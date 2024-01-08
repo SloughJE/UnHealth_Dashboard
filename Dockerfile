@@ -1,16 +1,24 @@
-FROM ubuntu:22.04
-
-RUN mkdir /code
-WORKDIR /code
+FROM python:3.11-slim-bullseye
 
 ENV PYTHONUNBUFFERED 1
 
-RUN apt-get -y update && \
-    apt-get -y install bc curl gnupg2 jq less python3 python3-pip unzip wget git && \
-    ln -s /usr/bin/python3 /usr/bin/python && \
+# Update and install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libgdal-dev gcc g++ && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt /code/
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+# Create a non-root user and switch to it
+RUN useradd -m -s /bin/bash myuser
+USER myuser
+
+WORKDIR /home/myuser/code
+
+# Copy the requirements.txt first to leverage Docker cache
+COPY --chown=myuser:myuser requirements.txt /home/myuser/code/
+
+# Install Python packages from requirements.txt
+RUN pip install --user --upgrade pip && \
+    pip install --user -r requirements.txt
+
+COPY --chown=myuser:myuser . /home/myuser/code/
