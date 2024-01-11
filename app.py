@@ -23,6 +23,18 @@ def value_to_color(value, min_val, max_val, colormap=plt.cm.RdYlGn_r):
     norm = mcolors.Normalize(vmin=min_val, vmax=max_val)
     return mcolors.to_hex(colormap(norm(value)))
 
+table_style_cell = {
+    'fontFamily': 'Arial, sans-serif',  # Use a readable font
+    'fontSize': 18,  # Increase font size
+    'textAlign': 'left',
+}
+
+table_style_header = {
+    'fontWeight': 'bold',
+    'fontSize': 22,
+    'backgroundColor': '#f4f4f4',  # Light gray background in headers
+    'color': 'black'
+}
 
 # Initialize the Dash app
 app = dash.Dash(__name__)
@@ -35,15 +47,38 @@ app.layout = html.Div([
         value='Diagnosed diabetes among adults aged >=18 years'  # Default value
     ),
     html.Button("Show Outliers", id="show-outliers-button", n_clicks=0),
-    dcc.Graph(id='choropleth-map'),
-    html.Div(id='table-title', children="Selected Measure", style={'fontSize': 22, 'marginTop': 20, 'textAlign': 'center'}),
-    dash_table.DataTable(
-        id='outliers-table',
-        columns=[],
-        data=[],
-        style_data_conditional=[],
-        style_table={'overflowX': 'auto'},  # Horizontal scroll
+    html.Div(
+        dcc.Graph(id='choropleth-map'),
+        style={'display': 'flex', 'justify-content': 'center'}
+        ),
+    html.Div(
+        id='table-title1',
+        children="Counties with Highest and Lowest Rates:",
+        style={'fontSize': 24, 'fontWeight':'bold','textAlign': 'center'}
     ),
+    html.Div(id='table-title', children="Selected Measure", style={'fontSize': 24, 'fontWeight':'bold','marginBottom': 20, 'textAlign': 'center'}),
+    
+    html.Div(
+        dash_table.DataTable(
+            id='outliers-table',
+            columns=[
+                {"name": "County", "id": "County"},
+                {"name": "State", "id": "State"},
+                {"name": "Percent", "id": "Percent"},
+            ],        data=[],
+            style_cell=table_style_cell,  # Apply cell style
+            style_header=table_style_header,  # Apply header style
+            style_data_conditional=[],
+            style_table={'overflowX': 'auto', 'width': '500px'},
+            style_cell_conditional=[
+                {'if': {'column_id': 'County'}, 'width': '55%'},  # Adjust width for County column
+                {'if': {'column_id': 'State'}, 'width': '35%'},  # Adjust width for State column
+                {'if': {'column_id': 'Percent'}, 'width': '15%'},  # Adjust width for Percent column
+            ],
+        ),
+        style={'display': 'flex', 'justify-content': 'center'}  
+    )
+
 ])
 
 def find_top_bottom_values(data_series, max_values):
@@ -96,8 +131,8 @@ def update_map(selected_measure):
         title_y=0.85,
         title_x=0.5,
         title_font=dict(size=20),
-        width=1000,
-        height=800
+        width=1200,
+        height=900
     )
 
     return fig
@@ -147,7 +182,7 @@ def update_table(selected_measure, n_clicks):
         style = [{'if': {'row_index': i}, 'backgroundColor': color} for i, color in enumerate(outliers_df['Color'])]
 
         # Define title based on the selected measure
-        title = f"Counties with Highest and Lowest Rates: {selected_measure}"
+        title = f"{selected_measure}"
 
         return outliers_df[['County', 'State', 'Percent']].to_dict('records'), style, columns, title
     else:
