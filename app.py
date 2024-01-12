@@ -12,7 +12,7 @@ df = pd.read_pickle(filepath_health_data)
 df['Data_Value'] = df['Data_Value'] / 100
 
 # GeoJSON file
-file_path_geo_json = "data/interim/plotly_geojson-counties-fips.json"
+file_path_geo_json = "data/interim/us_census_counties_geojson.json"
 with open(file_path_geo_json) as f:
     counties = json.load(f)
 
@@ -111,7 +111,7 @@ def update_map(selected_measure):
     # Create the choropleth map
     fig = go.Figure(go.Choropleth(
         geojson=counties,
-        featureidkey="id",
+        featureidkey="properties.GEOID",
         locations=filtered_df['FIPS'],
         z=filtered_df['Data_Value'],
         colorscale="RdYlGn_r",
