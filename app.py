@@ -7,7 +7,7 @@ import json
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 
-filepath_health_data = "data/interim/health_food_2020.pickle"
+filepath_health_data = "data/interim/health_food_2020_GEOID.pickle"
 df = pd.read_pickle(filepath_health_data)  
 df['Data_Value'] = df['Data_Value'] / 100
 
@@ -112,7 +112,7 @@ def update_map(selected_measure):
     fig = go.Figure(go.Choropleth(
         geojson=counties,
         featureidkey="properties.GEOID",
-        locations=filtered_df['FIPS'],
+        locations=filtered_df['GEOID'],
         z=filtered_df['Data_Value'],
         colorscale="RdYlGn_r",
         hovertemplate='%{customdata[0]} County, %{customdata[1]}<br>' + selected_measure + ': %{z:.2%}',
@@ -161,6 +161,8 @@ def toggle_button_label(n_clicks):
 def update_table(selected_measure, n_clicks):
     if n_clicks % 2 == 1:
         filtered_df = df[df['Measure'] == selected_measure]
+        filtered_df = filtered_df[filtered_df['LocationName'] != filtered_df['StateDesc']]
+
         outliers, _, _ = find_top_bottom_values(filtered_df['Data_Value'], max_values)
         outliers_df = filtered_df.loc[outliers.index]
 
