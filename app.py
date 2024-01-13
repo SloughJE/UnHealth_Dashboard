@@ -108,6 +108,13 @@ def find_top_bottom_values(data_series, max_values):
 def update_map(selected_measure):
     filtered_df = df[df['Measure'] == selected_measure]
 
+    # Calculate the 10th and 90th percentiles of the data
+    percentile_low = filtered_df['Data_Value'].quantile(0.05)
+    percentile_high = filtered_df['Data_Value'].quantile(0.95)
+    print(selected_measure)
+    print(percentile_low)
+    print(percentile_high)
+
     # Create the choropleth map
     fig = go.Figure(go.Choropleth(
         geojson=counties,
@@ -117,9 +124,9 @@ def update_map(selected_measure):
         colorscale="RdYlGn_r",
         hovertemplate='%{customdata[0]} County, %{customdata[1]}<br>' + selected_measure + ': %{z:.2%}',
         customdata=filtered_df[['LocationName', 'StateAbbr']],
-        colorbar=dict(thickness=10, len=0.5, tickformat=".0%"),
-        zmin=filtered_df['Data_Value'].min(),
-        zmax=filtered_df['Data_Value'].max(),
+        colorbar=dict(thickness=15, len=0.5, tickformat=".1%"),
+        zmin=percentile_low,
+        zmax=percentile_high,
         showscale=True,
         name=""
     ))
@@ -133,6 +140,16 @@ def update_map(selected_measure):
         title_font=dict(size=20),
         width=1200,
         height=900
+    )
+    fig.add_annotation(
+    text="Color scale represents<br>5th to 95th percentile",
+    align='left',
+    showarrow=False,
+    xref='paper', yref='paper',
+    x=1.075, y=.21,  # Adjust the position according to your layout
+    bgcolor="white",
+    bordercolor="black",
+    borderpad=4
     )
 
     return fig
