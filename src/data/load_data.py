@@ -62,6 +62,99 @@ def load_process_CDC_PLACES_data(save_og_files):
 
     cols_wanted = ['Year','StateAbbr','StateDesc','LocationName','Measure','Data_Value','Data_Value_Unit','GEOID']
     merged_gdf = merged_gdf[cols_wanted]
+    
+    # transform 'positive outcome' measures and values to inverse
+    measure_mapping = {
+        "Visits to doctor for routine checkup within the past year among adults aged >=18 years": "No doctor visit for checkup in past year among adults aged >=18 years",
+        "Visits to dentist or dental clinic among adults aged >=18 years": "No dental visit in past year among adults aged >=18 years",
+        "Fecal occult blood test, sigmoidoscopy, or colonoscopy among adults aged 50-75 years": "No colorectal cancer screening among adults aged 50-75 years",
+        "Cervical cancer screening among adult women aged 21-65 years": "No cervical cancer screening among adult women aged 21-65 years",
+        "Taking medicine for high blood pressure control among adults aged >=18 years with high blood pressure": "Not taking medicine for high blood pressure among adults aged >=18 years",
+        "Cholesterol screening among adults aged >=18 years": "No cholesterol screening among adults aged >=18 years",
+        "Mammography use among women aged 50-74 years": "No mammography use among women aged 50-74 years",
+        "Older adult men aged >=65 years who are up to date on a core set of clinical preventive services: Flu shot past year, PPV shot ever, Colorectal cancer screening": "Older adult men aged >=65 years not up to date on clinical preventive services",
+        "Older adult women aged >=65 years who are up to date on a core set of clinical preventive services: Flu shot past year, PPV shot ever, Colorectal cancer screening, and Mammogram past 2 years": "Older adult women aged >=65 years not up to date on clinical preventive services"
+    }
+
+    # Apply the mapping to the DataFrame
+    merged_gdf['Measure'] = merged_gdf['Measure'].apply(lambda x: measure_mapping.get(x, x))
+    # Invert data values for positive measures
+    merged_gdf['Data_Value'] = merged_gdf.apply(lambda row: 100 - row['Data_Value'] if row['Measure'] in measure_mapping.values() else row['Data_Value'], axis=1)
+
     output_filepath = "data/interim/CDC_PLACES_GEOID.pickle"
     merged_gdf.to_pickle(output_filepath)
+    print(f"file saved to: {output_filepath}")
+
+
+def rank_counties_by_year(CDC_filepath):
+    
+    impact_scores = {
+        "Stroke among adults aged >=18 years": 5,
+        "Chronic obstructive pulmonary disease among adults aged >=18 years": 5,
+        "Cancer (excluding skin cancer) among adults aged >=18 years": 5,
+        "Diagnosed diabetes among adults aged >=18 years": 5,
+        "Coronary heart disease among adults aged >=18 years": 5,
+        "Chronic kidney disease among adults aged >=18 years": 5,
+        "Cognitive disability among adults ages >=18 years": 5,
+
+        "Current smoking among adults aged >=18 years": 4,
+        "Obesity among adults aged >=18 years": 4,
+        "Depression among adults aged >=18 years": 4,
+        "Binge drinking among adults aged >=18 years": 4,
+        "Mental health not good for >=14 days among adults aged >=18 years": 4,
+        "Mobility disability among adults aged >=18 years": 4,
+        "High blood pressure among adults aged >=18 years": 4,
+
+        "Arthritis among adults aged >=18 years": 3,
+        "No leisure-time physical activity among adults aged >=18 years": 3,
+        "Vision disability among adults aged >=18 years": 3,
+        "Any disability among adults aged >=18 years": 3,
+        "Physical health not good for >=14 days among adults aged >=18 years": 3,
+        "Fair or poor self-rated health status among adults aged >=18 years": 3,
+
+        
+        "High cholesterol among adults aged >=18 years who have been screened in the past 5 years": 2,
+        "Sleeping less than 7 hours among adults aged >=18 years": 2,
+        "Current asthma among adults aged >=18 years": 2,
+        "All teeth lost among adults aged >=65 years": 2,
+        "Independent living disability among adults aged >=18 years": 2,
+        "Not taking medicine for high blood pressure among adults aged >=18 years": 2,
+        "Current lack of health insurance among adults aged 18-64 years": 2,
+        "Older adult men aged >=65 years not up to date on clinical preventive services": 2,
+        "Older adult women aged >=65 years not up to date on clinical preventive services": 2,
+        "Self-care disability among adults aged >=18 years": 2,
+
+        "No mammography use among women aged 50-74 years": 1,
+        "No colorectal cancer screening among adults aged 50-75 years": 1,
+        "No cervical cancer screening among adult women aged 21-65 years": 1,
+        "No doctor visit for checkup in past year among adults aged >=18 years": 1,
+        "No dental visit in past year among adults aged >=18 years": 1,
+        "No cholesterol screening among adults aged >=18 years": 1,
+        "Hearing disability among adults aged >=18 years": 1
+    }
+
+    df = pd.read_pickle(CDC_filepath)
+
+    def normalize_within_group(df, column_name):
+        min_val = df[column_name].min()
+        max_val = df[column_name].max()
+        df[column_name + '_Normalized'] = ((df[column_name] - min_val) / (max_val - min_val)) * 100
+        return df
+
+    df = df.groupby(['Year', 'Measure']).apply(lambda x: normalize_within_group(x, 'Data_Value')).reset_index(drop=True)
+    df['Weighted_Score'] = df.apply(lambda row: row['Data_Value_Normalized'] * impact_scores.get(row['Measure'], 0), axis=1)
+
+    county_year_scores = df.groupby(['Year', 'GEOID', 'LocationName', 'StateAbbr'])['Weighted_Score'].sum().reset_index()
+    county_year_scores = county_year_scores.sort_values(by=['Year', 'Weighted_Score'], ascending=[True, False])
+
+    def normalize_within_year_group(df, column_name):
+        min_val = df[column_name].min()
+        max_val = df[column_name].max()
+        df[column_name + '_Normalized'] = ((df[column_name] - min_val) / (max_val - min_val)) * 100
+        return df
+
+    county_year_scores = county_year_scores.groupby('Year').apply(lambda x: normalize_within_year_group(x, 'Weighted_Score')).reset_index(drop=True)
+    print(county_year_scores[county_year_scores.Year==2020])
+    output_filepath = "data/interim/CDC_PLACES_county_rankings_by_year.pickle"
+    county_year_scores.to_pickle(output_filepath)
     print(f"file saved to: {output_filepath}")
