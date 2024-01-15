@@ -7,7 +7,8 @@ import json
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 
-filepath_health_data = "data/interim/health_food_2020_GEOID.pickle"
+# filepath_health_data = "data/interim/health_food_2020_GEOID.pickle"
+filepath_health_data = "data/interim/CDC_PLACES_GEOID.pickle"
 df = pd.read_pickle(filepath_health_data)  
 df['Data_Value'] = df['Data_Value'] / 100
 
@@ -41,6 +42,11 @@ app = dash.Dash(__name__)
 
 # Define the app layout
 app.layout = html.Div([
+    dcc.Dropdown(
+    id='year-dropdown',
+    options=[{'label': year, 'value': year} for year in sorted(df['Year'].unique())],
+    value=df['Year'].max()
+    ),
     dcc.Dropdown(
         id='measure-dropdown',
         options=[{'label': i, 'value': i} for i in df['Measure'].unique()],
@@ -81,6 +87,18 @@ app.layout = html.Div([
 
 ])
 
+# YEAR CALLBACK
+@app.callback(
+    Output('measure-dropdown', 'options'),
+    [Input('year-dropdown', 'value')]
+)
+def set_measure_options(selected_year):
+    # Filter the DataFrame based on the selected year
+    filtered_df = df[df['Year'] == selected_year]
+    # Return the unique measures for this year
+    return [{'label': measure, 'value': measure} for measure in filtered_df['Measure'].unique()]
+
+
 def find_top_bottom_values(data_series, max_values):
     # Sort the data series
     sorted_data = data_series.sort_values()
@@ -103,11 +121,12 @@ def find_top_bottom_values(data_series, max_values):
 # Callback to update map based on dropdown selection and button click
 @app.callback(
     Output('choropleth-map', 'figure'),
-    [Input('measure-dropdown', 'value')]
+    [Input('measure-dropdown', 'value'),
+     Input('year-dropdown', 'value')]
 )
-def update_map(selected_measure):
-    filtered_df = df[df['Measure'] == selected_measure]
-
+def update_map(selected_measure, selected_year):
+    print(selected_year)
+    filtered_df = df[(df['Measure'] == selected_measure) & (df['Year'] == selected_year)]
     # Calculate the 10th and 90th percentiles of the data
     percentile_low = filtered_df['Data_Value'].quantile(0.05)
     percentile_high = filtered_df['Data_Value'].quantile(0.95)
@@ -172,12 +191,13 @@ def toggle_button_label(n_clicks):
     Output('outliers-table', 'columns'),
     Output('table-title', 'children'),  # Output for the title
     [Input('measure-dropdown', 'value'),
+     Input('year-dropdown', 'value'),  # Include year-dropdown as an input
      Input('show-outliers-button', 'n_clicks')]
 )
-
-def update_table(selected_measure, n_clicks):
+def update_table(selected_measure, selected_year, n_clicks):  # Include selected_year as a parameter
     if n_clicks % 2 == 1:
-        filtered_df = df[df['Measure'] == selected_measure]
+        # Filter by both measure and year
+        filtered_df = df[(df['Measure'] == selected_measure) & (df['Year'] == selected_year)]
         filtered_df = filtered_df[filtered_df['LocationName'] != filtered_df['StateDesc']]
 
         outliers, _, _ = find_top_bottom_values(filtered_df['Data_Value'], max_values)
@@ -201,7 +221,7 @@ def update_table(selected_measure, n_clicks):
         style = [{'if': {'row_index': i}, 'backgroundColor': color} for i, color in enumerate(outliers_df['Color'])]
 
         # Define title based on the selected measure
-        title = f"{selected_measure}"
+        title = f"{selected_measure} for {selected_year}"
 
         return outliers_df[['County', 'State', 'Percent']].to_dict('records'), style, columns, title
     else:
