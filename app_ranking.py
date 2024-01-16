@@ -124,7 +124,7 @@ def update_map( selected_year):
     align='left',
     showarrow=False,
     xref='paper', yref='paper',
-    x=1.055, y=.21,  # Adjust the position according to your layout
+    x=1.055, y=.21,  
     bgcolor="white",
     bordercolor="black",
     borderpad=4
@@ -177,8 +177,6 @@ def update_table(selected_year):
     title = f"County Rank of Overall Health Metrics for {selected_year}"
 
     return combined_ranks_df[['County', 'State', 'Score', 'Rank']].to_dict('records'), style, columns, title
-
-
 
 # Run the app
 if __name__ == '__main__':
