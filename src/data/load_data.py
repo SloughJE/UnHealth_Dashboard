@@ -134,18 +134,19 @@ def rank_counties_by_year(CDC_filepath):
     }
 
     df = pd.read_pickle(CDC_filepath)
+    df = df[df['LocationName'] != df['StateDesc']] # remove state data if any
 
-    def normalize_within_group(df, column_name):
+    def invert_normalize_within_group(df, column_name):
         min_val = df[column_name].min()
         max_val = df[column_name].max()
-        df[column_name + '_Normalized'] = ((df[column_name] - min_val) / (max_val - min_val)) * 100
+        df[column_name + '_Inverted_Normalized'] = 100 - ((df[column_name] - min_val) / (max_val - min_val)) * 100
         return df
 
-    df = df.groupby(['Year', 'Measure']).apply(lambda x: normalize_within_group(x, 'Data_Value')).reset_index(drop=True)
-    df['Weighted_Score'] = df.apply(lambda row: row['Data_Value_Normalized'] * impact_scores.get(row['Measure'], 0), axis=1)
+    df = df.groupby(['Year', 'Measure']).apply(lambda x: invert_normalize_within_group(x, 'Data_Value')).reset_index(drop=True)
 
-    county_year_scores = df.groupby(['Year', 'GEOID', 'LocationName', 'StateAbbr'])['Weighted_Score'].sum().reset_index()
-    county_year_scores = county_year_scores.sort_values(by=['Year', 'Weighted_Score'], ascending=[True, False])
+    df['Weighted_Score'] = df.apply(lambda row: row['Data_Value_Inverted_Normalized'] * impact_scores.get(row['Measure'], 0), axis=1)
+
+    county_year_scores = df.groupby(['Year', 'GEOID', 'LocationName', 'StateDesc', 'StateAbbr'])['Weighted_Score'].sum().reset_index()
 
     def normalize_within_year_group(df, column_name):
         min_val = df[column_name].min()
@@ -154,6 +155,13 @@ def rank_counties_by_year(CDC_filepath):
         return df
 
     county_year_scores = county_year_scores.groupby('Year').apply(lambda x: normalize_within_year_group(x, 'Weighted_Score')).reset_index(drop=True)
+    # Add a ranking column within each year based on the normalized weighted score
+    # method='min' assigns same rank to ties
+    # Rank the scores, higher is now better
+    county_year_scores['Rank'] = county_year_scores.groupby('Year')['Weighted_Score_Normalized'].rank(ascending=False, method='min')
+    county_year_scores['Rank'] = county_year_scores['Rank'].astype(int)
+    county_year_scores = county_year_scores.sort_values(by=['Year', 'Rank'])
+
     print(county_year_scores[county_year_scores.Year==2020])
     output_filepath = "data/interim/CDC_PLACES_county_rankings_by_year.pickle"
     county_year_scores.to_pickle(output_filepath)
