@@ -166,3 +166,76 @@ def rank_counties_by_year(CDC_filepath):
     output_filepath = "data/interim/CDC_PLACES_county_rankings_by_year.pickle"
     county_year_scores.to_pickle(output_filepath)
     print(f"file saved to: {output_filepath}")
+
+
+####################################
+# FROM USA SPENDING
+def get_spending_data(year_wanted):
+    import requests
+    import pandas as pd
+    import us
+
+    def fetch_spending_data_by_county(fiscal_year):
+        url = "https://api.usaspending.gov/api/v2/search/spending_by_geography/"
+        headers = {
+            'Content-Type': 'application/json'
+        }
+        data = {
+            "scope": "place_of_performance",
+            "geo_layer": "county",
+            "filters": {
+                "time_period": [{"start_date": f"{fiscal_year}-01-01", "end_date": f"{fiscal_year}-12-31"}]
+            }
+        }
+
+        response = requests.post(url, json=data, headers=headers)
+
+        if response.status_code == 200:
+            print("Request successful")
+            response_json = response.json()
+            results = response_json['results']
+
+            for result in results:
+                fips_code = result['shape_code']
+                state = us.states.lookup(fips_code[:2])
+                result['state_code'] = state.abbr if state else None
+
+            df = pd.DataFrame(results)
+            df['fiscal_year'] = fiscal_year
+
+            return df
+        else:
+            print("Request failed")
+            print(response.status_code)
+            print(response.text)
+            return pd.DataFrame()
+
+    print(f"Pulling data from USA Spending API for {year_wanted}")
+    df_spending = fetch_spending_data_by_county(year_wanted)
+    print(df_spending)
+    fileout = f"data/interim/USA_Spending_{year_wanted}.pickle"
+    print(f"Spending data saved to: {fileout}")
+
+    df_spending.to_pickle(fileout)
+
+##################
+# FROM BEA
+# Read the CSV file, skipping the first 3 rows and the last 11 rows
+def process_gdp_data(filepath_in,filepath_out):
+
+    df_gdp = pd.read_csv(filepath_in, skiprows=3, skipfooter=11, engine='python')
+
+    # Rename the columns
+    df_gdp.columns = ['GeoFips', 'GeoName', 'gdp_thousands']
+
+    # Convert 'gdp_thousands' to numeric, coercing errors to NaN
+    df_gdp['gdp_thousands'] = pd.to_numeric(df_gdp['gdp_thousands'], errors='coerce')
+
+    # Multiply by 1000 to convert to actual GDP
+    df_gdp['gdp'] = df_gdp['gdp_thousands'] * 1000
+    df_gdp['GeoFips'] = df_gdp.GeoFips.astype(str)
+    df_gdp.to_pickle(filepath_out)
+    print(df_gdp)
+    print(f"data processed and saved to{filepath_out}")
+
+    

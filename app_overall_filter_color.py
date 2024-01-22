@@ -1,6 +1,7 @@
 import dash
 from dash import html, dcc, dash_table
 from dash.dependencies import Input, Output
+from dash.dash_table.Format import Format, Group
 
 import plotly.graph_objects as go
 import pandas as pd
@@ -16,7 +17,7 @@ import matplotlib.colors as mcolors
 table_style = {
     'style_table': {
         'overflowX': 'auto',
-        'width': '80%',
+        'width': '50%',
         'margin': 'auto',
         'border': '1px solid white'
     },
@@ -38,13 +39,73 @@ table_style = {
     }
 }
 
+style_header_conditional=[
+    {
+        'if': {'column_id': 'Weighted_Score_Normalized'},
+        'textAlign': 'right'
+    },
+    {
+        'if': {'column_id': 'Rank'},
+        'textAlign': 'right'
+    },
+    {
+        'if': {'column_id': 'LocationName'},
+        'textAlign': 'center'
+    },
+    {
+        'if': {'column_id': 'StateDesc'},
+        'textAlign': 'center'
+    },
+    {
+        'if': {'column_id': 'population'},
+        'textAlign': 'right'
+    },
+    {
+        'if': {'column_id': 'GDP_Per_Capita_2020'},
+        'textAlign': 'right'
+    }
+]
+
+
+style_cell_conditional=[
+    {
+        'if': {'column_id': 'Weighted_Score_Normalized'},
+        'width': '15%',  
+        'textAlign': 'right'
+    },
+    {
+        'if': {'column_id': 'Rank'},
+        'width': '10%',  
+        'textAlign': 'right'
+    },
+    {
+        'if': {'column_id': 'LocationName'},
+        'textAlign': 'left'
+    },
+    {
+        'if': {'column_id': 'StateDesc'},
+        'textAlign': 'left'
+    },
+        {
+        'if': {'column_id': 'population'},
+        'textAlign': 'right',
+        'width': '15%',  
+
+    },
+    {
+        'if': {'column_id': 'GDP_Per_Capita_2020'},
+        'textAlign': 'right',
+        'width': '15%',  
+
+    }
+]
 
 ### Load data#####
-df_ranking = pd.read_pickle("data/interim/CDC_PLACES_county_rankings_by_year.pickle")
+df_ranking = pd.read_pickle("data/processed/HealthScore_Rank_GDP_Pop_perCounty.pickle")
 df_ranking = df_ranking[df_ranking.Year==2020]
-#df_ranking['Weighted_Score_Normalized'] = df_ranking.Weighted_Score_Normalized / 100
 
-merged_df = pd.read_pickle("data/interim/combined_Rank_CDCLocals_BEAgdp_Spending.pickle")
+# merged_df = pd.read_pickle("data/processed/HealthScore_Rank_GDP_Pop_perCounty.pickle")
+merged_df = df_ranking.copy()
 merged_df = merged_df[['GEOID','LocationName','StateDesc','StateAbbr','Weighted_Score_Normalized', 'Rank', 'GDP_Per_Capita_2020','population']]
 
 # GeoJSON file
@@ -81,7 +142,6 @@ merged_df['Weighted_Score_Normalized'] = round(merged_df.Weighted_Score_Normaliz
 # Fit a GAM model
 # Apply logarithmic transformation and then scale to the range [0, 1]
 normalized_weights = np.log(merged_df['population'] + 1)  # Add 1 to avoid log(0)
-print(normalized_weights.min())
 #normalized_weights = (normalized_weights - normalized_weights.min()) / (normalized_weights.max() - normalized_weights.min())
 # Fit the GAM model with normalized weights
 gam = LinearGAM(s(0, n_splines=20, constraints='monotonic_inc', lam=10))
@@ -134,9 +194,6 @@ def create_updated_bubble_chart(selected_state):
     # Step 1: Filter by State (if any are selected)
     if selected_state:
         filtered_df = filtered_df[filtered_df['StateAbbr'].isin(selected_state)]
-
-    print(f"bubble chart len: {len(filtered_df)}")
-    print(f"bubble chart states: {filtered_df.StateAbbr.unique()}")
 
     hover_text = [
     f"{row['LocationName']}, {row['StateDesc']}<br>County Health Score: {row['Weighted_Score_Normalized']}<br>Rank: {row['Rank']}<br>GDP Per Capita: {row['GDP_Per_Capita_2020']}<br>Population: {row['population']}"
@@ -219,13 +276,13 @@ def create_updated_bubble_chart(selected_state):
 
         # Update the layout for a dark and minimalist theme
         fig_bubble.update_layout(
-            title='GDP per Capita vs Health Score by County',
+            title='GDP per Capita vs Health Score',
             title_x=0.5,  # Center the title
             title_font=dict(size=20),  # Adjust the font size if needed
             margin=dict(l=0, r=0, t=40, b=0),
             xaxis=dict(title='GDP per capita 2020', range=[0, 200000], showgrid=False, linecolor='darkgrey', linewidth=1),  # Hide grid lines and set axis line color
             yaxis=dict(range=[0, 101], showgrid=False, linecolor='darkgrey', linewidth=1),  # Hide grid lines and set axis line color
-            yaxis_title='County Health Score',
+            yaxis_title='Health Score',
             #width=700, height=600,
             coloraxis_showscale=False,
             
@@ -307,7 +364,6 @@ def create_updated_map(selected_state):
     fig = go.Figure()
 
     #for i, quintile_df in enumerate(filtered_dfs):
-    print(f"map df length: {len(filtered_df_by_state)}")
     fig.add_trace(go.Choropleth(
         geojson=counties,
         featureidkey="properties.GEOID",
@@ -323,7 +379,7 @@ def create_updated_map(selected_state):
             thickness=15,
             len=0.5,
             tickformat="0",
-            x=0.03,  # Adjust this value to move the colorbar closer
+            x=0.05,  # Adjust this value to move the colorbar closer
             xpad=0,  # Adjust padding if needed
             tickfont=dict(color='white'),  # Set tick font color
         ),
@@ -350,7 +406,7 @@ def create_updated_map(selected_state):
         ),
         paper_bgcolor='black',
         plot_bgcolor='black',
-        title_text='Overall Health Score by County for 2020',
+        title_text='Health Score',
         title_x=0.5,  # Center the title
         margin=dict(l=0, r=0, t=40, b=0),
         title_font=dict(size=20, color='white'),
@@ -362,7 +418,7 @@ def create_updated_map(selected_state):
         align='left',
         showarrow=False,
         xref='paper', yref='paper',
-        x=0.725, y=0.05,
+        x=0.95, y=0.15,
         bgcolor="black",  # Set background color
         bordercolor="gray",  # Set border color
         borderpad=4,
@@ -411,7 +467,7 @@ app.css.append_css({
 
 # Define the app layout with responsive design
 app.layout = html.Div([
-    html.H1("Health Scores and Economic Indicators by County", style={
+    html.H1("Overall Health Score and GDP per Capita by County for 2020", style={
         'color': 'white',
         'textAlign': 'center',
         'fontSize': '42px',
@@ -452,7 +508,7 @@ app.layout = html.Div([
 
     # Title for Table
     html.Div(
-        html.H2("Top and Bottom County Health Scores", style={
+        html.H2("Ten Worst and Best County Health Scores", style={
             'color': 'white',
             'textAlign': 'center',
             'fontSize': '30px',
@@ -478,14 +534,28 @@ app.layout = html.Div([
             columns=[
                 {"name": "County", "id": "LocationName"},
                 {"name": "State", "id": "StateDesc"},
+                {
+                    "name": "GDP per Capita", 
+                    "id": "GDP_Per_Capita_2020",
+                    "type": "numeric", 
+                    "format": Format(group=Group.yes)  # Group by thousands
+                },
+                {
+                    "name": "Population", 
+                    "id": "population",
+                    "type": "numeric", 
+                    "format": Format(group=Group.yes)  # Group by thousands
+                },
                 {"name": "Health Score", "id": "Weighted_Score_Normalized"},
                 {"name": "Overall Rank", "id": "Rank"},
-
             ],
             data=[],
+            style_cell_conditional=style_cell_conditional,
+            style_header_conditional=style_header_conditional,
             **table_style
         )
     ], style={'textAlign': 'center', 'backgroundColor': 'black', 'padding': '20px', 'border': 'none'})
+
 ], style={
     'backgroundColor': 'black',
     'margin': '0',
@@ -523,13 +593,14 @@ def update_table(selected_state):
     else:
         # If no state is selected, use the full dataset
         filtered_df = df_ranking
-
     # Get top and bottom values based on filtered DataFrame
     top_bottom_df = find_top_bottom_values(filtered_df, 'Weighted_Score_Normalized', max_values)
-
     # Calculate colors for each row in the top_bottom_df based on overall min and max values
     top_bottom_df['Color'] = top_bottom_df['Weighted_Score_Normalized'].apply(lambda x: value_to_color(x, percentile_low, percentile_high))
     top_bottom_df['Weighted_Score_Normalized'] = round(top_bottom_df.Weighted_Score_Normalized,2)
+
+    top_bottom_df['GDP_Per_Capita_2020'] = round(top_bottom_df.GDP_Per_Capita_2020,0)
+    top_bottom_df.fillna("NA",inplace=True)
     # Convert DataFrame to dictionary for DataTable
     data = top_bottom_df.to_dict('records')
 
