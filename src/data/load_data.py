@@ -60,7 +60,7 @@ def load_process_CDC_PLACES_data(save_og_files):
     #https://www.cdc.gov/nchs/hus/sources-definitions/age-adjustment.htm#:~:text=Age%2Dadjusted%20rates%20are%20computed,age%20differences%20in%20population%20composition.
     merged_gdf = merged_gdf[merged_gdf.Data_Value_Type!='Crude prevalence']
 
-    cols_wanted = ['Year','StateAbbr','StateDesc','LocationName','Measure','Data_Value','Data_Value_Unit','GEOID']
+    cols_wanted = ['Year','StateAbbr','StateDesc','LocationName','Measure','Data_Value','Data_Value_Unit','GEOID','Geolocation']
     merged_gdf = merged_gdf[cols_wanted]
     
     # transform 'positive outcome' measures and values to inverse

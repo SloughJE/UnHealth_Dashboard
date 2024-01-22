@@ -91,7 +91,7 @@ def update_map( selected_year):
     # Calculate the 10th and 90th percentiles of the data
     percentile_low = filtered_df['Weighted_Score_Normalized'].quantile(0.05)
     percentile_high = filtered_df['Weighted_Score_Normalized'].quantile(0.95)
-
+    print(filtered_df[(filtered_df.StateDesc=='Arizona')])
     num_counties = len(filtered_df)
     # Create the choropleth map
     fig = go.Figure(go.Choropleth(
