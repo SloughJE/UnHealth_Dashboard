@@ -10,3 +10,4 @@ us
 plotly
 geopandas
 dash
+python-dotenv

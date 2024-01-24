@@ -1,5 +1,6 @@
 import os
 import json
+import requests
 
 import pandas as pd
 import geopandas as gpd
@@ -239,3 +240,151 @@ def process_gdp_data(filepath_in,filepath_out):
     print(f"data processed and saved to{filepath_out}")
 
     
+def get_bea_income_data(api_key,table_name='CAINC1',year_min=1969, year_max=2023, line_codes=['1','2','3']):
+
+
+    years = [str(year) for year in range(year_min, year_max)]
+    year_range = ','.join(years)
+
+    dfs = []
+    statistics = []
+    unit_of_measures = []
+    GeoFips='COUNTY'
+    print("getting county data")
+    # Make separate API requests for each LineCode as for some reason you can't request multiple at once
+    for line_code in line_codes:
+
+        url = f"https://apps.bea.gov/api/data/?UserID={api_key}&method=GetData&datasetname=Regional&TableName={table_name}&LineCode={line_code}&Year={year_range}&GeoFips={GeoFips}&ResultFormat=json"
+
+        response = requests.get(url)
+        data = response.json()
+        statistic = data['BEAAPI']['Results']['Statistic']
+        unit_of_measure = data['BEAAPI']['Results']['UnitOfMeasure']
+
+        statistics.append(statistic)
+        unit_of_measures.append(unit_of_measure)
+
+        data_list = data['BEAAPI']['Results']['Data']
+        df = pd.DataFrame(data_list)
+        dfs.append(df)
+
+    for i, df in enumerate(dfs):
+        df['Statistic'] = statistics[i]
+        df['UnitOfMeasure'] = unit_of_measures[i]
+
+    county_df = pd.concat(dfs, ignore_index=True)
+    print(f"county_df data shape: {county_df.shape}")
+    print(f"county_df number of unique GeoFips: {county_df.GeoFips.nunique()}")
+    # now get state and USA totals
+    dfs = []
+    statistics = []
+    unit_of_measures = []
+    GeoFips='STATE'
+    print("getting state and country data")
+    for line_code in line_codes:
+
+        url = f"https://apps.bea.gov/api/data/?UserID={api_key}&method=GetData&datasetname=Regional&TableName={table_name}&LineCode={line_code}&Year={year_range}&GeoFips={GeoFips}&ResultFormat=json"
+
+        response = requests.get(url)
+        data = response.json()
+
+        statistic = data['BEAAPI']['Results']['Statistic']
+        unit_of_measure = data['BEAAPI']['Results']['UnitOfMeasure']
+
+        statistics.append(statistic)
+        unit_of_measures.append(unit_of_measure)
+
+        data_list = data['BEAAPI']['Results']['Data']
+
+        df = pd.DataFrame(data_list)
+
+        dfs.append(df)
+
+    # Add the 'Statistic' and 'UnitOfMeasure' columns to each DataFrame
+    for i, df in enumerate(dfs):
+        df['Statistic'] = statistics[i]
+        df['UnitOfMeasure'] = unit_of_measures[i]
+
+    # Concatenate all DataFrames into a single DataFrame
+    state_country_df = pd.concat(dfs, ignore_index=True)
+    print(f"state_country_df data shape: {state_country_df.shape}")
+    print(f"state_country_df number of unique GeoFips: {state_country_df.GeoFips.nunique()}")
+
+    df_income = pd.concat([state_country_df,county_df])
+    print(df_income.head(2))
+    print(df_income.tail(2))
+
+    print(f"data shape: {df_income.shape}")
+    print(f"number of unique GeoFips: {df_income.GeoFips.nunique()}")
+
+    file_out = f"data/interim/df_income_{year_min}_{year_max}.pickle"
+    df_income.to_pickle(file_out)
+    print(f"file saved to: {file_out}")
+
+
+def get_regional_bls_cpi_data(api_key, start_year, end_year):
+    
+    print(f"pulling regional CPI data from {start_year} to {end_year}")
+    def generate_year_ranges(start, end, interval=20):
+        return [(year, min(year + interval - 1, end)) for year in range(start, end, interval)]
+
+    # found looking at: https://www.bls.gov/cpi/regional-resources.htm
+    # couldn't find other documentation about this
+
+    bls_series_dict = {
+        "South": ["CUUR0300SA0", "CUUS0300SA0"],
+        "West": ["CUUR0400SA0", "CUUS0400SA0"],
+        "Midwest": ["CUUR0200SA0", "CUUS0200SA0"],
+        "NorthEast": ["CUUR0100SA0", "CUUS0100SA0"]
+    }
+
+    headers = {'Content-type': 'application/json'}
+    all_data = []
+
+    for region, series_ids in bls_series_dict.items():
+        for start_year_loop, end_year_loop in generate_year_ranges(start_year, end_year, 20):
+
+            data = json.dumps({
+                "seriesid": series_ids,
+                "startyear": str(start_year_loop),
+                "endyear": str(end_year_loop),
+                "annualaverage": True,
+                "registrationkey": api_key
+            })
+
+            response = requests.post('https://api.bls.gov/publicAPI/v2/timeseries/data/', data=data, headers=headers)
+            cpi_data = response.json()
+
+            # Check if 'Results' key is present and not empty
+            if cpi_data.get('Results', {}):
+                for i, series_id in enumerate(series_ids):
+                    series_data = cpi_data['Results']['series'][i]['data']
+                    annual_data = [item for item in series_data if item['periodName'] == 'Annual']
+                    for item in annual_data:
+                        item['region'] = region
+                        all_data.append(item)
+            else:
+                print(f"No data for series {series_ids} in region {region} for years {start_year_loop}-{end_year_loop}")
+
+    # Creating and organizing the DataFrame
+    df = pd.DataFrame(all_data)
+    df = df[['year', 'value', 'region']]
+    df = df.sort_values(by=['region', 'year'])
+    df.drop_duplicates(inplace=True)
+
+    print(df.head(2))
+    print(df.tail(2))
+    print(f"df shape: {df.shape}")
+    region_counts = df.groupby('region').count()
+    print(region_counts)
+    
+    file_out = f"data/interim/df_bls_regional_cpi_{start_year}_{end_year}.pickle"
+    df.to_pickle(file_out)
+    print(f"file saved to: {file_out}")
+
+    regions_dict = {
+        "West": ["WA", "OR", "ID", "MT", "WY", "CA", "NV", "UT", "CO", "AZ", "NM", "AK", "HI"],
+        "Midwest": ["ND", "SD", "NE", "KS", "MN", "IA", "MO", "WI", "IL", "MI", "IN", "OH"],
+        "South": ["TX", "OK", "AR", "LA", "MS", "AL", "GA", "FL", "SC", "NC", "VA", "WV", "KY", "TN", "DC", "MD", "DE"],
+        "Northeast": ["PA", "NJ", "NY", "CT", "RI", "MA", "VT", "NH", "ME"]
+    }
