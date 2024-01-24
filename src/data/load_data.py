@@ -317,9 +317,88 @@ def get_bea_income_data(api_key,table_name='CAINC1',year_min=1969, year_max=2023
     print(f"data shape: {df_income.shape}")
     print(f"number of unique GeoFips: {df_income.GeoFips.nunique()}")
 
-    file_out = f"data/interim/df_income_{year_min}_{year_max}.pickle"
+    file_out = f"data/interim/df_BEA_income_{year_min}_{year_max}.pickle"
     df_income.to_pickle(file_out)
     print(f"file saved to: {file_out}")
+
+
+## get GDP data from 2017 to 2023 from BEA by county,state,country
+def get_bea_gdp_data(api_key,table_name='CAGDP1',year_min=2017, year_max=2023, line_codes=['1','2','3']):
+
+
+    years = [str(year) for year in range(year_min, year_max)]
+    year_range = ','.join(years)
+
+    dfs = []
+    statistics = []
+
+    GeoFips='COUNTY'
+    print("getting county data")
+    # Make separate API requests for each LineCode as for some reason you can't request multiple at once
+    for line_code in line_codes:
+
+        url = f"https://apps.bea.gov/api/data/?UserID={api_key}&method=GetData&datasetname=Regional&TableName={table_name}&LineCode={line_code}&Year={year_range}&GeoFips={GeoFips}&ResultFormat=json"
+
+        response = requests.get(url)
+        data = response.json()
+        statistic = data['BEAAPI']['Results']['Statistic']
+
+
+        statistics.append(statistic)
+
+
+        data_list = data['BEAAPI']['Results']['Data']
+        df = pd.DataFrame(data_list)
+        dfs.append(df)
+
+    for i, df in enumerate(dfs):
+        df['Statistic'] = statistics[i]
+
+
+    county_df = pd.concat(dfs, ignore_index=True)
+    print(f"county_df data shape: {county_df.shape}")
+    print(f"county_df number of unique GeoFips: {county_df.GeoFips.nunique()}")
+    # now get state and USA totals
+    dfs = []
+    statistics = []
+
+    GeoFips='STATE'
+    print("getting state and country data")
+    for line_code in line_codes:
+
+        url = f"https://apps.bea.gov/api/data/?UserID={api_key}&method=GetData&datasetname=Regional&TableName={table_name}&LineCode={line_code}&Year={year_range}&GeoFips={GeoFips}&ResultFormat=json"
+
+        response = requests.get(url)
+        data = response.json()
+
+        statistic = data['BEAAPI']['Results']['Statistic']
+        statistics.append(statistic)
+        data_list = data['BEAAPI']['Results']['Data']
+
+        df = pd.DataFrame(data_list)
+
+        dfs.append(df)
+
+    # Add the 'Statistic' and 'UnitOfMeasure' columns to each DataFrame
+    for i, df in enumerate(dfs):
+        df['Statistic'] = statistics[i]
+
+    # Concatenate all DataFrames into a single DataFrame
+    state_country_df = pd.concat(dfs, ignore_index=True)
+    print(f"state_country_df data shape: {state_country_df.shape}")
+    print(f"state_country_df number of unique GeoFips: {state_country_df.GeoFips.nunique()}")
+
+    df_gdp = pd.concat([state_country_df,county_df])
+    print(df_gdp.head(2))
+    print(df_gdp.tail(2))
+
+    print(f"data shape: {df_gdp.shape}")
+    print(f"number of unique GeoFips: {df_gdp.GeoFips.nunique()}")
+
+    file_out = f"data/interim/df_BEA_gdp_{year_min}_{year_max}.pickle"
+    df_gdp.to_pickle(file_out)
+    print(f"file saved to: {file_out}")
+
 
 
 def get_regional_bls_cpi_data(api_key, start_year, end_year):

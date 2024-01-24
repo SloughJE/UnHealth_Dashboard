@@ -4,7 +4,8 @@ import yaml
 import argparse
 from dotenv import load_dotenv
 
-from src.data.load_data import load_process_CDC_PLACES_data, rank_counties_by_year, process_gdp_data, get_spending_data, get_bea_income_data, get_regional_bls_cpi_data
+from src.data.load_data import (load_process_CDC_PLACES_data, rank_counties_by_year, process_gdp_data, get_spending_data, 
+                                get_bea_income_data, get_bea_gdp_data, get_regional_bls_cpi_data)
 from src.data.merge_data import merge_gdp_ranking_data
 
 load_dotenv()
@@ -53,6 +54,12 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "--get_bea_gdp_data",
+        help="get gdp per county, state and country from BEA api",
+        action="store_true"
+    )
+
+    parser.add_argument(
         "--get_bls_regional_cpi",
         help="get regional CPI from BLS api",
         action="store_true"
@@ -97,6 +104,15 @@ if __name__ == "__main__":
                 bea_api_key,
                 table_name='CAINC1',
                 year_min=1969, 
+                year_max=2023, 
+                line_codes=['1','2','3']
+            )
+
+        if args.get_bea_gdp_data:
+            get_bea_gdp_data(
+                bea_api_key,
+                table_name='CAGDP1',
+                year_min=2017, # min year available is 2017 
                 year_max=2023, 
                 line_codes=['1','2','3']
             )
