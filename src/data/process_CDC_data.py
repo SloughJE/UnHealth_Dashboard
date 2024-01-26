@@ -61,7 +61,7 @@ def rank_counties_by_year(CDC_filepath):
         'Current smoking among adults aged >=18 years': 'Current smoking (>=18)',
         'Depression among adults aged >=18 years': 'Depression (>=18)',
         'Diagnosed diabetes among adults aged >=18 years': 'Diagnosed diabetes (>=18)',
-        'Fair or poor self-rated health status among adults aged >=18 years': 'Poor health rating (>=18)',
+        'Fair or poor self-rated health status among adults aged >=18 years': 'Poor health self-rating (>=18)',
         'Mental health not good for >=14 days among adults aged >=18 years': 'Poor mental health (>=18)',
         'No cervical cancer screening among adult women aged 21-65 years': 'No cervical cancer screening (21-65)',
         'No colorectal cancer screening among adults aged 50-75 years': 'No colorectal cancer screening (50-75)',
