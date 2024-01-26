@@ -27,6 +27,33 @@ def load_process_CDC_PLACES_data(save_og_files):
         print(f"OG files saved to: {filepath_2022} and {filepath_2023}")
 
     df_health = pd.concat([df_health_2022,df_health_2023])
+
+    # Florida does not have Disability data. I will add this from USA avg. This is so we can have a 'overall health score'
+    print("Dealing with Florida's lack of disability data")
+    print("Inserting USA average for all Florida counties")
+    # Step 1: Extract the USA data for 'Disability' and 'Age-adjusted prevalence'
+    usa_disability_data = df_health[(df_health.StateAbbr == 'US') & (df_health.Category == 'Disability') & (df_health.Data_Value_Type == 'Age-adjusted prevalence')]
+
+    # Step 2: Extract the unique list of Florida counties with their Geolocation
+    florida_counties_geo = df_health[df_health.StateAbbr == 'FL'][['LocationName', 'Geolocation']].drop_duplicates()
+
+    # Step 3: Replicate the USA disability data for each Florida county, retaining the Geolocation
+    florida_data_list = []
+    for index, row in florida_counties_geo.iterrows():
+        county_data = usa_disability_data.copy()
+        county_data['LocationName'] = row['LocationName']
+        county_data['StateAbbr'] = 'FL'
+        county_data['StateDesc'] = 'Florida'
+        county_data['Geolocation'] = row['Geolocation']
+        florida_data_list.append(county_data)
+
+    florida_data = pd.concat(florida_data_list, ignore_index=True)
+
+    # Step 4: Remove existing Florida disability data and append the new data
+    df_health = df_health[~((df_health.StateAbbr == 'FL') & (df_health.Category == 'Disability'))] # just for check
+    df_health = pd.concat([df_health, florida_data], ignore_index=True)
+    print(f"added this to data:{florida_data.head()}")
+
     df_health = df_health[df_health.Geolocation.notna()] # this would remove USA total or avg
     df_health['Geolocation'] = df_health['Geolocation'].apply(wkt.loads) # Convert the 'Geolocation' column to a GeoSeries
 
@@ -61,7 +88,7 @@ def load_process_CDC_PLACES_data(save_og_files):
     #https://www.cdc.gov/nchs/hus/sources-definitions/age-adjustment.htm#:~:text=Age%2Dadjusted%20rates%20are%20computed,age%20differences%20in%20population%20composition.
     merged_gdf = merged_gdf[merged_gdf.Data_Value_Type!='Crude prevalence']
 
-    cols_wanted = ['Year','StateAbbr','StateDesc','LocationName','Measure','Data_Value','Data_Value_Unit','GEOID','Geolocation']
+    cols_wanted = ['Year','StateAbbr','StateDesc','LocationName','Category','Measure','Data_Value','Data_Value_Unit','GEOID','Geolocation']
     merged_gdf = merged_gdf[cols_wanted]
     
     # transform 'positive outcome' measures and values to inverse
@@ -78,7 +105,9 @@ def load_process_CDC_PLACES_data(save_og_files):
     }
 
     # Apply the mapping to the DataFrame
-    merged_gdf['Measure'] = merged_gdf['Measure'].apply(lambda x: measure_mapping.get(x, x))
+    merged_gdf.rename(columns={'Measure': 'Original_Measure'}, inplace=True)
+
+    merged_gdf['Measure'] = merged_gdf['Original_Measure'].apply(lambda x: measure_mapping.get(x, x))
     # Invert data values for positive measures
     merged_gdf['Data_Value'] = merged_gdf.apply(lambda row: 100 - row['Data_Value'] if row['Measure'] in measure_mapping.values() else row['Data_Value'], axis=1)
 
@@ -97,6 +126,7 @@ def rank_counties_by_year(CDC_filepath):
         "Coronary heart disease among adults aged >=18 years": 5,
         "Chronic kidney disease among adults aged >=18 years": 5,
         "Cognitive disability among adults ages >=18 years": 5,
+        "Self-care disability among adults aged >=18 years": 5,
 
         "Current smoking among adults aged >=18 years": 4,
         "Obesity among adults aged >=18 years": 4,
@@ -105,25 +135,23 @@ def rank_counties_by_year(CDC_filepath):
         "Mental health not good for >=14 days among adults aged >=18 years": 4,
         "Mobility disability among adults aged >=18 years": 4,
         "High blood pressure among adults aged >=18 years": 4,
+        "Independent living disability among adults aged >=18 years": 4,
+        "Vision disability among adults aged >=18 years": 4,
+        "Any disability among adults aged >=18 years": 4,
 
         "Arthritis among adults aged >=18 years": 3,
         "No leisure-time physical activity among adults aged >=18 years": 3,
-        "Vision disability among adults aged >=18 years": 3,
-        "Any disability among adults aged >=18 years": 3,
         "Physical health not good for >=14 days among adults aged >=18 years": 3,
         "Fair or poor self-rated health status among adults aged >=18 years": 3,
+        "All teeth lost among adults aged >=65 years": 3,
+        "Current lack of health insurance among adults aged 18-64 years": 3,
 
-        
         "High cholesterol among adults aged >=18 years who have been screened in the past 5 years": 2,
         "Sleeping less than 7 hours among adults aged >=18 years": 2,
         "Current asthma among adults aged >=18 years": 2,
-        "All teeth lost among adults aged >=65 years": 2,
-        "Independent living disability among adults aged >=18 years": 2,
         "Not taking medicine for high blood pressure among adults aged >=18 years": 2,
-        "Current lack of health insurance among adults aged 18-64 years": 2,
         "Older adult men aged >=65 years not up to date on clinical preventive services": 2,
         "Older adult women aged >=65 years not up to date on clinical preventive services": 2,
-        "Self-care disability among adults aged >=18 years": 2,
 
         "No mammography use among women aged 50-74 years": 1,
         "No colorectal cancer screening among adults aged 50-75 years": 1,
@@ -134,8 +162,11 @@ def rank_counties_by_year(CDC_filepath):
         "Hearing disability among adults aged >=18 years": 1
     }
 
+        # Assuming CDC_filepath is defined
     df = pd.read_pickle(CDC_filepath)
-    df = df[df['LocationName'] != df['StateDesc']] # remove state data if any
+    df = df[df['LocationName'] != df['StateDesc']]  # Remove state data if any
+    df = df.sort_values('Year', ascending=False).groupby(['GEOID', 'Measure']).first().reset_index()
+    df.drop_duplicates(inplace=True)
 
     def invert_normalize_within_group(df, column_name):
         min_val = df[column_name].min()
@@ -143,31 +174,28 @@ def rank_counties_by_year(CDC_filepath):
         df[column_name + '_Inverted_Normalized'] = 100 - ((df[column_name] - min_val) / (max_val - min_val)) * 100
         return df
 
-    df = df.groupby(['Year', 'Measure']).apply(lambda x: invert_normalize_within_group(x, 'Data_Value')).reset_index(drop=True)
+    # Assuming impact_scores is defined
+    df = df.groupby('Measure').apply(lambda x: invert_normalize_within_group(x, 'Data_Value')).reset_index(drop=True)
 
     df['Weighted_Score'] = df.apply(lambda row: row['Data_Value_Inverted_Normalized'] * impact_scores.get(row['Measure'], 0), axis=1)
 
-    county_year_scores = df.groupby(['Year', 'GEOID', 'LocationName', 'StateDesc', 'StateAbbr'])['Weighted_Score'].sum().reset_index()
-
-    def normalize_within_year_group(df, column_name):
+    def normalize_within_group(df, column_name):
         min_val = df[column_name].min()
         max_val = df[column_name].max()
         df[column_name + '_Normalized'] = ((df[column_name] - min_val) / (max_val - min_val)) * 100
         return df
 
-    county_year_scores = county_year_scores.groupby('Year').apply(lambda x: normalize_within_year_group(x, 'Weighted_Score')).reset_index(drop=True)
-    # Add a ranking column within each year based on the normalized weighted score
-    # method='min' assigns same rank to ties
-    # Rank the scores, higher is now better
-    county_year_scores['Rank'] = county_year_scores.groupby('Year')['Weighted_Score_Normalized'].rank(ascending=False, method='min')
-    county_year_scores['Rank'] = county_year_scores['Rank'].astype(int)
-    county_year_scores = county_year_scores.sort_values(by=['Year', 'Rank'])
+    county_scores = df.groupby(['GEOID', 'LocationName', 'StateDesc', 'StateAbbr'])['Weighted_Score'].sum().reset_index()
+    county_scores = normalize_within_group(county_scores, 'Weighted_Score')
 
-    print(county_year_scores[county_year_scores.Year==2020])
-    output_filepath = "data/interim/CDC_PLACES_county_rankings_by_year.pickle"
-    county_year_scores.to_pickle(output_filepath)
+    # Add a ranking column based on the normalized weighted score
+    county_scores['Rank'] = county_scores['Weighted_Score_Normalized'].rank(ascending=False, method='min')
+    county_scores['Rank'] = county_scores['Rank'].astype(int)
+    county_scores = county_scores.sort_values(by='Rank')
+
+    output_filepath = "data/interim/CDC_PLACES_county_rankings.pickle"
+    county_scores.to_pickle(output_filepath)
     print(f"file saved to: {output_filepath}")
-
 
 ####################################
 # FROM USA SPENDING
@@ -461,9 +489,53 @@ def get_regional_bls_cpi_data(api_key, start_year, end_year):
     df.to_pickle(file_out)
     print(f"file saved to: {file_out}")
 
-    regions_dict = {
-        "West": ["WA", "OR", "ID", "MT", "WY", "CA", "NV", "UT", "CO", "AZ", "NM", "AK", "HI"],
-        "Midwest": ["ND", "SD", "NE", "KS", "MN", "IA", "MO", "WI", "IL", "MI", "IN", "OH"],
-        "South": ["TX", "OK", "AR", "LA", "MS", "AL", "GA", "FL", "SC", "NC", "VA", "WV", "KY", "TN", "DC", "MD", "DE"],
-        "Northeast": ["PA", "NJ", "NY", "CT", "RI", "MA", "VT", "NH", "ME"]
-    }
+ 
+ # get USA CPI
+    
+import requests
+import json
+import pandas as pd
+
+def get_usa_bls_cpi_data(api_key, start_year, end_year):
+    print(f"pulling USA CPI data from {start_year} to {end_year}")
+
+    def generate_year_ranges(start, end, interval=20):
+        return [(year, min(year + interval - 1, end)) for year in range(start, end, interval)]
+
+    headers = {'Content-type': 'application/json'}
+    all_data = []
+
+    for start_year_loop, end_year_loop in generate_year_ranges(start_year, end_year, 20):
+        data = json.dumps({
+            "seriesid": ["CUUR0000SA0"],
+            "startyear": str(start_year_loop),
+            "endyear": str(end_year_loop),
+            "annualaverage": True,
+            "registrationkey": api_key
+        })
+
+        response = requests.post('https://api.bls.gov/publicAPI/v2/timeseries/data/', data=data, headers=headers)
+        cpi_data = response.json()
+
+        # Check if 'Results' key is present and not empty
+        if 'Results' in cpi_data and 'series' in cpi_data['Results']:
+            series_data = cpi_data['Results']['series'][0]['data']
+            annual_data = [item for item in series_data if item['periodName'] == 'Annual']
+            all_data.extend(annual_data)
+        else:
+            print(f"No data for series CUUR0000SA0 in USA for years {start_year_loop}-{end_year_loop}")
+
+    # Creating and organizing the DataFrame
+    df = pd.DataFrame(all_data)
+    df = df[['year', 'value']]
+    df['value'] = df['value'].astype(float)  # Convert the 'value' to float
+    df.drop_duplicates(subset=['year'], inplace=True)  # Drop duplicates based on 'year'
+
+    print(df.head(2))
+    print(df.tail(2))
+    print(f"df shape: {df.shape}")
+    print(f"data from year: {df.year.min()} to {df.year.max()}")
+    file_out = f"data/interim/df_bls_usa_cpi_{start_year}_{end_year}.pickle"
+    df.to_pickle(file_out)
+    print(f"file saved to: {file_out}")
+

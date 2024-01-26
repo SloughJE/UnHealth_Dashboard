@@ -4,9 +4,10 @@ import yaml
 import argparse
 from dotenv import load_dotenv
 
-from src.data.load_data import (load_process_CDC_PLACES_data, rank_counties_by_year, process_gdp_data, get_spending_data, 
-                                get_bea_income_data, get_bea_gdp_data, get_regional_bls_cpi_data)
+from src.data.load_data import (load_process_CDC_PLACES_data, process_gdp_data, get_spending_data, 
+                                get_bea_income_data, get_bea_gdp_data, get_regional_bls_cpi_data, get_usa_bls_cpi_data)
 from src.data.merge_data import merge_gdp_ranking_data
+from src.data.process_CDC_data import rank_counties_by_year
 
 load_dotenv()
 # Load environment variables from .env file
@@ -64,7 +65,12 @@ if __name__ == "__main__":
         help="get regional CPI from BLS api",
         action="store_true"
     )
-
+    
+    parser.add_argument(
+        "--get_bls_usa_cpi",
+        help="get USA CPI from BLS api",
+        action="store_true"
+    )
 
     args = parser.parse_args()
 
@@ -119,6 +125,13 @@ if __name__ == "__main__":
 
         if args.get_bls_regional_cpi:
             get_regional_bls_cpi_data(
+                bls_api_key, 
+                start_year=1969,
+                end_year=2023
+                )
+
+        if args.get_bls_usa_cpi:
+            get_usa_bls_cpi_data(
                 bls_api_key, 
                 start_year=1969,
                 end_year=2023
