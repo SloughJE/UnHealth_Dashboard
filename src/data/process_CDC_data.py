@@ -126,11 +126,12 @@ def rank_counties_by_year(CDC_filepath):
     df['Measure_short'] = df['Measure'].replace(measure_replacements)
 
     fips_county = '01011' # for example 
+    print(f"example data for fips: {fips_county}")
     print(df[(df.GEOID==fips_county)].head(2))
-    print(df[(df.GEOID==fips_county)].absolute_contribution.sum())
+    print(f"Summed CHS: {df[(df.GEOID==fips_county)].absolute_contribution.sum()}")
 
     print(county_scores[(county_scores.GEOID==fips_county)])
-    print(f"df shape: {df.shape}")
+    print(f"df county measures shape: {df.shape}")
     print(f"county_scores shape: {county_scores.shape}")
 
     output_filepath = "data/interim/CDC_PLACES_county_measures.pickle"
