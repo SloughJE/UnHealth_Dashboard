@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-def rank_counties_by_year(CDC_filepath):
+def process_cdc_data(CDC_filepath):
     
     impact_scores = {
         "Stroke among adults aged >=18 years": 5,
@@ -134,10 +134,10 @@ def rank_counties_by_year(CDC_filepath):
     print(f"df county measures shape: {df.shape}")
     print(f"county_scores shape: {county_scores.shape}")
 
-    output_filepath = "data/interim/CDC_PLACES_county_measures.pickle"
+    output_filepath = "data/processed/CDC_PLACES_county_measures.pickle"
     df.to_pickle(output_filepath)
     print(f"file saved to: {output_filepath}")
 
-    output_filepath = "data/interim/CDC_PLACES_county_rankings.pickle"
+    output_filepath = "data/processed/CDC_PLACES_county_rankings.pickle"
     county_scores.to_pickle(output_filepath)
     print(f"file saved to: {output_filepath}")

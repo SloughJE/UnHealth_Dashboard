@@ -116,86 +116,6 @@ def load_process_CDC_PLACES_data(save_og_files):
     print(f"file saved to: {output_filepath}")
 
 
-def rank_counties_by_year(CDC_filepath):
-    
-    impact_scores = {
-        "Stroke among adults aged >=18 years": 5,
-        "Chronic obstructive pulmonary disease among adults aged >=18 years": 5,
-        "Cancer (excluding skin cancer) among adults aged >=18 years": 5,
-        "Diagnosed diabetes among adults aged >=18 years": 5,
-        "Coronary heart disease among adults aged >=18 years": 5,
-        "Chronic kidney disease among adults aged >=18 years": 5,
-        "Cognitive disability among adults ages >=18 years": 5,
-        "Self-care disability among adults aged >=18 years": 5,
-
-        "Current smoking among adults aged >=18 years": 4,
-        "Obesity among adults aged >=18 years": 4,
-        "Depression among adults aged >=18 years": 4,
-        "Binge drinking among adults aged >=18 years": 4,
-        "Mental health not good for >=14 days among adults aged >=18 years": 4,
-        "Mobility disability among adults aged >=18 years": 4,
-        "High blood pressure among adults aged >=18 years": 4,
-        "Independent living disability among adults aged >=18 years": 4,
-        "Vision disability among adults aged >=18 years": 4,
-        "Any disability among adults aged >=18 years": 4,
-
-        "Arthritis among adults aged >=18 years": 3,
-        "No leisure-time physical activity among adults aged >=18 years": 3,
-        "Physical health not good for >=14 days among adults aged >=18 years": 3,
-        "Fair or poor self-rated health status among adults aged >=18 years": 3,
-        "All teeth lost among adults aged >=65 years": 3,
-        "Current lack of health insurance among adults aged 18-64 years": 3,
-
-        "High cholesterol among adults aged >=18 years who have been screened in the past 5 years": 2,
-        "Sleeping less than 7 hours among adults aged >=18 years": 2,
-        "Current asthma among adults aged >=18 years": 2,
-        "Not taking medicine for high blood pressure among adults aged >=18 years": 2,
-        "Older adult men aged >=65 years not up to date on clinical preventive services": 2,
-        "Older adult women aged >=65 years not up to date on clinical preventive services": 2,
-
-        "No mammography use among women aged 50-74 years": 1,
-        "No colorectal cancer screening among adults aged 50-75 years": 1,
-        "No cervical cancer screening among adult women aged 21-65 years": 1,
-        "No doctor visit for checkup in past year among adults aged >=18 years": 1,
-        "No dental visit in past year among adults aged >=18 years": 1,
-        "No cholesterol screening among adults aged >=18 years": 1,
-        "Hearing disability among adults aged >=18 years": 1
-    }
-
-        # Assuming CDC_filepath is defined
-    df = pd.read_pickle(CDC_filepath)
-    df = df[df['LocationName'] != df['StateDesc']]  # Remove state data if any
-    df = df.sort_values('Year', ascending=False).groupby(['GEOID', 'Measure']).first().reset_index()
-    df.drop_duplicates(inplace=True)
-
-    def invert_normalize_within_group(df, column_name):
-        min_val = df[column_name].min()
-        max_val = df[column_name].max()
-        df[column_name + '_Inverted_Normalized'] = 100 - ((df[column_name] - min_val) / (max_val - min_val)) * 100
-        return df
-
-    # Assuming impact_scores is defined
-    df = df.groupby('Measure').apply(lambda x: invert_normalize_within_group(x, 'Data_Value')).reset_index(drop=True)
-
-    df['Weighted_Score'] = df.apply(lambda row: row['Data_Value_Inverted_Normalized'] * impact_scores.get(row['Measure'], 0), axis=1)
-
-    def normalize_within_group(df, column_name):
-        min_val = df[column_name].min()
-        max_val = df[column_name].max()
-        df[column_name + '_Normalized'] = ((df[column_name] - min_val) / (max_val - min_val)) * 100
-        return df
-
-    county_scores = df.groupby(['GEOID', 'LocationName', 'StateDesc', 'StateAbbr'])['Weighted_Score'].sum().reset_index()
-    county_scores = normalize_within_group(county_scores, 'Weighted_Score')
-
-    # Add a ranking column based on the normalized weighted score
-    county_scores['Rank'] = county_scores['Weighted_Score_Normalized'].rank(ascending=False, method='min')
-    county_scores['Rank'] = county_scores['Rank'].astype(int)
-    county_scores = county_scores.sort_values(by='Rank')
-
-    output_filepath = "data/interim/CDC_PLACES_county_rankings.pickle"
-    county_scores.to_pickle(output_filepath)
-    print(f"file saved to: {output_filepath}")
 
 ####################################
 # FROM USA SPENDING
@@ -539,3 +459,17 @@ def get_usa_bls_cpi_data(api_key, start_year, end_year):
     df.to_pickle(file_out)
     print(f"file saved to: {file_out}")
 
+    
+def get_state_census_geo_file(us_census_state_geojson_url="https://www2.census.gov/geo/tiger/GENZ2021/shp/cb_2021_us_state_20m.zip"):
+       
+    print(f"downloading geolocation data from census: {us_census_state_geojson_url}")
+    us_counties = gpd.read_file(us_census_state_geojson_url)
+    # Convert GeoDataFrame to JSON string and then to a Python dictionary
+    us_counties_geojson = us_counties.to_json()
+    us_counties_geojson_dict = json.loads(us_counties_geojson)
+
+    # Write the dictionary to a file in JSON format
+    file_path_geo_json = "data/interim/us_census_state_geojson.json"
+    with open(file_path_geo_json, 'w') as f:
+        json.dump(us_counties_geojson_dict, f)
+    print(f"GeoJSON file saved to: {file_path_geo_json}")

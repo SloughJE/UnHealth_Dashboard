@@ -5,9 +5,11 @@ import argparse
 from dotenv import load_dotenv
 
 from src.data.load_data import (load_process_CDC_PLACES_data, process_gdp_data, get_spending_data, 
-                                get_bea_income_data, get_bea_gdp_data, get_regional_bls_cpi_data, get_usa_bls_cpi_data)
+                                get_bea_income_data, get_bea_gdp_data, get_regional_bls_cpi_data, get_usa_bls_cpi_data,
+                                get_state_census_geo_file)
 from src.data.merge_data import merge_gdp_ranking_data
-from src.data.process_CDC_data import rank_counties_by_year
+from src.data.process_CDC_data import process_cdc_data
+from src.data.process_bea_data import process_bea_data
 
 load_dotenv()
 # Load environment variables from .env file
@@ -25,8 +27,8 @@ if __name__ == "__main__":
         action="store_true"
     )
     parser.add_argument(
-        "--rank_counties_by_year",
-        help="create a subjective ranking of counties by year",
+        "--process_cdc_data",
+        help="create a subjective ranking of counties",
         action="store_true"
     )
 
@@ -72,6 +74,18 @@ if __name__ == "__main__":
         action="store_true"
     )
 
+    parser.add_argument(
+        "--get_state_census_geodata",
+        help="get USA state geodata from Census",
+        action="store_true"
+    )
+
+    parser.add_argument(
+        "--process_bea_data",
+        help="process and adjust income data by regional CPI",
+        action="store_true"
+    )
+
     args = parser.parse_args()
 
     if len(sys.argv) == 1:
@@ -84,8 +98,8 @@ if __name__ == "__main__":
         if args.get_CDC_LOCALS_data:
             load_process_CDC_PLACES_data(save_og_files=True)
 
-        if args.rank_counties_by_year:
-            rank_counties_by_year(CDC_filepath="data/interim/CDC_PLACES_GEOID.pickle")
+        if args.process_cdc_data:
+            process_cdc_data(CDC_filepath="data/interim/CDC_PLACES_GEOID.pickle")
 
         if args.process_gdp:
             process_gdp_data(
@@ -135,4 +149,17 @@ if __name__ == "__main__":
                 bls_api_key, 
                 start_year=1969,
                 end_year=2023
+                )
+            
+        if args.get_state_census_geodata:
+            get_state_census_geo_file(
+                "https://www2.census.gov/geo/tiger/GENZ2021/shp/cb_2021_us_state_20m.zip"
+            )
+
+        if args.process_bea_data:
+            process_bea_data(
+                bea_income_file="data/interim/df_BEA_income_1969_2023.pickle",
+                regional_cpi_file="data/interim/df_bls_regional_cpi_1969_2023.pickle", 
+                usa_cpi_file = "data/interim/df_bls_usa_cpi_1969_2023.pickle",
+                gpd_file = "data/interim/df_BEA_gdp_2017_2023.pickle"
                 )
