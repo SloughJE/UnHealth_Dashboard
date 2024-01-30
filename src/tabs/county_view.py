@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import json
 import plotly.graph_objects as go
 import plotly.express as px
@@ -17,18 +18,28 @@ file_path_geo_json = "data/interim/us_census_counties_geojson.json"
 with open(file_path_geo_json) as f:
     counties = json.load(f)
 
+def check_fips_county_data(df_bea,fips_county,selected_state, selected_county):
 
-def create_county_econ_charts(df_bea, fips_county='01011'):
+    if len(df_bea[df_bea.GeoFips==fips_county])==0:
+        df_bea_find_fips = df_bea[df_bea.State==selected_state]
+        fips_county = df_bea_find_fips[df_bea_find_fips.GeoName.str.contains(selected_county)].GeoFips.iloc[0]
+    
+    return fips_county
 
-    df_bea_county = df_bea[(df_bea.GeoFips==fips_usa) | (df_bea.GeoFips==fips_county)]
+def create_county_econ_charts(df_bea_county):
 
+    colors = ['#636efa', '#ef553b']  # Default colors for plotly_dark theme
+
+    print(df_bea_county)
     # CPI Adjusted per Capita Income
     traces = []
-    for geo_name in df_bea_county['GeoName'].unique():
+    for i, geo_name in enumerate(df_bea_county['GeoName'].unique()):
         trace = go.Scatter(x=df_bea_county[df_bea_county['GeoName'] == geo_name]['TimePeriod'],
                         y=df_bea_county[(df_bea_county['GeoName'] == geo_name) & (df_bea_county.Statistic=='CPI Adjusted Per Capita Income')]['DataValue'],
                         mode='lines',
-                        name=geo_name)
+                        name=geo_name,
+                        line=dict(color=colors[i])
+                        )
         traces.append(trace)
 
     # Create the layout
@@ -44,11 +55,11 @@ def create_county_econ_charts(df_bea, fips_county='01011'):
     # Per Capita Income
     #######
     traces = []
-    for geo_name in df_bea_county['GeoName'].unique():
+    for i, geo_name in enumerate(df_bea_county['GeoName'].unique()):
         trace = go.Scatter(x=df_bea_county[df_bea_county['GeoName'] == geo_name]['TimePeriod'],
                         y=df_bea_county[(df_bea_county['GeoName'] == geo_name) & (df_bea_county.Statistic=='Per capita personal income')]['DataValue'],
                         mode='lines',
-                        name=geo_name)
+                        name=geo_name,line=dict(color=colors[i]))
         traces.append(trace)
 
     # Create the layout
@@ -65,11 +76,11 @@ def create_county_econ_charts(df_bea, fips_county='01011'):
 
     traces = []
     df_chart = df_bea_county[df_bea_county.Statistic=='Real GDP Per Capita']
-    for geo_name in df_chart['GeoName'].unique():
+    for i, geo_name in enumerate(df_bea_county['GeoName'].unique()):
         trace = go.Scatter(x=df_chart[df_chart['GeoName'] == geo_name]['TimePeriod'],
                         y=df_chart[(df_chart['GeoName'] == geo_name)]['DataValue'],
                         mode='lines',
-                        name=geo_name)
+                        name=geo_name,line=dict(color=colors[i]))
         traces.append(trace)
 
     # Create the layout
@@ -86,11 +97,11 @@ def create_county_econ_charts(df_bea, fips_county='01011'):
 
     traces = []
     df_chart = df_bea_county[df_bea_county.Statistic=='Current-dollar GDP Per Capita']
-    for geo_name in df_chart['GeoName'].unique():
+    for i, geo_name in enumerate(df_bea_county['GeoName'].unique()):
         trace = go.Scatter(x=df_chart[df_chart['GeoName'] == geo_name]['TimePeriod'],
                         y=df_chart[(df_chart['GeoName'] == geo_name)]['DataValue'],
                         mode='lines',
-                        name=geo_name)
+                        name=geo_name,line=dict(color=colors[i]))
         traces.append(trace)
 
     # Create the layout
@@ -102,7 +113,26 @@ def create_county_econ_charts(df_bea, fips_county='01011'):
     # Create the figure
     fig_gdp = go.Figure(data=traces, layout=layout)
     
-    return fig_adj_income, fig_income, fig_real_gdp, fig_gdp
+
+    # Population, only the county
+    df_chart = df_bea_county[(df_bea_county.Statistic=='Population') & (df_bea_county.GeoFips!="00000")]
+
+    trace = go.Scatter(x=df_chart[df_chart['GeoName'] == geo_name]['TimePeriod'],
+                    y=df_chart[(df_chart['GeoName'] == geo_name)]['DataValue'],
+                    mode='lines',
+                    name=geo_name,line=dict(color=colors[1]))
+
+    # Create the layout
+    layout = go.Layout(title='County Population',
+                    xaxis=dict(title='TimePeriod'),
+                    yaxis=dict(title='Population'),
+                    template='plotly_dark')  # Set the dark theme
+
+    # Create the figure
+    fig_pop = go.Figure(data=trace, layout=layout)
+
+
+    return fig_adj_income, fig_income, fig_real_gdp, fig_gdp, fig_pop
 
 
 
@@ -288,3 +318,35 @@ def create_county_map(selected_state, selected_county, df_ranking,counties):
     fig.update_layout(autosize=False)
 
     return fig
+
+
+def calculate_percent_difference_econ(df_bea_county):
+    # Filter data for the selected county and year 2022
+    
+    county_data = df_bea_county[(df_bea_county['GeoFips'] != "00000") & (df_bea_county['TimePeriod'] == 2022)]
+
+    # Filter data for the USA and year 2022
+    usa_data = df_bea_county[(df_bea_county['GeoFips'] == '00000') & (df_bea_county['TimePeriod'] == 2022)]
+
+    def get_value(data, statistic):
+        value = data[data['Statistic'] == statistic]['DataValue'].values
+        return value[0] if value.size > 0 else None
+
+    # Retrieve values for GDP and income for both county and USA
+    county_gdp = get_value(county_data, 'Real GDP Per Capita')
+    county_income = get_value(county_data, 'Per capita personal income')
+    usa_gdp = get_value(usa_data, 'Real GDP Per Capita')
+    usa_income = get_value(usa_data, 'Per capita personal income')
+
+    # Function to calculate percent difference
+    def percent_difference(local, national):
+        if local is None or national is None:
+            return None
+        return round(((local - national) / national) * 100, 2)
+
+    # Calculate percent differences
+    gdp_percent_difference = percent_difference(county_gdp, usa_gdp)
+    income_percent_difference = percent_difference(county_income, usa_income)
+
+    return gdp_percent_difference, income_percent_difference
+

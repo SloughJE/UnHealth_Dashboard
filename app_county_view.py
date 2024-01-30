@@ -4,24 +4,45 @@ from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 
 # Your existing functions
-from src.tabs.county_view import (create_county_econ_charts, create_county_health_charts, create_county_map, 
+from src.tabs.county_view import (
+                                create_county_econ_charts, create_county_health_charts, create_county_map, 
+                                calculate_percent_difference_econ,check_fips_county_data,
                                 df_all_counties, df_ranking, df_bea, counties
                                 )
 
-def create_kpi_layout(df_ranking, fips_county):
+def create_kpi_layout(df_ranking, fips_county, df_bea_county):
 
     selected_data = df_ranking[df_ranking.GEOID==fips_county].iloc[0]
+    county_name = selected_data['LocationName']
+    state_name = selected_data['StateDesc']
     health_metric = selected_data['Weighted_Score_Normalized']
     rank = selected_data['Rank']
 
+    gdp_percent_difference, income_percent_difference = calculate_percent_difference_econ(df_bea_county)
+    
+    # Function to format the text
+    def format_text(label, value):
+        return f"{label}: {value:.2f}%" if value is not None else f"{label}: Not Available"
+    
+    # Format the percent differences
+    gdp_percent_text = format_text("GDP per Capita % Difference from USA", gdp_percent_difference)
+    income_percent_text = format_text("Income per Capita % Difference from USA", income_percent_difference)
+    
     return html.Div([
-        html.H3(f"County Health Metric: {health_metric:.2f}", style={'color': 'white'}),
-        html.H3(f"Rank: {rank}", style={'color': 'white'})
-    ])
+            html.H2(f"{county_name},  {state_name}", style={'color': 'white'}),
+            html.H3(f"County Health Metric: {health_metric:.2f} out of 100", style={'color': 'white'}),
+            html.H3(f"Rank: {rank} of {len(df_ranking)} counties", style={'color': 'white'}),
+            html.H3(gdp_percent_text, style={'color': 'white'}),
+            html.H3(income_percent_text, style={'color': 'white'})
+        ])
 
 
 # Initialize the Dash app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY])
+# Custom CSS to reset default browser styles
+app.css.append_css({
+    "external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"
+})
 
 # App layout
 app.layout = dbc.Container([
@@ -31,7 +52,8 @@ app.layout = dbc.Container([
         dcc.Dropdown(
             id='state-dropdown',
             options=[{'label': state, 'value': state} for state in df_ranking['StateAbbr'].unique()],
-            placeholder="Select a State"
+            placeholder="Select a State",
+            
         ),
 
         # Dropdown for County, updated based on State
@@ -56,7 +78,7 @@ app.layout = dbc.Container([
     dbc.Row([
         # Health metric chart
         dcc.Graph(id='county-health-chart',
-            style={'height': '700px'})
+            style={'height': '800px'})
     ]),
     dbc.Row([
         dbc.Col([
@@ -86,6 +108,11 @@ app.layout = dbc.Container([
             width=6  # Similarly, this takes up the other half of the row
         )
     ]),
+    dbc.Row([
+        # Health metric chart
+        dcc.Graph(id='econ-pop')
+    ]),
+
 ], fluid=True)
 
 # Callback to update county dropdown based on state selection
@@ -105,8 +132,9 @@ def update_county_dropdown(selected_state):
         Output('kpi-display', 'children'),
         Output('county-map', 'figure'),
         Output('county-health-chart', 'figure'),
-        Output('econ-chart-1', 'figure'),  # Updated output
-        Output('econ-chart-2', 'figure')   # Updated output
+        Output('econ-chart-1', 'figure'), 
+        Output('econ-chart-2', 'figure'),
+        Output('econ-pop', 'figure')  
     ],
     [
         Input('show-data-button', 'n_clicks'),
@@ -119,17 +147,20 @@ def update_charts(n_clicks, currency_type, selected_state, selected_county):
         return dash.no_update
 
     fips_county = df_ranking[(df_ranking.StateAbbr == selected_state) & (df_ranking.LocationName == selected_county)].GEOID.iloc[0]
-    
-    kpi_layout = create_kpi_layout(df_ranking, fips_county) 
+    fips_county_bea = check_fips_county_data(df_bea,fips_county,selected_state, selected_county)
+    # fips_usa = 00000
+    df_bea_county = df_bea[(df_bea.GeoFips=="00000") | (df_bea.GeoFips==fips_county_bea)]
+
+    kpi_layout = create_kpi_layout(df_ranking, fips_county, df_bea_county) 
     county_map_figure = create_county_map(selected_state, selected_county, df_ranking, counties)
     county_health_figure = create_county_health_charts(df_ranking, df_all_counties, fips_county)
     
-    fig_adj_income, fig_income, fig_real_gdp, fig_gdp = create_county_econ_charts(df_bea, fips_county)
+    fig_adj_income, fig_income, fig_real_gdp, fig_gdp, fig_pop= create_county_econ_charts(df_bea_county)
     
     if currency_type == 'adj':
-        return kpi_layout, county_map_figure, county_health_figure, fig_adj_income, fig_real_gdp
+        return kpi_layout, county_map_figure, county_health_figure, fig_adj_income, fig_real_gdp, fig_pop
     else:
-        return kpi_layout, county_map_figure, county_health_figure, fig_income, fig_gdp
+        return kpi_layout, county_map_figure, county_health_figure, fig_income, fig_gdp, fig_pop
 
 
 # Run the app

@@ -161,5 +161,5 @@ if __name__ == "__main__":
                 bea_income_file="data/interim/df_BEA_income_1969_2023.pickle",
                 regional_cpi_file="data/interim/df_bls_regional_cpi_1969_2023.pickle", 
                 usa_cpi_file = "data/interim/df_bls_usa_cpi_1969_2023.pickle",
-                gpd_file = "data/interim/df_BEA_gdp_2017_2023.pickle"
+                gdp_file = "data/interim/df_BEA_gdp_2017_2023.pickle"
                 )

@@ -5,7 +5,7 @@ def process_bea_data(
                     bea_income_file="data/interim/df_BEA_income_1969_2023.pickle",
                     regional_cpi_file="data/interim/df_bls_regional_cpi_1969_2023.pickle", 
                     usa_cpi_file = "data/interim/df_bls_usa_cpi_1969_2023.pickle",
-                    gpd_file = "data/interim/df_BEA_gdp_2017_2023.pickle"
+                    gdp_file = "data/interim/df_BEA_gdp_2017_2023.pickle"
                     ):
 
     regions_dict = {
@@ -19,6 +19,8 @@ def process_bea_data(
     df_bea_income = pd.read_pickle(bea_income_file)
     df_income = df_bea_income[df_bea_income.Statistic=='Per capita personal income']
     df_population = df_bea_income[df_bea_income.Statistic=='Population']
+    df_income['GeoName'] = df_income.GeoName.str.replace("*","")
+    df_population['GeoName'] = df_population.GeoName.str.replace("*","")
 
     df_regional_cpi = pd.read_pickle(regional_cpi_file)
 
@@ -27,8 +29,6 @@ def process_bea_data(
 
     # Extracting the state abbreviation from the GeoName column in df_income
     df_income['State'] = df_income['GeoName'].apply(lambda x: x.split(', ')[-1] if ', ' in x else None)
-    # also do for population
-    df_population['State'] = df_population['GeoName'].apply(lambda x: x.split(', ')[-1] if ', ' in x else None)
 
     # Creating a reverse mapping from state to region
     state_to_region = {state: region for region, states in regions_dict.items() for state in states}
@@ -78,8 +78,9 @@ def process_bea_data(
 
     ################################################
     # gdp data, calculate GDP per capita
-    df_gdp = pd.read_pickle(gpd_file)
+    df_gdp = pd.read_pickle(gdp_file)
     df_gdp = df_gdp[(df_gdp.Statistic=='Real Gross Domestic Product (GDP)') | (df_gdp.Statistic=='Current-dollar Gross Domestic Product (GDP)')]
+    df_gdp['GeoName'] = df_gdp.GeoName.str.replace("*","")
 
 
     # Split df_gdp into two separate DataFrames
@@ -118,9 +119,16 @@ def process_bea_data(
     # Select relevant columns
     df_combined = df_combined[['GeoFips', 'GeoName', 'TimePeriod', 'Statistic', 'DataValue']]
 
-    # Display the last few rows
     df_income_combined = pd.concat([df_income_combined, df_combined])
-    print(df_combined.tail())
+
+    df_income_combined['TimePeriod'] = pd.to_datetime(df_income_combined['TimePeriod'], format='%Y')
+    # Extract only the year from the datetime
+    df_income_combined['TimePeriod'] = df_income_combined['TimePeriod'].dt.year
+
+    # add state back for everything
+    df_income_combined['State'] = df_income_combined['GeoName'].apply(lambda x: x.split(', ')[-1] if ', ' in x else None)
+    df_income_combined['State'] = df_income_combined.State.str.replace("*","")
+    print(df_income_combined.tail())
 
     fileout = "data/processed/bea_economic_data.pickle"
     df_income_combined.to_pickle(fileout)
