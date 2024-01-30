@@ -9,6 +9,13 @@ from src.tabs.county_view import (
                                 calculate_percent_difference_econ,check_fips_county_data,
                                 df_all_counties, df_ranking, df_bea, counties
                                 )
+# Define the common style
+common_div_style = {
+    'backgroundColor': 'black', 
+    'padding': '10px', 
+    'border-radius': '5px',
+    'margin-bottom': '20px'  # Optional, adds space between components
+}
 
 def create_kpi_layout(df_ranking, fips_county, df_bea_county, fips_county_bea):
 
@@ -41,7 +48,7 @@ def create_kpi_layout(df_ranking, fips_county, df_bea_county, fips_county_bea):
     pop_county = df_bea_county[(df_bea_county.Statistic == 'Population') & (df_bea_county.GeoFips == fips_county_bea) & (df_bea_county.TimePeriod == year_bea)].DataValue.iloc[0]
     pop_county_formatted = "{:,}".format(int(pop_county))
 
-    # KPI Layout
+    # KPI Layout with black background
     kpi_layout = html.Div([
         html.H2(f"{county_name}, {state_name}", style={'color': 'white', 'margin-bottom': '20px'}),
         html.Div([
@@ -55,7 +62,6 @@ def create_kpi_layout(df_ranking, fips_county, df_bea_county, fips_county_bea):
         html.H3(f"Population ({year_bea}): {pop_county_formatted}", style={'color': 'white'}),
         note
     ])
-
 
     return kpi_layout
 
@@ -71,9 +77,11 @@ app.css.append_css({
     "external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"
 })
 
+
+
 # App layout
 app.layout = dbc.Container([
-        dcc.Interval(
+    dcc.Interval(
         id='interval-component',
         interval=1*1000,  # in milliseconds
         n_intervals=0,
@@ -81,42 +89,32 @@ app.layout = dbc.Container([
     ),
     dbc.Row([
         dbc.Col([
-            # Dropdown for State
-            # Dropdown for State
             dcc.Dropdown(
                 id='state-dropdown',
-                options=[
-                    {'label': state, 'value': state} 
-                    for state in sorted(df_ranking['StateAbbr'].unique())
-                ],
-                value=default_state,  # Correctly set default value for the dropdown
+                options=[{'label': state, 'value': state} for state in sorted(df_ranking['StateAbbr'].unique())],
+                value=default_state,  # Set default value
                 placeholder="Select a State",
             ),
-
-            # Dropdown for County, updated based on State
             dcc.Dropdown(
                 id='county-dropdown',
                 value=default_county,  # Set default value
                 placeholder="Select a County"
             ),
-            # Button to show data
             html.Button('Show County Data', id='show-data-button')
         ], width=12)
     ]),
     dbc.Row([
-        dbc.Col([
-            # KPIs here
-            html.Div(id='kpi-display')
-        ], width=6),
-        dbc.Col([
-            # County map
-            dcc.Graph(id='county-map')
-        ], width=6)
-    ]),
+        dbc.Col(html.Div(id='kpi-display', style={**common_div_style,'height': '95%'}), width=6),
+        dbc.Col(html.Div(dcc.Graph(id='county-map'), style={**common_div_style, 'height': '95%'}), width=6)
+    ], align="stretch"),  # Setting align to "stretch" for equal height columns
     dbc.Row([
-        # Health metric chart
-        dcc.Graph(id='county-health-chart',
-            style={'height': '800px'})
+        dbc.Col(
+            html.Div(
+                dcc.Graph(id='county-health-chart', style={'height': '800px'}),
+                style=common_div_style
+            ),
+            width=12  # Use the full width of the row
+        )
     ]),
     dbc.Row([
         dbc.Col([
@@ -132,25 +130,25 @@ app.layout = dbc.Container([
             )
         ], width=12)
     ]),
-
-    # Layout for Economic Charts
     dbc.Row([
-        # Column for the first economic chart
+            dbc.Col(
+                html.Div(dcc.Graph(id='econ-chart-1'), style=common_div_style), 
+                width=6
+            ),
+            dbc.Col(
+                html.Div(dcc.Graph(id='econ-chart-2'), style=common_div_style), 
+                width=6
+            )
+        ]),
+    dbc.Row([
         dbc.Col(
-            dcc.Graph(id='econ-chart-1'), 
-            width=6  # This specifies that the column takes up half of the row
-        ),
-        # Column for the second economic chart
-        dbc.Col(
-            dcc.Graph(id='econ-chart-2'), 
-            width=6  # Similarly, this takes up the other half of the row
+            html.Div(
+                dcc.Graph(id='econ-pop'), 
+                style=common_div_style
+            ),
+            width=12  # Use the full width of the row
         )
     ]),
-    dbc.Row([
-        # Health metric chart
-        dcc.Graph(id='econ-pop')
-    ]),
-
 ], fluid=True)
 
 # Callback to update county dropdown based on state selection
