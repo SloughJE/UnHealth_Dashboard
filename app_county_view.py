@@ -10,7 +10,15 @@ from src.tabs.county_view import (
                                 df_all_counties, df_ranking, df_bea, counties
                                 )
 
-def create_kpi_layout(df_ranking, fips_county, df_bea_county):
+def create_kpi_layout(df_ranking, fips_county, df_bea_county, fips_county_bea):
+
+    # Get the corresponding GeoName for fips_county_bea
+    geo_name_bea = df_bea[df_bea.GeoFips == fips_county_bea].GeoName.iloc[0] if not df_bea[df_bea.GeoFips == fips_county_bea].empty else "Unknown"
+    # Check if fips_county and fips_county_bea are different
+    if fips_county != fips_county_bea:
+        note = html.P(f"Note: Economic data displayed is based on {geo_name_bea} (FIPS: {fips_county_bea}) due to data availability.", style={'color': 'yellow'})
+    else:
+        note = html.P()
 
     selected_data = df_ranking[df_ranking.GEOID==fips_county].iloc[0]
     county_name = selected_data['LocationName']
@@ -18,23 +26,42 @@ def create_kpi_layout(df_ranking, fips_county, df_bea_county):
     health_metric = selected_data['Weighted_Score_Normalized']
     rank = selected_data['Rank']
 
-    gdp_percent_difference, income_percent_difference = calculate_percent_difference_econ(df_bea_county)
+    year_bea = 2022
+    gdp_percent_difference, income_percent_difference = calculate_percent_difference_econ(df_bea_county, year_bea)
     
     # Function to format the text
     def format_text(label, value):
-        return f"{label}: {value:.2f}%" if value is not None else f"{label}: Not Available"
-    
+        return f"{label} ({year_bea}): {value:.2f}%" if value is not None else f"{label} ({year_bea}): Not Available"
+
     # Format the percent differences
-    gdp_percent_text = format_text("GDP per Capita % Difference from USA", gdp_percent_difference)
-    income_percent_text = format_text("Income per Capita % Difference from USA", income_percent_difference)
-    
-    return html.Div([
-            html.H2(f"{county_name},  {state_name}", style={'color': 'white'}),
-            html.H3(f"County Health Metric: {health_metric:.2f} out of 100", style={'color': 'white'}),
-            html.H3(f"Rank: {rank} of {len(df_ranking)} counties", style={'color': 'white'}),
+    gdp_percent_text = format_text("GDP per Capita % Diff. from USA Avg.", gdp_percent_difference)
+    income_percent_text = format_text("Income per Capita % Diff. from USA Avg.", income_percent_difference)
+
+    # Get population for the year and format it
+    pop_county = df_bea_county[(df_bea_county.Statistic == 'Population') & (df_bea_county.GeoFips == fips_county_bea) & (df_bea_county.TimePeriod == year_bea)].DataValue.iloc[0]
+    pop_county_formatted = "{:,}".format(int(pop_county))
+
+    # KPI Layout
+    kpi_layout = html.Div([
+        html.H2(f"{county_name}, {state_name}", style={'color': 'white', 'margin-bottom': '20px'}),
+        html.Div([
+            html.H3(f"Health Score: {health_metric:.2f} (out of 100)", style={'color': 'white'}),
+            html.H3(f"Rank: {rank} of {len(df_ranking)}", style={'color': 'white'}),
+        ], style={'margin-bottom': '20px'}),
+        html.Div([
             html.H3(gdp_percent_text, style={'color': 'white'}),
-            html.H3(income_percent_text, style={'color': 'white'})
-        ])
+            html.H3(income_percent_text, style={'color': 'white'}),
+        ], style={'margin-bottom': '20px'}),
+        html.H3(f"Population ({year_bea}): {pop_county_formatted}", style={'color': 'white'}),
+        note
+    ])
+
+
+    return kpi_layout
+
+
+default_state = 'AK'  
+default_county = 'Aleutians East'
 
 
 # Initialize the Dash app
@@ -46,21 +73,32 @@ app.css.append_css({
 
 # App layout
 app.layout = dbc.Container([
+        dcc.Interval(
+        id='interval-component',
+        interval=1*1000,  # in milliseconds
+        n_intervals=0,
+        max_intervals=1  # Ensure it triggers only once
+    ),
     dbc.Row([
         dbc.Col([
-        # Dropdown for State
-        dcc.Dropdown(
-            id='state-dropdown',
-            options=[{'label': state, 'value': state} for state in df_ranking['StateAbbr'].unique()],
-            placeholder="Select a State",
-            
-        ),
+            # Dropdown for State
+            # Dropdown for State
+            dcc.Dropdown(
+                id='state-dropdown',
+                options=[
+                    {'label': state, 'value': state} 
+                    for state in sorted(df_ranking['StateAbbr'].unique())
+                ],
+                value=default_state,  # Correctly set default value for the dropdown
+                placeholder="Select a State",
+            ),
 
-        # Dropdown for County, updated based on State
-        dcc.Dropdown(
-            id='county-dropdown',
-            placeholder="Select a County"
-        ),
+            # Dropdown for County, updated based on State
+            dcc.Dropdown(
+                id='county-dropdown',
+                value=default_county,  # Set default value
+                placeholder="Select a County"
+            ),
             # Button to show data
             html.Button('Show County Data', id='show-data-button')
         ], width=12)
@@ -122,7 +160,7 @@ app.layout = dbc.Container([
 )
 def update_county_dropdown(selected_state):
     if selected_state is not None:
-        counties = df_ranking[df_ranking['StateAbbr'] == selected_state]['LocationName'].unique()
+        counties = sorted(df_ranking[df_ranking['StateAbbr'] == selected_state]['LocationName'].unique())
         return [{'label': county, 'value': county} for county in counties]
     return []
 
@@ -137,21 +175,26 @@ def update_county_dropdown(selected_state):
         Output('econ-pop', 'figure')  
     ],
     [
+        Input('interval-component', 'n_intervals'),
         Input('show-data-button', 'n_clicks'),
-        Input('currency-type', 'value')  # New input
+        Input('currency-type', 'value')
     ],
     [State('state-dropdown', 'value'), State('county-dropdown', 'value')]
 )
-def update_charts(n_clicks, currency_type, selected_state, selected_county):
-    if n_clicks is None:
+def update_charts(n_intervals, n_clicks, currency_type, selected_state, selected_county):
+    if n_intervals == 0 and n_clicks is None:
         return dash.no_update
 
+    # Ensure selected_state and selected_county have values
+    selected_state = selected_state or default_state
+    selected_county = selected_county or default_county
+    
     fips_county = df_ranking[(df_ranking.StateAbbr == selected_state) & (df_ranking.LocationName == selected_county)].GEOID.iloc[0]
     fips_county_bea = check_fips_county_data(df_bea,fips_county,selected_state, selected_county)
     # fips_usa = 00000
     df_bea_county = df_bea[(df_bea.GeoFips=="00000") | (df_bea.GeoFips==fips_county_bea)]
 
-    kpi_layout = create_kpi_layout(df_ranking, fips_county, df_bea_county) 
+    kpi_layout = create_kpi_layout(df_ranking, fips_county, df_bea_county, fips_county_bea) 
     county_map_figure = create_county_map(selected_state, selected_county, df_ranking, counties)
     county_health_figure = create_county_health_charts(df_ranking, df_all_counties, fips_county)
     
