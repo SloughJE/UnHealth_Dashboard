@@ -183,8 +183,8 @@ def create_county_health_charts(df_ranking,df_all_counties,fips_county='01011'):
     ###################################
 
     fig = make_subplots(rows=1, cols=2, column_widths=[0.75, 0.25], 
-                        subplot_titles=('County Health Metrics',
-                                        'Contribution to CHS'),
+                        subplot_titles=('CDC Health Survey',
+                                        'Contribution by Category'),
                                         )
 
     # Map 'Category' to colors for the first chart
@@ -213,7 +213,7 @@ def create_county_health_charts(df_ranking,df_all_counties,fips_county='01011'):
         yref="y2",  # Referencing the y-axis of the second subplot
         x=1,  # Centered on the x-axis for the stacked bar
         y=total + 1.7,  # Slightly above the top of the stacked bar
-        text=f"Total: {total}",
+        text=f"Health Score: {total}",
         showarrow=False,
         font=dict(size=16, color="white"),
         bgcolor="rgba(0,0,0,0.5)",
@@ -241,10 +241,10 @@ def create_county_health_charts(df_ranking,df_all_counties,fips_county='01011'):
                     barmode='stack',
                     margin=dict(t=150),)
 
-    fig.update_xaxes(title_text="Percent Occurrence", row=1, col=1)
+    fig.update_xaxes(title_text="Percent", row=1, col=1)
     fig.update_yaxes(title_text="", row=1, col=1)
     fig.update_xaxes(showticklabels=False, row=1, col=2)
-    fig.update_yaxes(title_text="Contribution to CHS", row=1, col=2)
+    fig.update_yaxes(title_text="Health Score", row=1, col=2)
 
     fig.update_traces(textposition='inside', textangle=0, insidetextanchor='middle', 
                     textfont=dict(size=18), selector=dict(orientation='v'))
