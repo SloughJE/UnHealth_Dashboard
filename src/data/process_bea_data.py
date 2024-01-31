@@ -12,11 +12,12 @@ def process_bea_data(
         "West": ["WA", "OR", "ID", "MT", "WY", "CA", "NV", "UT", "CO", "AZ", "NM", "AK", "HI"],
         "Midwest": ["ND", "SD", "NE", "KS", "MN", "IA", "MO", "WI", "IL", "MI", "IN", "OH"],
         "South": ["TX", "OK", "AR", "LA", "MS", "AL", "GA", "FL", "SC", "NC", "VA", "WV", "KY", "TN", "DC", "MD", "DE"],
-        "Northeast": ["PA", "NJ", "NY", "CT", "RI", "MA", "VT", "NH", "ME"]
+        "NorthEast": ["PA", "NJ", "NY", "CT", "RI", "MA", "VT", "NH", "ME"]
     }
 
 
     df_bea_income = pd.read_pickle(bea_income_file)
+
     df_income = df_bea_income[df_bea_income.Statistic=='Per capita personal income']
     df_population = df_bea_income[df_bea_income.Statistic=='Population']
     df_income['GeoName'] = df_income.GeoName.str.replace("*","")
@@ -33,7 +34,7 @@ def process_bea_data(
     # Creating a reverse mapping from state to region
     state_to_region = {state: region for region, states in regions_dict.items() for state in states}
     df_income['region'] = df_income['State'].map(state_to_region)
-
+    print(df_income[(df_income.GeoFips=='50019') & (df_income.TimePeriod=='2022')])
     # Renaming columns for merging
     df_usa_cpi.rename(columns={'year': 'TimePeriod', 'value': 'CPI'}, inplace=True)
     df_regional_cpi.rename(columns={'year': 'TimePeriod', 'value': 'CPI'}, inplace=True)
@@ -71,17 +72,16 @@ def process_bea_data(
     # Concatenate with the original DataFrame
     df_income_combined = pd.concat([df_income_combined, df_adjusted_income])
 
-    print(df_income_combined[df_income_combined.Statistic=='CPI Adjusted Per Capita Income'].head(2))
-   
+    #print(df_income_combined[df_income_combined.Statistic=='CPI Adjusted Per Capita Income'].head(2))
     df_income_combined = df_income_combined[['GeoFips','GeoName','TimePeriod','DataValue','Statistic','State']]
-    print(df_income_combined.tail())
+    #print(df_income_combined.tail())
+    print(df_income_combined[(df_income_combined.GeoFips=='50019') & (df_income_combined.TimePeriod=='2022')])
 
     ################################################
     # gdp data, calculate GDP per capita
     df_gdp = pd.read_pickle(gdp_file)
     df_gdp = df_gdp[(df_gdp.Statistic=='Real Gross Domestic Product (GDP)') | (df_gdp.Statistic=='Current-dollar Gross Domestic Product (GDP)')]
     df_gdp['GeoName'] = df_gdp.GeoName.str.replace("*","")
-
 
     # Split df_gdp into two separate DataFrames
     df_gdp_real = df_gdp[df_gdp.Statistic == 'Real Gross Domestic Product (GDP)']

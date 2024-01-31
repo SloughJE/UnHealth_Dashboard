@@ -16,7 +16,7 @@ df_ranking = pd.read_pickle("data/processed/CDC_PLACES_county_rankings.pickle")
 num_counties = len(df_ranking)
 
 df_bea = pd.read_pickle("data/processed/bea_economic_data.pickle")
-df_bea = df_bea[(df_bea.TimePeriod==2022) & (df_bea.State.notnull()) & ((df_bea.Statistic=='Population') | (df_bea.Statistic=='Real GDP Per Capita'))]
+df_bea = df_bea[(df_bea.TimePeriod==2022) & (df_bea.State.notnull()) & ((df_bea.Statistic=='Population') | (df_bea.Statistic=='Per capita personal income'))]
 
 # GeoJSON file
 file_path_geo_json = "data/interim/us_census_counties_geojson.json"
@@ -66,7 +66,7 @@ def check_fips_county_data(df_bea, df_ranking):
             # Update matched_GEOID if a match is found
             if not matching_rows.empty:
                 df_ranking.at[index, 'matched_GEOID'] = matching_rows.GeoFips.iloc[0]
-                df_ranking.at[index, 'Note'] = f"Updated to {matching_rows.GeoName.iloc[0]}"
+                df_ranking.at[index, 'Note'] = f"Econ data from {matching_rows.GeoName.iloc[0]}"
 
 check_fips_county_data(df_bea, df_ranking)
 # Extract necessary columns from df_bea
@@ -76,25 +76,22 @@ df_bea_pivot = df_bea.pivot(index='GeoFips', columns='Statistic', values='DataVa
 # Assuming df_bea_pivot has GeoFips as an index
 df_ranking = pd.merge(df_ranking, df_bea_pivot, left_on='matched_GEOID', right_index=True, how='left')
 
-print(df_ranking[df_ranking.LocationName=="Albemarle"])
-df_gam = df_ranking[['GEOID','LocationName','StateDesc','StateAbbr','Weighted_Score_Normalized', 'Rank','Population','Real GDP Per Capita','Note']]
+df_gam = df_ranking[['GEOID','LocationName','StateDesc','StateAbbr','Weighted_Score_Normalized', 'Rank','Population','Per capita personal income','Note']]
+min_x = df_ranking['Per capita personal income'].min()
 
-# Calculate IQR for 'Real GDP Per Capita'
+# Calculate IQR for 'Per capita personal income'
 
 percentile_low = df_ranking['Weighted_Score_Normalized'].quantile(0.05)
 percentile_high = df_ranking['Weighted_Score_Normalized'].quantile(0.95)
 percentile_low_scatter = percentile_low
 percentile_high_scatter = percentile_high
-####################
-####BUBBLE CHART####
-####################
 
 
 # FILTER outliers based on IQR
 def filter_outliers(df):
         
-    Q1 = df['Real GDP Per Capita'].quantile(0.01)
-    Q3 = df['Real GDP Per Capita'].quantile(0.99)
+    Q1 = df['Per capita personal income'].quantile(0.01)
+    Q3 = df['Per capita personal income'].quantile(0.99)
     IQR = Q3 - Q1
 
     # Define bounds for outliers
@@ -102,7 +99,7 @@ def filter_outliers(df):
     upper_bound = Q3 + 1.5 * IQR
 
     # Filter out outliers
-    df = df[(df['Real GDP Per Capita'] >= lower_bound) & (df['Real GDP Per Capita'] <= upper_bound)]
+    df = df[(df['Per capita personal income'] >= lower_bound) & (df['Per capita personal income'] <= upper_bound)]
     df['Weighted_Score_Normalized'] = round(df.Weighted_Score_Normalized,2)
     
     return df
@@ -110,18 +107,18 @@ def filter_outliers(df):
 def fit_gam(df):
     # Fit a GAM model
     gam = LinearGAM(s(0, n_splines=20, constraints='monotonic_dec', lam=10))
-    gam.fit(df[['Real GDP Per Capita']], df['Weighted_Score_Normalized'])
-
+    gam.fit(df[['Per capita personal income']], df['Weighted_Score_Normalized'])
+    #print(gam.summary())
     # Generate predictions and intervals as before
-    x_pred = pd.DataFrame({'Real GDP Per Capita': np.linspace(df['Real GDP Per Capita'].min(), df['Real GDP Per Capita'].max(), 500)})
+    x_pred = pd.DataFrame({'Per capita personal income': np.linspace(df['Per capita personal income'].min(), df['Per capita personal income'].max(), 500)})
     y_pred = gam.predict(x_pred)
     y_intervals = gam.prediction_intervals(x_pred, width=0.8)
+    y_intervals[:, 0] = np.maximum(y_intervals[:, 0], 0)  # Set lower bounds to 0 if they are below 0
 
     return x_pred, y_pred, y_intervals
 
-df_gam = filter_outliers(df_gam)
+#df_gam = filter_outliers(df_gam)
 x_pred, y_pred, y_intervals = fit_gam(df_gam)
-
 
 def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals):
 
@@ -130,10 +127,10 @@ def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals):
 
     # Step 1: Filter by State (if any are selected)
     if selected_state:
-        filtered_df = filtered_df[filtered_df['StateAbbr'].isin(selected_state)]
+        filtered_df = filtered_df[filtered_df['StateDesc'].isin(selected_state)]
 
     hover_text = [
-        f"{row['LocationName']}, {row['StateDesc']}<br>County Health Score: {row['Weighted_Score_Normalized']}<br>Rank: {row['Rank']:,.0f}<br>GDP Per Capita: {row['Real GDP Per Capita']:,.0f}<br>Population: {row['Population']:,.0f}"
+        f"{row['LocationName']}, {row['StateDesc']}<br>Health Score: {row['Weighted_Score_Normalized']}<br>Rank: {row['Rank']:,.0f} of {num_counties}<br>Per capita personal income: {row['Per capita personal income']:,.0f}<br>Population: {row['Population']:,.0f}<br>{row['Note']}"
         for index, row in filtered_df.iterrows()
     ]
 
@@ -160,7 +157,7 @@ def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals):
         )
     else:
         scatter_plot = go.Scatter(
-            x=filtered_df['Real GDP Per Capita'],
+            x=filtered_df['Per capita personal income'],
             y=filtered_df['Weighted_Score_Normalized'],
             mode='markers',
             marker=dict(
@@ -181,13 +178,13 @@ def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals):
 
 
         # Add the GAM trend line
-        trend_line = go.Scatter(x=x_pred['Real GDP Per Capita'], y=y_pred, mode='lines', 
+        trend_line = go.Scatter(x=x_pred['Per capita personal income'], y=y_pred, mode='lines', 
                                 name='GAM Trend Line', 
                                 line=dict(color='darkgrey', width=5))
 
         # Add prediction intervals
         lower_interval = go.Scatter(
-            x=x_pred['Real GDP Per Capita'],
+            x=x_pred['Per capita personal income'],
             y=y_intervals[:, 0],
             mode='lines',
             line=dict(color='lightgrey', width=1, dash='dot'),  # Lighter color, dashed line
@@ -196,12 +193,12 @@ def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals):
         )
 
         upper_interval = go.Scatter(
-            x=x_pred['Real GDP Per Capita'],
+            x=x_pred['Per capita personal income'],
             y=y_intervals[:, 1],
             fill='tonexty',
             mode='lines',
             line=dict(color='lightgrey', width=1, dash='dot'),  # Lighter color, dashed line
-            name='95% Prediction Interval',
+            name='80% Prediction Interval',
             fillcolor='rgba(150, 150, 150, 0.3)',  # Light fill color with reduced opacity
             showlegend=True
         )
@@ -213,11 +210,11 @@ def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals):
 
         # Update the layout for a dark and minimalist theme
         fig_bubble.update_layout(
-            title='GDP per Capita vs Health Score',
+            title='Per capita personal income vs Health Score',
             title_x=0.5,  # Center the title
             title_font=dict(size=20),  # Adjust the font size if needed
             margin=dict(l=0, r=0, t=40, b=0),
-            xaxis=dict(title='GDP per capita 2020', range=[0, 200000], showgrid=False, linecolor='darkgrey', linewidth=1),  # Hide grid lines and set axis line color
+            xaxis=dict(title='Per capita personal income',range=[min_x,200000], showgrid=False, linecolor='darkgrey', linewidth=1),  # Hide grid lines and set axis line color
             yaxis=dict(range=[0, 101], showgrid=False, linecolor='darkgrey', linewidth=1),  # Hide grid lines and set axis line color
             yaxis_title='Health Score',
             #width=700, height=600,
@@ -254,7 +251,7 @@ def create_updated_map(df, selected_state):
     
     # Filter the dataframe based on selected_state (if it's not None)
     if selected_state is not None and len(selected_state) > 0:
-        filtered_df_by_state = df[df['StateAbbr'].isin(selected_state)]
+        filtered_df_by_state = df[df['StateDesc'].isin(selected_state)]
     else:
         filtered_df_by_state = df  # No state filter applied
 
@@ -266,8 +263,15 @@ def create_updated_map(df, selected_state):
         locations=filtered_df_by_state['GEOID'],
         z=filtered_df_by_state.Weighted_Score_Normalized,
         colorscale="RdYlGn_r",
-        customdata=filtered_df_by_state[['GEOID', 'LocationName', 'StateAbbr', 'Rank', 'Weighted_Score_Normalized']],
-        hovertemplate = '%{customdata[1]} County, %{customdata[2]}<br>Score: %{customdata[4]:.2f}<br>Rank: %{customdata[3]} of ' + str(num_counties),
+        customdata=filtered_df_by_state[['GEOID', 'LocationName', 'StateDesc', 'Rank', 'Weighted_Score_Normalized','Per capita personal income','Population','Note']],
+        hovertemplate = (
+            '%{customdata[1]} County, %{customdata[2]}<br>'
+            'Health Score: %{customdata[4]:.2f}<br>'
+            'Rank: %{customdata[3]} of ' + str(num_counties) + '<br>'
+            'Per capita personal income: %{customdata[5]:,.0f}<br>'
+            'Population: %{customdata[6]:,.0f}<br>'
+            '%{customdata[7]}'
+        ),
         marker_line_width=0,
         colorbar=dict(
             thickness=15,
@@ -328,7 +332,7 @@ def create_updated_map(df, selected_state):
 
 
 # Extract unique states and counties from your data
-available_states = df_ranking['StateAbbr'].unique()
+available_states = df_ranking['StateDesc'].unique()
 available_states.sort()
 
 def find_top_bottom_values(df, column_name, max_values):

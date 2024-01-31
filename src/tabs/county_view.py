@@ -8,6 +8,7 @@ from plotly.subplots import make_subplots
 import dash
 from dash import html
 import dash_bootstrap_components as dbc
+from .helper_data import health_score_explanation
 
 fips_usa = '00000'
 fips_county = '01011'
@@ -20,14 +21,6 @@ df_ranking = pd.read_pickle("data/processed/CDC_PLACES_county_rankings.pickle")
 file_path_geo_json = "data/interim/us_census_counties_geojson.json"
 with open(file_path_geo_json) as f:
     counties = json.load(f)
-
-
-
-health_score_explanation = """
-The Health Score provides a comprehensive overview of a county's health by combining data on various health indicators, such as the prevalence of chronic diseases, lifestyle factors, and disabilities. Each indicator is assigned an impact score, reflecting its significance on public health. High-impact indicators include stroke, diabetes, and cancer, among others, while lower-impact indicators cover aspects like sleep duration and health screenings.
-
-The process involves normalizing data across all indicators to create a score out of 100, where a higher score signals more significant health challenges within the county. This normalized score allows for direct comparison across counties, offering insights into areas needing most health-related interventions and support.
-"""
 
 def create_kpi_layout(df_ranking, fips_county, df_bea_county, fips_county_bea,health_score_explanation):
 

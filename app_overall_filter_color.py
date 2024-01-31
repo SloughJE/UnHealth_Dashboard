@@ -12,6 +12,33 @@ import plotly.graph_objects as go
 from src.tabs.overall_view import (create_updated_bubble_chart,create_updated_map,find_top_bottom_values, value_to_color,
     df_ranking, df_gam, x_pred, y_pred, y_intervals, available_states,percentile_low, percentile_high
 )
+from src.tabs.helper_data import health_score_explanation
+
+info_icon = html.I(className="bi bi-info-circle", id="health-score-tooltip-target", style={'cursor': 'pointer', 'font-size': '22px', 'marginLeft': '10px'})
+health_score_with_icon = html.H2(
+    ["Health Score and Economic Data by County", info_icon],
+    style={
+        'color': 'white',
+        'textAlign': 'center',
+        'fontSize': '28px',
+        'margin': '0',
+    }
+)
+health_score_tooltip = dbc.Tooltip(
+    health_score_explanation,
+    target="health-score-tooltip-target",
+    placement="right",
+    className='custom-tooltip'
+)
+
+common_div_style = {
+    'backgroundColor': 'black', 
+    'padding': '10px', 
+    'border-radius': '5px',
+    'margin-bottom': '20px'
+}
+
+
 # Style for the data table
 table_style = {
     'style_table': {
@@ -60,7 +87,7 @@ style_header_conditional=[
         'textAlign': 'right'
     },
     {
-        'if': {'column_id': 'Real GDP Per Capita'},
+        'if': {'column_id': 'Per capita personal income'},
         'textAlign': 'right'
     }
 ]
@@ -92,7 +119,7 @@ style_cell_conditional=[
 
     },
     {
-        'if': {'column_id': 'Real GDP Per Capita'},
+        'if': {'column_id': 'Per capita personal income'},
         'textAlign': 'right',
         'width': '15%',  
 
@@ -104,15 +131,16 @@ style_cell_conditional=[
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc.icons.BOOTSTRAP])
 
 # Define the app layout with responsive design
-app.layout = html.Div([
-    html.H1("Overall Health Score and GDP per Capita by County for 2020", style={
+app.layout = app.layout = dbc.Container([
+    html.H1("Summary View", style={
         'color': 'white',
         'textAlign': 'center',
         'fontSize': '42px',
         'margin': '0',
         'padding': '20px 0'
     }),
-
+    health_score_with_icon,
+    health_score_tooltip,
     html.Div([
         dcc.Dropdown(
             id='state-dropdown',
@@ -120,7 +148,7 @@ app.layout = html.Div([
             multi=True,
             placeholder='Select a State or States',
             style={
-                'color': '#212121',  # Text color
+                'color': 'white',  # Text color
                 'backgroundColor': '#303030',  # Dropdown background color
                 'borderRadius': '5px',  # Rounded corners
                 'fontSize': '20px',
@@ -134,73 +162,62 @@ app.layout = html.Div([
         'backgroundColor': 'transparent',  # Ensure background is transparent
     }),
 
-    # Map and Bubble Chart with adjusted padding
-    html.Div([
+    dbc.Row([
+            dbc.Col(
+                html.Div(dcc.Graph(id='choropleth-map', figure={}), style=common_div_style),
+                width=6
+            ),
+            dbc.Col(
+                    html.Div(dcc.Graph(id='bubble-chart', figure={}), style=common_div_style),
+                width=6
+            )
+        ]),
+    
+    dbc.Row([
+        dbc.Col(
         html.Div([
-            dcc.Graph(id='choropleth-map', figure={})
-        ], style={'width': '50%', 'display': 'inline-block', 'padding': '0', 'height': '80vh', 'marginBottom': '0'}),
-        html.Div([
-            dcc.Graph(id='bubble-chart', figure={})
-        ], style={'width': '50%', 'display': 'inline-block', 'padding': '0', 'height': '80vh', 'marginBottom': '0'})
-    ], style={'display': 'flex', 'backgroundColor': 'black', 'flexWrap': 'wrap','padding':'0', 'marginBottom': '0'}), 
-
-    # Title for Table
-    html.Div(
-        html.H2("Ten Worst and Best County Health Scores", style={
+             html.H2("Ten Best and Worst County Health Scores", style={
             'color': 'white',
             'textAlign': 'center',
             'fontSize': '30px',
-            'marginTop': '0',
+            'marginTop': '0px',
             'marginBottom': '0',
             'textDecoration': 'none',
             'borderBottom': 'none',
             'backgroundColor': 'black',
             'padding': '0'
         }),
-        style={
-            'backgroundColor': 'black',
-            'border': 'none',
-            'margin': '0',
-            'padding': '0'
-        }
-    ),
-
-    # Data Table
-    html.Div([
-        dash_table.DataTable(
-            id='state-data-table',
-            columns=[
-                {"name": "County", "id": "LocationName"},
-                {"name": "State", "id": "StateDesc"},
-                {
-                    "name": "GDP per Capita", 
-                    "id": "Real GDP Per Capita",
-                    "type": "numeric", 
-                    "format": Format(group=Group.yes)  # Group by thousands
-                },
-                {
-                    "name": "Population", 
-                    "id": "Population",
-                    "type": "numeric", 
-                    "format": Format(group=Group.yes)  # Group by thousands
-                },
-                {"name": "Health Score", "id": "Weighted_Score_Normalized"},
-                {"name": "Overall Rank", "id": "Rank"},
-            ],
-            data=[],
-            style_cell_conditional=style_cell_conditional,
-            style_header_conditional=style_header_conditional,
-            **table_style
+            dash_table.DataTable(
+                id='state-data-table',
+                columns=[
+                    {"name": "County", "id": "LocationName"},
+                    {"name": "State", "id": "StateDesc"},
+                    {
+                        "name": "Per capita personal income", 
+                        "id": "Per capita personal income",
+                        "type": "numeric", 
+                        "format": Format(group=Group.yes)  # Group by thousands
+                    },
+                    {
+                        "name": "Population", 
+                        "id": "Population",
+                        "type": "numeric", 
+                        "format": Format(group=Group.yes)  # Group by thousands
+                    },
+                    {"name": "Health Score", "id": "Weighted_Score_Normalized"},
+                    {"name": "Overall Rank", "id": "Rank"},
+                ],
+                data=[],
+                style_cell_conditional=style_cell_conditional,
+                style_header_conditional=style_header_conditional,
+                **table_style
+            )
+        ], style=common_div_style),
+            width=12  # Use the full width of the row
         )
-    ], style={'textAlign': 'center', 'backgroundColor': 'black', 'padding': '20px', 'border': 'none'})
+    ]),
 
-], style={
-    'backgroundColor': 'black',
-    'margin': '0',
-    'padding': '0',
-    'height': '100vh',
-    'border': 'none'
-})
+],fluid=True)
 
 # Define callback to update map and chart based on user input
 @app.callback(
@@ -227,7 +244,7 @@ def update_table(selected_state):
 
     if selected_state:
         # Filter DataFrame based on selected state
-        filtered_df = df_ranking[df_ranking['StateAbbr'].isin(selected_state)]
+        filtered_df = df_ranking[df_ranking['StateDesc'].isin(selected_state)]
     else:
         # If no state is selected, use the full dataset
         filtered_df = df_ranking
@@ -238,7 +255,7 @@ def update_table(selected_state):
     top_bottom_df['Color'] = top_bottom_df['Weighted_Score_Normalized'].apply(lambda x: value_to_color(x, percentile_low, percentile_high))
     top_bottom_df['Weighted_Score_Normalized'] = round(top_bottom_df.Weighted_Score_Normalized,2)
 
-    top_bottom_df['Real GDP Per Capita'] = round(top_bottom_df['Real GDP Per Capita'],0)
+    top_bottom_df['Per capita personal income'] = round(top_bottom_df['Per capita personal income'],0)
     top_bottom_df.fillna("NA",inplace=True)
 
     # Convert DataFrame to dictionary for DataTable
