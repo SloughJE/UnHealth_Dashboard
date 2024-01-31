@@ -5,10 +5,10 @@ import dash_bootstrap_components as dbc
 
 from src.tabs.county_view import (
                                 create_county_econ_charts, create_county_health_charts, create_county_map, 
-                                calculate_percent_difference_econ,check_fips_county_data,
+                                check_fips_county_data, create_kpi_layout,
                                 df_all_counties, df_ranking, df_bea, counties, health_score_explanation
                                 )
-# Define the common style
+# Define the common div style
 common_div_style = {
     'backgroundColor': 'black', 
     'padding': '10px', 
@@ -17,77 +17,8 @@ common_div_style = {
 }
 
 
-def create_kpi_layout(df_ranking, fips_county, df_bea_county, fips_county_bea):
-
-    # Get the corresponding GeoName for fips_county_bea
-    geo_name_bea = df_bea[df_bea.GeoFips == fips_county_bea].GeoName.iloc[0] if not df_bea[df_bea.GeoFips == fips_county_bea].empty else "Unknown"
-    # Check if fips_county and fips_county_bea are different
-    if fips_county != fips_county_bea:
-        note = html.P(f"Note: Economic data displayed is based on {geo_name_bea} (FIPS: {fips_county_bea}) due to data availability.", style={'color': 'yellow'})
-    else:
-        note = html.P()
-
-
-    selected_data = df_ranking[df_ranking.GEOID==fips_county].iloc[0]
-    county_name = selected_data['LocationName']
-    state_name = selected_data['StateDesc']
-    health_metric = selected_data['Weighted_Score_Normalized']
-    rank = selected_data['Rank']
-
-    year_bea = 2022
-    gdp_percent_difference, income_percent_difference = calculate_percent_difference_econ(df_bea_county, year_bea)
-    
-    # Function to format the text
-    def format_text(label, value):
-        return f"{label} ({year_bea}): {value:.2f}%" if value is not None else f"{label} ({year_bea}): Not Available"
-
-    # Format the percent differences
-    gdp_percent_text = format_text("GDP per Capita % Diff. from USA Avg.", gdp_percent_difference)
-    income_percent_text = format_text("Income per Capita % Diff. from USA Avg.", income_percent_difference)
-
-    # Get population for the year and format it
-    pop_county = df_bea_county[(df_bea_county.Statistic == 'Population') & (df_bea_county.GeoFips == fips_county_bea) & (df_bea_county.TimePeriod == year_bea)].DataValue.iloc[0]
-    pop_county_formatted = "{:,}".format(int(pop_county))
-        
-    info_icon = html.I(className="bi bi-info-circle", id="health-score-tooltip-target", style={'cursor': 'pointer','font-size': '22px'})
-    health_score_with_icon = html.H3(
-        ["Health Score ", info_icon],
-        style={'color': 'white'}
-    )
-    health_score_tooltip = dbc.Tooltip(
-        health_score_explanation,
-        target="health-score-tooltip-target",
-        placement="right",
-        className='custom-tooltip'
-    )
-    kpi_layout = html.Div([
-        #html.H2(f"{county_name}, {state_name}", style={'color': 'white','text-align': 'center'}),
-        html.Div([
-            health_score_with_icon,
-            html.P(f"{health_metric:.2f} (out of 100)", style={'color': 'white', 'font-size': '1.2em'}),
-            #html.Small("Note: Higher scores indicate worse health outcomes.", style={'color': 'yellow', 'font-size': '0.8em'}),  # Explanatory note
-            html.H3("Rank", style={'color': 'white'}),
-            html.P(f"{rank} of {len(df_ranking)}", style={'color': 'white', 'font-size': '1.2em'}),
-        ], className='kpi-box-health-rank-box'),
-
-        html.Div([
-            html.H3("Economic Data", style={'color': 'white'}),
-            html.P(gdp_percent_text, style={'color': 'white', 'font-size': '1.2em'}),
-            html.P(income_percent_text, style={'color': 'white', 'font-size': '1.2em'}),
-        ], className='kpi-box'),
-        html.Div([
-            html.H3("Population", style={'color': 'white'}),
-            html.P(f"{pop_county_formatted} ({year_bea})", style={'color': 'white', 'font-size': '1.2em'}),
-        ], className='kpi-box'),
-        note
-    ], className='kpi-container')
-
-    return html.Div([kpi_layout, health_score_tooltip]) 
-
-
 default_state = 'Alaska'  
 default_county = 'Kusilvak'
-
 
 # Initialize the Dash app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc.icons.BOOTSTRAP])
@@ -224,7 +155,7 @@ def update_charts(n_intervals, n_clicks, currency_type, selected_state, selected
     df_bea_county = df_bea[(df_bea.GeoFips=="00000") | (df_bea.GeoFips==fips_county_bea)]
     county_map_figure = create_county_map(selected_state, selected_county, df_ranking, counties)
 
-    kpi_layout = create_kpi_layout(df_ranking, fips_county, df_bea_county, fips_county_bea) 
+    kpi_layout = create_kpi_layout(df_ranking, fips_county, df_bea_county, fips_county_bea, health_score_explanation) 
     county_health_figure = create_county_health_charts(df_ranking, df_all_counties, fips_county)
     
     fig_adj_income, fig_income, fig_real_gdp, fig_gdp, fig_pop= create_county_econ_charts(df_bea_county)
