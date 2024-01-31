@@ -6,7 +6,7 @@ import dash_bootstrap_components as dbc
 from src.tabs.county_view import (
                                 create_county_econ_charts, create_county_health_charts, create_county_map, 
                                 calculate_percent_difference_econ,check_fips_county_data,
-                                df_all_counties, df_ranking, df_bea, counties
+                                df_all_counties, df_ranking, df_bea, counties, health_score_explanation
                                 )
 # Define the common style
 common_div_style = {
@@ -48,16 +48,28 @@ def create_kpi_layout(df_ranking, fips_county, df_bea_county, fips_county_bea):
     # Get population for the year and format it
     pop_county = df_bea_county[(df_bea_county.Statistic == 'Population') & (df_bea_county.GeoFips == fips_county_bea) & (df_bea_county.TimePeriod == year_bea)].DataValue.iloc[0]
     pop_county_formatted = "{:,}".format(int(pop_county))
-
+        
+    info_icon = html.I(className="bi bi-info-circle", id="health-score-tooltip-target", style={'cursor': 'pointer','font-size': '22px'})
+    health_score_with_icon = html.H3(
+        ["Health Score ", info_icon],
+        style={'color': 'white'}
+    )
+    health_score_tooltip = dbc.Tooltip(
+        health_score_explanation,
+        target="health-score-tooltip-target",
+        placement="right",
+        className='custom-tooltip'
+    )
     kpi_layout = html.Div([
         #html.H2(f"{county_name}, {state_name}", style={'color': 'white','text-align': 'center'}),
         html.Div([
-            html.H3("Health Score", style={'color': 'white'}),
+            health_score_with_icon,
             html.P(f"{health_metric:.2f} (out of 100)", style={'color': 'white', 'font-size': '1.2em'}),
-            html.Small("Note: Higher scores indicate worse health outcomes.", style={'color': 'yellow', 'font-size': '0.8em'}),  # Explanatory note
+            #html.Small("Note: Higher scores indicate worse health outcomes.", style={'color': 'yellow', 'font-size': '0.8em'}),  # Explanatory note
             html.H3("Rank", style={'color': 'white'}),
             html.P(f"{rank} of {len(df_ranking)}", style={'color': 'white', 'font-size': '1.2em'}),
         ], className='kpi-box-health-rank-box'),
+
         html.Div([
             html.H3("Economic Data", style={'color': 'white'}),
             html.P(gdp_percent_text, style={'color': 'white', 'font-size': '1.2em'}),
@@ -70,7 +82,7 @@ def create_kpi_layout(df_ranking, fips_county, df_bea_county, fips_county_bea):
         note
     ], className='kpi-container')
 
-    return kpi_layout
+    return html.Div([kpi_layout, health_score_tooltip]) 
 
 
 default_state = 'Alaska'  
@@ -78,7 +90,7 @@ default_county = 'Kusilvak'
 
 
 # Initialize the Dash app
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY])
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc.icons.BOOTSTRAP])
 
 # App layout
 app.layout = dbc.Container([

@@ -90,3 +90,9 @@ body {
     color: #f0ad4e;
     font-size: 0.9em;
 }
+
+.custom-tooltip .tooltip-inner {
+    font-size: 18px; 
+    max-width: 450px;
+}
+
