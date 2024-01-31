@@ -54,6 +54,7 @@ def create_kpi_layout(df_ranking, fips_county, df_bea_county, fips_county_bea):
         html.Div([
             html.H3("Health Score", style={'color': 'white'}),
             html.P(f"{health_metric:.2f} (out of 100)", style={'color': 'white', 'font-size': '1.2em'}),
+            html.Small("Note: Higher scores indicate worse health outcomes.", style={'color': 'yellow', 'font-size': '0.8em'}),  # Explanatory note
             html.H3("Rank", style={'color': 'white'}),
             html.P(f"{rank} of {len(df_ranking)}", style={'color': 'white', 'font-size': '1.2em'}),
         ], className='kpi-box-health-rank-box'),
@@ -73,7 +74,7 @@ def create_kpi_layout(df_ranking, fips_county, df_bea_county, fips_county_bea):
 
 
 default_state = 'Alaska'  
-default_county = 'Aleutians East'
+default_county = 'Kusilvak'
 
 
 # Initialize the Dash app
