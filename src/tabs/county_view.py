@@ -18,11 +18,29 @@ file_path_geo_json = "data/interim/us_census_counties_geojson.json"
 with open(file_path_geo_json) as f:
     counties = json.load(f)
 
+
+
+
 def check_fips_county_data(df_bea, fips_county, selected_state, selected_county):
+    
     # Check if FIPS code exists in the dataset
     if len(df_bea[df_bea.GeoFips == fips_county]) == 0:
+        # map full state name to abbr
+        state_mapping = {
+            "Alabama": "AL", "Alaska": "AK", "Arizona": "AZ", "Arkansas": "AR", "California": "CA",
+            "Colorado": "CO", "Connecticut": "CT", "Delaware": "DE", "Florida": "FL", "Georgia": "GA",
+            "Hawaii": "HI", "Idaho": "ID", "Illinois": "IL", "Indiana": "IN", "Iowa": "IA",
+            "Kansas": "KS", "Kentucky": "KY", "Louisiana": "LA", "Maine": "ME", "Maryland": "MD",
+            "Massachusetts": "MA", "Michigan": "MI", "Minnesota": "MN", "Mississippi": "MS", "Missouri": "MO",
+            "Montana": "MT", "Nebraska": "NE", "Nevada": "NV", "New Hampshire": "NH", "New Jersey": "NJ",
+            "New Mexico": "NM", "New York": "NY", "North Carolina": "NC", "North Dakota": "ND", "Ohio": "OH",
+            "Oklahoma": "OK", "Oregon": "OR", "Pennsylvania": "PA", "Rhode Island": "RI", "South Carolina": "SC",
+            "South Dakota": "SD", "Tennessee": "TN", "Texas": "TX", "Utah": "UT", "Vermont": "VT",
+            "Virginia": "VA", "Washington": "WA", "West Virginia": "WV", "Wisconsin": "WI", "Wyoming": "WY"
+        }
+        selected_state_abbr = state_mapping[selected_state]
         # Filter by selected state
-        df_bea_find_fips = df_bea[df_bea.State == selected_state]
+        df_bea_find_fips = df_bea[df_bea.State == selected_state_abbr]
         
         # Try finding the county using the full selected_county name
         matching_rows = df_bea_find_fips[df_bea_find_fips.GeoName.str.contains(selected_county, case=False, na=False)]
@@ -54,9 +72,9 @@ def create_county_econ_charts(df_bea_county):
         traces.append(trace)
 
     # Create the layout
-    layout = go.Layout(title='CPI Adjusted Income (~1983 dollars)<br>(counties adjusted with regional CPI)',
+    layout = go.Layout(title='Income per Capita: CPI Adjusted (~1983 dollars, counties with regional CPI)',
                     xaxis=dict(title=''),
-                    yaxis=dict(title='CPI Adjusted Per Capita Income'),
+                    yaxis=dict(title='Income per Capita (adjusted)'),
                     template='plotly_dark',
                     legend=dict(orientation='h', x=0.5, xanchor='center', y=-0.1, yanchor='top')
                     )
@@ -76,9 +94,9 @@ def create_county_econ_charts(df_bea_county):
         traces.append(trace)
 
     # Create the layout
-    layout = go.Layout(title='Current Dollar Income',
+    layout = go.Layout(title='Income per Capita: Current Dollars',
                     xaxis=dict(title=''),
-                    yaxis=dict(title='Income'),
+                    yaxis=dict(title='Income per Capita (current)'),
                     template='plotly_dark',
                     legend=dict(orientation='h', x=0.5, xanchor='center', y=-0.1, yanchor='top')
                     )
@@ -99,9 +117,9 @@ def create_county_econ_charts(df_bea_county):
         traces.append(trace)
 
     # Create the layout
-    layout = go.Layout(title='Adjusted GDP per Capita (2017 dollars)',
+    layout = go.Layout(title='GDP per Capita: Adjusted (2017 dollars)',
                     xaxis=dict(title=''),
-                    yaxis=dict(title='Adjusted GDP'),
+                    yaxis=dict(title='GDP per Capita (adjusted)'),
                     template='plotly_dark',
                     legend=dict(orientation='h', x=0.5, xanchor='center', y=-0.1, yanchor='top')
                     )
@@ -122,9 +140,9 @@ def create_county_econ_charts(df_bea_county):
         traces.append(trace)
 
     # Create the layout
-    layout = go.Layout(title='Current Dollar GDP per Capita',
+    layout = go.Layout(title='GDP per Capita: Current Dollars',
                     xaxis=dict(title=''),
-                    yaxis=dict(title='Adjusted Income'),
+                    yaxis=dict(title='GDP per Capita (current)'),
                     template='plotly_dark',
                     legend=dict(orientation='h', x=0.5, xanchor='center', y=-0.1, yanchor='top')
                     )
@@ -224,7 +242,7 @@ def create_county_health_charts(df_ranking,df_all_counties,fips_county='01011'):
 
     fig.update_layout(
         title={
-            'text': f"{sorted_df.iloc[0].LocationName}, {sorted_df.iloc[0].StateAbbr}",
+            'text': f"{sorted_df.iloc[0].LocationName}, {sorted_df.iloc[0].StateDesc}",
             #'y':0.9,
             'x':0.5,
             'xanchor': 'center',
@@ -263,7 +281,7 @@ def create_county_map(selected_state, selected_county, df_ranking,counties):
     
     # Filter the dataframe based on selected_state and selected_county
     
-    filtered_df = df_ranking[(df_ranking['StateAbbr'] == selected_state) & (df_ranking['LocationName'] == selected_county)]
+    filtered_df = df_ranking[(df_ranking['StateDesc'] == selected_state) & (df_ranking['LocationName'] == selected_county)]
 
     fig = go.Figure()
 
@@ -273,7 +291,7 @@ def create_county_map(selected_state, selected_county, df_ranking,counties):
         locations=filtered_df['GEOID'],
         z=filtered_df.Weighted_Score_Normalized,
         colorscale="RdYlGn_r",
-        customdata=filtered_df[['GEOID', 'LocationName', 'StateAbbr', 'Rank', 'Weighted_Score_Normalized']],
+        customdata=filtered_df[['GEOID', 'LocationName', 'StateDesc', 'Rank', 'Weighted_Score_Normalized']],
         hovertemplate='%{customdata[1]} County, %{customdata[2]}<br>Score: %{customdata[4]:.2f}<br>Rank: %{customdata[3]} of ' + str(num_counties) + '<extra></extra>',
         marker_line_width=0,
         colorbar=dict(
@@ -317,7 +335,7 @@ def create_county_map(selected_state, selected_county, df_ranking,counties):
         ),
         paper_bgcolor='black',
         plot_bgcolor='black',
-        title_text='Health Score for ' + selected_county + ', ' + selected_state,
+        #title_text='Health Score for ' + selected_county + ', ' + selected_state,
         title_x=0.5,
         margin=dict(l=0, r=0, t=40, b=0),
         title_font=dict(size=20, color='white'),

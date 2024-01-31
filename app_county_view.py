@@ -3,7 +3,6 @@ from dash import html, dcc
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 
-# Your existing functions
 from src.tabs.county_view import (
                                 create_county_econ_charts, create_county_health_charts, create_county_map, 
                                 calculate_percent_difference_econ,check_fips_county_data,
@@ -17,6 +16,7 @@ common_div_style = {
     'margin-bottom': '20px'  # Optional, adds space between components
 }
 
+
 def create_kpi_layout(df_ranking, fips_county, df_bea_county, fips_county_bea):
 
     # Get the corresponding GeoName for fips_county_bea
@@ -26,6 +26,7 @@ def create_kpi_layout(df_ranking, fips_county, df_bea_county, fips_county_bea):
         note = html.P(f"Note: Economic data displayed is based on {geo_name_bea} (FIPS: {fips_county_bea}) due to data availability.", style={'color': 'yellow'})
     else:
         note = html.P()
+
 
     selected_data = df_ranking[df_ranking.GEOID==fips_county].iloc[0]
     county_name = selected_data['LocationName']
@@ -48,61 +49,72 @@ def create_kpi_layout(df_ranking, fips_county, df_bea_county, fips_county_bea):
     pop_county = df_bea_county[(df_bea_county.Statistic == 'Population') & (df_bea_county.GeoFips == fips_county_bea) & (df_bea_county.TimePeriod == year_bea)].DataValue.iloc[0]
     pop_county_formatted = "{:,}".format(int(pop_county))
 
-    # KPI Layout with black background
     kpi_layout = html.Div([
-        html.H2(f"{county_name}, {state_name}", style={'color': 'white', 'margin-bottom': '20px'}),
+        #html.H2(f"{county_name}, {state_name}", style={'color': 'white','text-align': 'center'}),
         html.Div([
-            html.H3(f"Health Score: {health_metric:.2f} (out of 100)", style={'color': 'white'}),
-            html.H3(f"Rank: {rank} of {len(df_ranking)}", style={'color': 'white'}),
-        ], style={'margin-bottom': '20px'}),
+            html.H3("Health Score", style={'color': 'white'}),
+            html.P(f"{health_metric:.2f} (out of 100)", style={'color': 'white', 'font-size': '1.2em'}),
+            html.H3("Rank", style={'color': 'white'}),
+            html.P(f"{rank} of {len(df_ranking)}", style={'color': 'white', 'font-size': '1.2em'}),
+        ], className='kpi-box-health-rank-box'),
         html.Div([
-            html.H3(gdp_percent_text, style={'color': 'white'}),
-            html.H3(income_percent_text, style={'color': 'white'}),
-        ], style={'margin-bottom': '20px'}),
-        html.H3(f"Population ({year_bea}): {pop_county_formatted}", style={'color': 'white'}),
+            html.H3("Economic Data", style={'color': 'white'}),
+            html.P(gdp_percent_text, style={'color': 'white', 'font-size': '1.2em'}),
+            html.P(income_percent_text, style={'color': 'white', 'font-size': '1.2em'}),
+        ], className='kpi-box'),
+        html.Div([
+            html.H3("Population", style={'color': 'white'}),
+            html.P(f"{pop_county_formatted} ({year_bea})", style={'color': 'white', 'font-size': '1.2em'}),
+        ], className='kpi-box'),
         note
-    ])
+    ], className='kpi-container')
 
     return kpi_layout
 
 
-default_state = 'AK'  
+default_state = 'Alaska'  
 default_county = 'Aleutians East'
 
 
 # Initialize the Dash app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY])
-# Custom CSS to reset default browser styles
-app.css.append_css({
-    "external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"
-})
-
-
 
 # App layout
 app.layout = dbc.Container([
     dcc.Interval(
         id='interval-component',
-        interval=1*1000,  # in milliseconds
+        interval=500,  # in milliseconds
         n_intervals=0,
         max_intervals=1  # Ensure it triggers only once
     ),
+    html.H1("County View", style={'text-align': 'center', 'margin-top': '20px','margin-bottom': '20px','font-size':'5em'}),
+    html.P("Please select a state and county from the dropdowns below and press the button to view county data.", style={'text-align': 'left'}),
+
     dbc.Row([
         dbc.Col([
             dcc.Dropdown(
                 id='state-dropdown',
-                options=[{'label': state, 'value': state} for state in sorted(df_ranking['StateAbbr'].unique())],
+                options=[{'label': state, 'value': state} for state in sorted(df_ranking['StateDesc'].unique())],
                 value=default_state,  # Set default value
                 placeholder="Select a State",
+                style={'margin-bottom': '10px','font-size': '1.2em'}
             ),
             dcc.Dropdown(
                 id='county-dropdown',
                 value=default_county,  # Set default value
-                placeholder="Select a County"
+                placeholder="Select a County",
+                style={'margin-bottom': '10px','font-size': '1.2em'}
             ),
-            html.Button('Show County Data', id='show-data-button')
-        ], width=12)
+            html.Button(
+                'Show County Data', 
+                id='show-data-button', 
+                className='button-top-margin custom-button'
+            )
+        ], width=6)
     ]),
+
+    html.Div(id='selected-title', style={'text-align': 'center', 'font-size': '3.5em', 'margin-bottom': '0px'}),  # Placeholder for the dynamic title
+    
     dbc.Row([
         dbc.Col(html.Div(id='kpi-display', style={**common_div_style,'height': '95%'}), width=6),
         dbc.Col(html.Div(dcc.Graph(id='county-map'), style={**common_div_style, 'height': '95%'}), width=6)
@@ -116,20 +128,25 @@ app.layout = dbc.Container([
             width=12  # Use the full width of the row
         )
     ]),
-    dbc.Row([
+    dbc.Row(
         dbc.Col([
+            html.H4("Monetary Basis:", className='monetary-basis-heading'),
             dcc.RadioItems(
                 id='currency-type',
                 options=[
-                    {'label': 'Adjusted Dollars', 'value': 'adj'},
+                    {'label': 'Adjusted Dollars (CPI)', 'value': 'adj'},
                     {'label': 'Current Dollars', 'value': 'current'}
                 ],
                 value='adj',  # Default value
-                labelStyle={'display': 'inline-block', 'margin-right': '20px'},
-                style={'text-align': 'center', 'color': 'white'}
-            )
-        ], width=12)
-    ]),
+                className='radio-button-style',
+                inputStyle={"margin-right": "5px"},
+                labelStyle={"display": "inline-block", "margin-right": "20px"},  # Make labels inline
+                style={'text-align': 'center'}
+            ),
+            html.P("Select the basis for dollar values displayed in the charts below.", className='radio-button-instruction')
+        ], width=12, className='text-center'),
+        justify="center"
+    ),
     dbc.Row([
             dbc.Col(
                 html.Div(dcc.Graph(id='econ-chart-1'), style=common_div_style), 
@@ -158,13 +175,14 @@ app.layout = dbc.Container([
 )
 def update_county_dropdown(selected_state):
     if selected_state is not None:
-        counties = sorted(df_ranking[df_ranking['StateAbbr'] == selected_state]['LocationName'].unique())
+        counties = sorted(df_ranking[df_ranking['StateDesc'] == selected_state]['LocationName'].unique())
         return [{'label': county, 'value': county} for county in counties]
     return []
 
 
 @app.callback(
     [
+        Output('selected-title', 'children'),
         Output('kpi-display', 'children'),
         Output('county-map', 'figure'),
         Output('county-health-chart', 'figure'),
@@ -187,21 +205,23 @@ def update_charts(n_intervals, n_clicks, currency_type, selected_state, selected
     selected_state = selected_state or default_state
     selected_county = selected_county or default_county
     
-    fips_county = df_ranking[(df_ranking.StateAbbr == selected_state) & (df_ranking.LocationName == selected_county)].GEOID.iloc[0]
+    fips_county = df_ranking[(df_ranking.StateDesc == selected_state) & (df_ranking.LocationName == selected_county)].GEOID.iloc[0]
     fips_county_bea = check_fips_county_data(df_bea,fips_county,selected_state, selected_county)
     # fips_usa = 00000
     df_bea_county = df_bea[(df_bea.GeoFips=="00000") | (df_bea.GeoFips==fips_county_bea)]
+    county_map_figure = create_county_map(selected_state, selected_county, df_ranking, counties)
 
     kpi_layout = create_kpi_layout(df_ranking, fips_county, df_bea_county, fips_county_bea) 
-    county_map_figure = create_county_map(selected_state, selected_county, df_ranking, counties)
     county_health_figure = create_county_health_charts(df_ranking, df_all_counties, fips_county)
     
     fig_adj_income, fig_income, fig_real_gdp, fig_gdp, fig_pop= create_county_econ_charts(df_bea_county)
     
+    dynamic_title = f"{selected_county}, {selected_state}"  # Format the title
+
     if currency_type == 'adj':
-        return kpi_layout, county_map_figure, county_health_figure, fig_adj_income, fig_real_gdp, fig_pop
+        return dynamic_title, kpi_layout, county_map_figure, county_health_figure, fig_adj_income, fig_real_gdp, fig_pop
     else:
-        return kpi_layout, county_map_figure, county_health_figure, fig_income, fig_gdp, fig_pop
+        return dynamic_title, kpi_layout, county_map_figure, county_health_figure, fig_income, fig_gdp, fig_pop
 
 
 # Run the app

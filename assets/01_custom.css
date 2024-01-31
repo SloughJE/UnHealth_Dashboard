@@ -1,0 +1,92 @@
+/* Style for the selected value in a single select dropdown */
+.Select--single > .Select-control .Select-value,
+.Select-placeholder {
+    background-color: #303030; /* Background color of the selected value and placeholder */
+    color: white; /* Text color - ensure this contrasts with the background */
+}
+
+/* Style for the text of the selected value */
+.Select-value .Select-value-label {
+    color: white !important; /* Ensures text color is white */
+    /* Additional styling as needed */
+}
+
+/* Style for the control part of the dropdown, including border */
+.Select-control {
+    background-color: #303030; /* Background color of the dropdown control */
+    border: 1px solid #757575; /* Border color - adjust as needed */
+    color: white; /* Text color */
+    /* Other styling as needed */
+}
+
+.Select-menu-outer {
+    border-radius: 5px !important;
+    background-color: #303030 !important;
+    border: 2px solid #757575 !important;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    color: white;
+}
+
+/* Apply to all DataTable components */
+.dash-table-container .dash-spreadsheet {
+    font-family: 'Arial', sans-serif;
+    color: white;
+}
+
+/* Apply specifically to the table cells */
+.dash-spreadsheet td, .dash-spreadsheet th {
+    font-family: 'Arial', sans-serif;
+}
+
+/* Custom button styling */
+.custom-button {
+    display: flex; /* Use flexbox */
+    align-items: center; /* Center vertically */
+    font-size: 1.5rem;
+    padding: 15px 30px;
+    margin-top: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #F08080;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+}
+
+.custom-button:hover,
+.custom-button:focus {
+    background-color: #C06070;
+    outline: none;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.custom-button:hover {
+    transform: translateY(-1px);
+}
+
+.radio-button-style {
+    display: block;  /* Block display for the entire group */
+    margin: auto;
+}
+
+.radio-button-style .form-check-inline .custom-control-input {
+    margin-right: 5px;  /* Space between radio button and label */
+}
+
+.monetary-basis-heading {
+    text-align: center;
+    color: white;
+    margin-bottom: 10px;
+}
+
+.radio-button-instruction {
+    text-align: center;
+    color: #f0ad4e;
+    font-size: 0.9em;
+}
