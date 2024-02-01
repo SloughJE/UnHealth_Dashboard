@@ -10,9 +10,9 @@ import json
 
 import plotly.graph_objects as go
 from src.tabs.overall_view import (create_updated_bubble_chart,create_updated_map,find_top_bottom_values, value_to_color,
-    df_ranking, df_gam, x_pred, y_pred, y_intervals, available_states,percentile_low, percentile_high
+    df_ranking, df_gam, x_pred, y_pred, y_intervals, available_states,percentile_low, percentile_high, pseudo_r2_value
 )
-from src.tabs.helper_data import health_score_explanation
+from src.tabs.helper_data import health_score_explanation, common_div_style, table_style,style_cell_conditional, style_header_conditional
 
 info_icon = html.I(className="bi bi-info-circle", id="health-score-tooltip-target", style={'cursor': 'pointer', 'font-size': '22px', 'marginLeft': '10px'})
 health_score_with_icon = html.H2(
@@ -31,102 +31,6 @@ health_score_tooltip = dbc.Tooltip(
     className='custom-tooltip'
 )
 
-common_div_style = {
-    'backgroundColor': 'black', 
-    'padding': '10px', 
-    'border-radius': '5px',
-    'margin-bottom': '20px'
-}
-
-
-# Style for the data table
-table_style = {
-    'style_table': {
-        'overflowX': 'auto',
-        'width': '50%',
-        'margin': 'auto',
-        'border': '1px solid white'
-    },
-    'style_cell': {
-        #'backgroundColor': 'rgb(30, 30, 30)',
-        'color': 'black',
-        'border': '1px solid grey',
-        'textAlign': 'center',
-        'padding': '5px',
-        'fontWeight': 'bold',
-
-    },
-    'style_header': {
-        'backgroundColor': 'rgb(50, 50, 50)',
-        'color': 'white',
-        'border': '1px solid grey',
-        'fontWeight': 'bold',
-        'textAlign': 'center'
-    }
-}
-
-style_header_conditional=[
-    {
-        'if': {'column_id': 'Weighted_Score_Normalized'},
-        'textAlign': 'right'
-    },
-    {
-        'if': {'column_id': 'Rank'},
-        'textAlign': 'right'
-    },
-    {
-        'if': {'column_id': 'LocationName'},
-        'textAlign': 'center'
-    },
-    {
-        'if': {'column_id': 'StateDesc'},
-        'textAlign': 'center'
-    },
-    {
-        'if': {'column_id': 'Population'},
-        'textAlign': 'right'
-    },
-    {
-        'if': {'column_id': 'Per capita personal income'},
-        'textAlign': 'right'
-    }
-]
-
-
-style_cell_conditional=[
-    {
-        'if': {'column_id': 'Weighted_Score_Normalized'},
-        'width': '15%',  
-        'textAlign': 'right'
-    },
-    {
-        'if': {'column_id': 'Rank'},
-        'width': '10%',  
-        'textAlign': 'right'
-    },
-    {
-        'if': {'column_id': 'LocationName'},
-        'textAlign': 'left'
-    },
-    {
-        'if': {'column_id': 'StateDesc'},
-        'textAlign': 'left'
-    },
-        {
-        'if': {'column_id': 'Population'},
-        'textAlign': 'right',
-        'width': '15%',  
-
-    },
-    {
-        'if': {'column_id': 'Per capita personal income'},
-        'textAlign': 'right',
-        'width': '15%',  
-
-    }
-]
-
-
 # Initialize the Dash app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc.icons.BOOTSTRAP])
 
@@ -136,10 +40,8 @@ app.layout = app.layout = dbc.Container([
         'color': 'white',
         'font-size':'5em',
         'textAlign': 'center',
-        #'fontSize': '42px',
         'margin-top': '20px',
-        #'padding': '20px 0'
-    }),    #html.H1("County View", style={'text-align': 'center', 'margin-top': '20px','margin-bottom': '20px','font-size':'5em'}),
+    }), 
 
     health_score_with_icon,
     health_score_tooltip,
@@ -227,12 +129,10 @@ app.layout = app.layout = dbc.Container([
     [Input('state-dropdown', 'value')]
 )
 def update_map_and_chart(selected_state):
-    # Filter your data based on selected_state and 
-    # Update the map and bubble chart based on the filtered data
 
     # Create and return the updated figures for map and bubble chart
     updated_map_fig = create_updated_map(df_ranking, selected_state)
-    updated_bubble_chart_fig = create_updated_bubble_chart(df_gam, selected_state,x_pred, y_pred, y_intervals)
+    updated_bubble_chart_fig = create_updated_bubble_chart(df_gam, selected_state,x_pred, y_pred, y_intervals,pseudo_r2_value)
 
     return updated_map_fig, updated_bubble_chart_fig
 
@@ -273,8 +173,6 @@ def update_table(selected_state):
 
     ])
     return data, style
-
-
 
 if __name__ == '__main__':
     app.run_server(debug=True,port=8087)

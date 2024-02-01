@@ -106,21 +106,26 @@ def filter_outliers(df):
 
 def fit_gam(df):
     # Fit a GAM model
-    gam = LinearGAM(s(0, n_splines=20, constraints='monotonic_dec', lam=10))
+    gam = LinearGAM(s(0, n_splines=20, lam=2, constraints='monotonic_dec'))
     gam.fit(df[['Per capita personal income']], df['Weighted_Score_Normalized'])
+    # Get the summary of the GAM model
+    #gam_summary = gam.summary()
+    # Extract the R-squared (R2) value from the summary
+    pseudo_r2_value = gam.statistics_['pseudo_r2']['explained_deviance']
     #print(gam.summary())
+    #print(pseudo_r2_value)
     # Generate predictions and intervals as before
     x_pred = pd.DataFrame({'Per capita personal income': np.linspace(df['Per capita personal income'].min(), df['Per capita personal income'].max(), 500)})
     y_pred = gam.predict(x_pred)
     y_intervals = gam.prediction_intervals(x_pred, width=0.8)
     y_intervals[:, 0] = np.maximum(y_intervals[:, 0], 0)  # Set lower bounds to 0 if they are below 0
 
-    return x_pred, y_pred, y_intervals
+    return x_pred, y_pred, y_intervals, pseudo_r2_value
 
 #df_gam = filter_outliers(df_gam)
-x_pred, y_pred, y_intervals = fit_gam(df_gam)
+x_pred, y_pred, y_intervals, pseudo_r2_value = fit_gam(df_gam)
 
-def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals):
+def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals, pseudo_r2_value):
 
     # Always start with the full dataset
     filtered_df = df.copy()
@@ -130,7 +135,7 @@ def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals):
         filtered_df = filtered_df[filtered_df['StateDesc'].isin(selected_state)]
 
     hover_text = [
-        f"{row['LocationName']}, {row['StateDesc']}<br>Health Score: {row['Weighted_Score_Normalized']}<br>Rank: {row['Rank']:,.0f} of {num_counties}<br>Per capita personal income: {row['Per capita personal income']:,.0f}<br>Population: {row['Population']:,.0f}<br>{row['Note']}"
+        f"{row['LocationName']}, {row['StateDesc']}<br>Health Score: {row['Weighted_Score_Normalized']:.2f}<br>Rank: {row['Rank']:,.0f} of {num_counties}<br>Per capita personal income: {row['Per capita personal income']:,.0f}<br>Population: {row['Population']:,.0f}<br>{row['Note']}"
         for index, row in filtered_df.iterrows()
     ]
 
@@ -180,7 +185,9 @@ def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals):
         # Add the GAM trend line
         trend_line = go.Scatter(x=x_pred['Per capita personal income'], y=y_pred, mode='lines', 
                                 name='GAM Trend Line (overall)', 
-                                line=dict(color='darkgrey', width=5))
+                                line=dict(color='darkgrey', width=5),
+                                hovertemplate='Per capita personal income: %{x:,.0f}<br>Health Score (predicted): %{y:.2f}<br>GAM Model Pseudo R²: ' + str(round(pseudo_r2_value, 2))
+)
 
         # Add prediction intervals
         lower_interval = go.Scatter(

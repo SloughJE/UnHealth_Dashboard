@@ -19,3 +19,91 @@ centered_div_style = {
     'alignItems': 'center',
     'justifyContent': 'center',
 }
+
+# Style for the data table in Overall View
+table_style = {
+    'style_table': {
+        'overflowX': 'auto',
+        'width': '50%',
+        'margin': 'auto',
+        'border': '1px solid white'
+    },
+    'style_cell': {
+        #'backgroundColor': 'rgb(30, 30, 30)',
+        'color': 'black',
+        'border': '1px solid grey',
+        'textAlign': 'center',
+        'padding': '5px',
+        'fontWeight': 'bold',
+
+    },
+    'style_header': {
+        'backgroundColor': 'rgb(50, 50, 50)',
+        'color': 'white',
+        'border': '1px solid grey',
+        'fontWeight': 'bold',
+        'textAlign': 'center'
+    }
+}
+
+
+style_header_conditional=[
+    {
+        'if': {'column_id': 'Weighted_Score_Normalized'},
+        'textAlign': 'right'
+    },
+    {
+        'if': {'column_id': 'Rank'},
+        'textAlign': 'right'
+    },
+    {
+        'if': {'column_id': 'LocationName'},
+        'textAlign': 'center'
+    },
+    {
+        'if': {'column_id': 'StateDesc'},
+        'textAlign': 'center'
+    },
+    {
+        'if': {'column_id': 'Population'},
+        'textAlign': 'right'
+    },
+    {
+        'if': {'column_id': 'Per capita personal income'},
+        'textAlign': 'right'
+    }
+]
+
+
+style_cell_conditional=[
+    {
+        'if': {'column_id': 'Weighted_Score_Normalized'},
+        'width': '15%',  
+        'textAlign': 'right'
+    },
+    {
+        'if': {'column_id': 'Rank'},
+        'width': '10%',  
+        'textAlign': 'right'
+    },
+    {
+        'if': {'column_id': 'LocationName'},
+        'textAlign': 'left'
+    },
+    {
+        'if': {'column_id': 'StateDesc'},
+        'textAlign': 'left'
+    },
+        {
+        'if': {'column_id': 'Population'},
+        'textAlign': 'right',
+        'width': '15%',  
+
+    },
+    {
+        'if': {'column_id': 'Per capita personal income'},
+        'textAlign': 'right',
+        'width': '15%',  
+
+    }
+]
