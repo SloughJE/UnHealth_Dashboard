@@ -15,14 +15,14 @@ fips_county = '01011'
 
 df_bea = pd.read_pickle("data/processed/bea_economic_data.pickle")
 df_all_counties = pd.read_pickle("data/processed/CDC_PLACES_county_measures.pickle")
-df_ranking = pd.read_pickle("data/processed/CDC_PLACES_county_rankings.pickle")
+df_ranking_cv = pd.read_pickle("data/processed/CDC_PLACES_county_rankings.pickle")
 
 # GeoJSON file
 file_path_geo_json = "data/interim/us_census_counties_geojson.json"
 with open(file_path_geo_json) as f:
     counties = json.load(f)
 
-def create_kpi_layout(df_ranking, fips_county, df_bea_county, fips_county_bea,health_score_explanation):
+def create_kpi_layout(df_ranking_cv, fips_county, df_bea_county, fips_county_bea,health_score_explanation):
 
     # Get the corresponding GeoName for fips_county_bea
     geo_name_bea = df_bea[df_bea.GeoFips == fips_county_bea].GeoName.iloc[0] if not df_bea[df_bea.GeoFips == fips_county_bea].empty else "Unknown"
@@ -33,7 +33,7 @@ def create_kpi_layout(df_ranking, fips_county, df_bea_county, fips_county_bea,he
         note = html.P()
 
 
-    selected_data = df_ranking[df_ranking.GEOID==fips_county].iloc[0]
+    selected_data = df_ranking_cv[df_ranking_cv.GEOID==fips_county].iloc[0]
     county_name = selected_data['LocationName']
     state_name = selected_data['StateDesc']
     health_metric = selected_data['Weighted_Score_Normalized']
@@ -72,7 +72,7 @@ def create_kpi_layout(df_ranking, fips_county, df_bea_county, fips_county_bea,he
             html.P(f"{health_metric:.2f} (out of 100)", style={'color': 'white', 'font-size': '1.2em'}),
             #html.Small("Note: Higher scores indicate worse health outcomes.", style={'color': 'yellow', 'font-size': '0.8em'}),  # Explanatory note
             html.H3("Rank", style={'color': 'white'}),
-            html.P(f"{rank} of {len(df_ranking)}", style={'color': 'white', 'font-size': '1.2em'}),
+            html.P(f"{rank} of {len(df_ranking_cv)}", style={'color': 'white', 'font-size': '1.2em'}),
         ], className='kpi-box-health-rank-box'),
 
         html.Div([
@@ -243,9 +243,9 @@ def create_county_econ_charts(df_bea_county):
 
 
 
-def create_county_health_charts(df_ranking,df_all_counties,fips_county='01011'):
+def create_county_health_charts(df_ranking_cv,df_all_counties,fips_county='01011'):
     
-    df_ranking_county = df_ranking[df_ranking.GEOID==fips_county]
+    df_ranking_county = df_ranking_cv[df_ranking_cv.GEOID==fips_county]
     df_county_measures = df_all_counties[df_all_counties.GEOID==fips_county]
 
     # Assuming df_county is your DataFrame and it contains a 'Category' column
@@ -341,15 +341,15 @@ def create_county_health_charts(df_ranking,df_all_counties,fips_county='01011'):
 
 ##############
 # County map
-percentile_high = df_ranking['Weighted_Score_Normalized'].quantile(0.95)
-percentile_low = df_ranking['Weighted_Score_Normalized'].quantile(0.05)
-num_counties = len(df_ranking)
+percentile_high = df_ranking_cv['Weighted_Score_Normalized'].quantile(0.95)
+percentile_low = df_ranking_cv['Weighted_Score_Normalized'].quantile(0.05)
+num_counties = len(df_ranking_cv)
 
-def create_county_map(selected_state, selected_county, df_ranking,counties):
+def create_county_map(selected_state, selected_county, df_ranking_cv,counties):
     
     # Filter the dataframe based on selected_state and selected_county
     
-    filtered_df = df_ranking[(df_ranking['StateDesc'] == selected_state) & (df_ranking['LocationName'] == selected_county)]
+    filtered_df = df_ranking_cv[(df_ranking_cv['StateDesc'] == selected_state) & (df_ranking_cv['LocationName'] == selected_county)]
 
     fig = go.Figure()
 

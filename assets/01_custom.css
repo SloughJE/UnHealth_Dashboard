@@ -3,6 +3,8 @@
 .Select-placeholder {
     background-color: #303030; /* Background color of the selected value and placeholder */
     color: white; /* Text color - ensure this contrasts with the background */
+    border: 1px solid white; /* Add white border around the selected value */
+    border-radius: 5px; /* Add rounded corners to the selected value */
 }
 
 /* Style for the text of the selected value */
@@ -24,6 +26,7 @@
     background-color: #303030 !important;
     border: 2px solid #757575 !important;
 }
+
 
 body {
     font-family: 'Arial', sans-serif;

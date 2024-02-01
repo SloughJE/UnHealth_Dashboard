@@ -6,16 +6,10 @@ import dash_bootstrap_components as dbc
 from src.tabs.county_view import (
                                 create_county_econ_charts, create_county_health_charts, create_county_map, 
                                 check_fips_county_data, create_kpi_layout,
-                                df_all_counties, df_ranking, df_bea, counties, health_score_explanation
+                                df_all_counties, df_ranking_cv, df_bea, counties
                                 )
-# Define the common div style
-common_div_style = {
-    'backgroundColor': 'black', 
-    'padding': '10px', 
-    'border-radius': '5px',
-    'margin-bottom': '20px'  # Optional, adds space between components
-}
 
+from src.tabs.helper_data import common_div_style, centered_div_style, health_score_explanation
 
 default_state = 'Alaska'  
 default_county = 'Kusilvak'
@@ -32,30 +26,35 @@ app.layout = dbc.Container([
         max_intervals=1  # Ensure it triggers only once
     ),
     html.H1("County View", style={'text-align': 'center', 'margin-top': '20px','margin-bottom': '20px','font-size':'5em'}),
-    html.P("Please select a state and county from the dropdowns below and press the button to view county data.", style={'text-align': 'left'}),
-
-    dbc.Row([
-        dbc.Col([
-            dcc.Dropdown(
-                id='state-dropdown',
-                options=[{'label': state, 'value': state} for state in sorted(df_ranking['StateDesc'].unique())],
-                value=default_state,  # Set default value
-                placeholder="Select a State",
-                style={'margin-bottom': '10px','font-size': '1.2em'}
-            ),
-            dcc.Dropdown(
-                id='county-dropdown',
-                value=default_county,  # Set default value
-                placeholder="Select a County",
-                style={'margin-bottom': '10px','font-size': '1.2em'}
-            ),
-            html.Button(
-                'Show County Data', 
-                id='show-data-button', 
-                className='button-top-margin custom-button'
-            )
-        ], width=6)
-    ]),
+    
+    html.Div([
+        html.Div("Please select a state and county from the dropdowns below and press the button to view county data.", style={'textAlign': 'center'}),
+        
+        html.Div([
+            dbc.Col([
+                dcc.Dropdown(
+                    id='state-dropdown',
+                    options=[{'label': state, 'value': state} for state in sorted(df_ranking_cv['StateDesc'].unique())],
+                    value=default_state,  # Set default value
+                    placeholder="Select a State",
+                    style={'marginBottom': '10px', 'fontSize': '1.2em', 'width': '400px','marginTop': '10px'}
+                ),
+                dcc.Dropdown(
+                    id='county-dropdown',
+                    value=default_county,  # Set default value
+                    placeholder="Select a County",
+                    style={'marginBottom': '10px', 'fontSize': '1.2em', 'width': '400px'}
+                ),
+                html.Div([
+                html.Button(
+                    'Show County Data', 
+                    id='show-data-button', 
+                    className='custom-button'
+                )
+            ], style={'display': 'flex', 'justifyContent': 'center'})  # Center-align the button
+        ], width=12)
+        ])  # Apply common_div_style to the wrapping Div
+    ], style={**common_div_style, **centered_div_style}),
 
     html.Div(id='selected-title', style={'text-align': 'center', 'font-size': '3.5em', 'margin-bottom': '0px'}),  # Placeholder for the dynamic title
     
@@ -119,7 +118,7 @@ app.layout = dbc.Container([
 )
 def update_county_dropdown(selected_state):
     if selected_state is not None:
-        counties = sorted(df_ranking[df_ranking['StateDesc'] == selected_state]['LocationName'].unique())
+        counties = sorted(df_ranking_cv[df_ranking_cv['StateDesc'] == selected_state]['LocationName'].unique())
         return [{'label': county, 'value': county} for county in counties]
     return []
 
@@ -149,14 +148,14 @@ def update_charts(n_intervals, n_clicks, currency_type, selected_state, selected
     selected_state = selected_state or default_state
     selected_county = selected_county or default_county
     
-    fips_county = df_ranking[(df_ranking.StateDesc == selected_state) & (df_ranking.LocationName == selected_county)].GEOID.iloc[0]
+    fips_county = df_ranking_cv[(df_ranking_cv.StateDesc == selected_state) & (df_ranking_cv.LocationName == selected_county)].GEOID.iloc[0]
     fips_county_bea = check_fips_county_data(df_bea,fips_county,selected_state, selected_county)
     # fips_usa = 00000
     df_bea_county = df_bea[(df_bea.GeoFips=="00000") | (df_bea.GeoFips==fips_county_bea)]
-    county_map_figure = create_county_map(selected_state, selected_county, df_ranking, counties)
+    county_map_figure = create_county_map(selected_state, selected_county, df_ranking_cv, counties)
 
-    kpi_layout = create_kpi_layout(df_ranking, fips_county, df_bea_county, fips_county_bea, health_score_explanation) 
-    county_health_figure = create_county_health_charts(df_ranking, df_all_counties, fips_county)
+    kpi_layout = create_kpi_layout(df_ranking_cv, fips_county, df_bea_county, fips_county_bea, health_score_explanation) 
+    county_health_figure = create_county_health_charts(df_ranking_cv, df_all_counties, fips_county)
     
     fig_adj_income, fig_income, fig_real_gdp, fig_gdp, fig_pop= create_county_econ_charts(df_bea_county)
     

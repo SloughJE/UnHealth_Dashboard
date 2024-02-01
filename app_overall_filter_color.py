@@ -134,11 +134,13 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc.icons.BOO
 app.layout = app.layout = dbc.Container([
     html.H1("Summary View", style={
         'color': 'white',
+        'font-size':'5em',
         'textAlign': 'center',
-        'fontSize': '42px',
-        'margin': '0',
-        'padding': '20px 0'
-    }),
+        #'fontSize': '42px',
+        'margin-top': '20px',
+        #'padding': '20px 0'
+    }),    #html.H1("County View", style={'text-align': 'center', 'margin-top': '20px','margin-bottom': '20px','font-size':'5em'}),
+
     health_score_with_icon,
     health_score_tooltip,
     html.Div([
@@ -193,7 +195,7 @@ app.layout = app.layout = dbc.Container([
                     {"name": "County", "id": "LocationName"},
                     {"name": "State", "id": "StateDesc"},
                     {
-                        "name": "Per capita personal income", 
+                        "name": "Income per Capita", 
                         "id": "Per capita personal income",
                         "type": "numeric", 
                         "format": Format(group=Group.yes)  # Group by thousands
@@ -275,4 +277,4 @@ def update_table(selected_state):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True,port=8087)

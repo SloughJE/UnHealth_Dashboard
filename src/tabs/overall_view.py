@@ -179,7 +179,7 @@ def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals):
 
         # Add the GAM trend line
         trend_line = go.Scatter(x=x_pred['Per capita personal income'], y=y_pred, mode='lines', 
-                                name='GAM Trend Line', 
+                                name='GAM Trend Line (overall)', 
                                 line=dict(color='darkgrey', width=5))
 
         # Add prediction intervals
@@ -210,11 +210,11 @@ def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals):
 
         # Update the layout for a dark and minimalist theme
         fig_bubble.update_layout(
-            title='Per capita personal income vs Health Score',
+            title='Income per Capita vs Health Score',
             title_x=0.5,  # Center the title
-            title_font=dict(size=20),  # Adjust the font size if needed
+            title_font=dict(size=24),  # Adjust the font size if needed
             margin=dict(l=0, r=0, t=40, b=0),
-            xaxis=dict(title='Per capita personal income',range=[min_x,200000], showgrid=False, linecolor='darkgrey', linewidth=1),  # Hide grid lines and set axis line color
+            xaxis=dict(title='Income per Capita',range=[min_x,200000], showgrid=False, linecolor='darkgrey', linewidth=1),  # Hide grid lines and set axis line color
             yaxis=dict(range=[0, 101], showgrid=False, linecolor='darkgrey', linewidth=1),  # Hide grid lines and set axis line color
             yaxis_title='Health Score',
             #width=700, height=600,
@@ -236,6 +236,8 @@ def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals):
             plot_bgcolor="black",  # Plot area background color
             font=dict(color="white"),  # Text color
         )
+    fig_bubble.update_xaxes(zeroline=True, zerolinewidth=0.5, zerolinecolor="gray")
+    fig_bubble.update_yaxes(zeroline=True, zerolinewidth=0.5, zerolinecolor="gray")
 
     fig_bubble.update_layout(
         autosize=True,  # Enable autosize
@@ -307,7 +309,7 @@ def create_updated_map(df, selected_state):
         title_text='Health Score',
         title_x=0.5,  # Center the title
         margin=dict(l=0, r=0, t=40, b=0),
-        title_font=dict(size=20, color='white'),
+        title_font=dict(size=24, color='white'),
         
     )
 
