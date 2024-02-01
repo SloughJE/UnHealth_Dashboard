@@ -1,7 +1,8 @@
 import dash
 from dash import html, dcc, dash_table
+
 from dash.dependencies import Input, Output
-from dash.dash_table.Format import Format, Group
+from dash_table.Format import Format, Scheme
 import dash_bootstrap_components as dbc
 
 import plotly.graph_objects as go
@@ -9,14 +10,14 @@ import pandas as pd
 import json
 
 import plotly.graph_objects as go
-from src.tabs.overall_view import (create_updated_bubble_chart,create_updated_map,find_top_bottom_values, value_to_color,
-    df_ranking, df_gam, x_pred, y_pred, y_intervals, available_states,percentile_low, percentile_high, pseudo_r2_value
+from src.tabs.measure_view import (create_updated_map,find_top_bottom_values, value_to_color,
+    df_measures, available_states, available_measures
 )
-from src.tabs.helper_data import health_score_explanation, common_div_style, table_style,style_cell_conditional, style_header_conditional
+from src.tabs.helper_data import CDC_PLACES_help, common_div_style, table_style,style_cell_conditional, style_header_conditional
 
 info_icon = html.I(className="bi bi-info-circle", id="health-score-tooltip-target", style={'cursor': 'pointer', 'font-size': '22px', 'marginLeft': '10px'})
 health_score_with_icon = html.H2(
-    ["Health Score and Economic Data by County", info_icon],
+    ["CDC PLACES Health Measures by County", info_icon],
     style={
         'color': 'white',
         'textAlign': 'center',
@@ -24,8 +25,8 @@ health_score_with_icon = html.H2(
         'margin': '0',
     }
 )
-health_score_tooltip = dbc.Tooltip(
-    health_score_explanation,
+health_tooltip = dbc.Tooltip(
+    CDC_PLACES_help,
     target="health-score-tooltip-target",
     placement="right",
     className='custom-tooltip'
@@ -36,7 +37,7 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc.icons.BOO
 
 # Define the app layout with responsive design
 app.layout = app.layout = dbc.Container([
-    html.H1("Summary View", style={
+    html.H1("Measure View", style={
         'color': 'white',
         'font-size':'5em',
         'textAlign': 'center',
@@ -44,8 +45,22 @@ app.layout = app.layout = dbc.Container([
     }), 
 
     health_score_with_icon,
-    health_score_tooltip,
+    health_tooltip,
     html.Div([
+            dcc.Dropdown(
+            id='measure-dropdown',
+            options=[{'label': measure, 'value': measure} for measure in available_measures],
+            multi=False,
+            placeholder='Select a Measure',
+            value=available_measures[0],
+            clearable=False,  # Prevent users from clearing the selection
+            style={
+                'color': 'white',  # Text color
+                'backgroundColor': '#303030',  # Dropdown background color
+                'borderRadius': '5px',  # Rounded corners
+                'fontSize': '20px',
+            }
+        ),
         dcc.Dropdown(
             id='state-dropdown',
             options=[{'label': state, 'value': state} for state in available_states],
@@ -69,18 +84,14 @@ app.layout = app.layout = dbc.Container([
     dbc.Row([
             dbc.Col(
                 html.Div(dcc.Graph(id='choropleth-map', figure={}), style=common_div_style),
-                width=6
+                width=12
             ),
-            dbc.Col(
-                    html.Div(dcc.Graph(id='bubble-chart', figure={}), style=common_div_style),
-                width=6
-            )
         ]),
     
     dbc.Row([
         dbc.Col(
         html.Div([
-             html.H2("Ten Best and Worst Health Scores", style={
+             html.H2("Ten Best and Worst Scores", style={
             'color': 'white',
             'textAlign': 'center',
             'fontSize': '30px',
@@ -96,20 +107,18 @@ app.layout = app.layout = dbc.Container([
                 columns=[
                     {"name": "County", "id": "LocationName"},
                     {"name": "State", "id": "StateDesc"},
+                    #{
+                    #    "name": "Income per Capita", 
+                    #    "id": "Per capita personal income",
+                    #    "type": "numeric", 
+                    #    "format": Format(group=Group.yes)  # Group by thousands
+                    #},
                     {
-                        "name": "Income per Capita", 
-                        "id": "Per capita personal income",
-                        "type": "numeric", 
-                        "format": Format(group=Group.yes)  # Group by thousands
+                        "name": "Measure", 
+                        "id": "Measure_short", 
                     },
-                    {
-                        "name": "Population", 
-                        "id": "Population",
-                        "type": "numeric", 
-                        "format": Format(group=Group.yes)  # Group by thousands
-                    },
-                    {"name": "Health Score", "id": "Weighted_Score_Normalized"},
-                    {"name": "Overall Rank", "id": "Rank"},
+                    {"name": "Percent", "id": "Data_Value", "type": "numeric", "format": Format(precision=2, scheme=Scheme.percentage)},
+                    {"name": "Measure Rank", "id": "County Measure Rank"},
                 ],
                 data=[],
                 style_cell_conditional=style_cell_conditional,
@@ -125,40 +134,46 @@ app.layout = app.layout = dbc.Container([
 
 # Define callback to update map and chart based on user input
 @app.callback(
-    [Output('choropleth-map', 'figure'), Output('bubble-chart', 'figure')],
-    [Input('state-dropdown', 'value')]
+    Output('choropleth-map', 'figure'),
+    [Input('measure-dropdown', 'value'),
+     Input('state-dropdown', 'value')]
 )
-def update_map_and_chart(selected_state):
+def update_map_and_chart(selected_measure, selected_state):
 
     # Create and return the updated figures for map and bubble chart
-    updated_map_fig = create_updated_map(df_ranking, selected_state)
-    updated_bubble_chart_fig = create_updated_bubble_chart(df_gam, selected_state,x_pred, y_pred, y_intervals,pseudo_r2_value)
+    updated_map_fig = create_updated_map(df_measures, selected_state, selected_measure)
 
-    return updated_map_fig, updated_bubble_chart_fig
+    return updated_map_fig
 
 @app.callback(
     Output('state-data-table', 'data'),
     Output('state-data-table', 'style_data_conditional'),
-    [Input('state-dropdown', 'value')]
+    [Input('measure-dropdown', 'value'),
+     Input('state-dropdown', 'value')]
 )
-def update_table(selected_state):
-    max_values = 10  # Number of top and bottom values
+def update_table(selected_measure, selected_state):
 
+    max_values = 10  # Number of top and bottom values
+    df_measures_filtered = df_measures[(df_measures['Measure_short'] == selected_measure)]
+    # Calculate the 10th and 90th percentiles of the data
+    percentile_low = df_measures_filtered['Data_Value'].quantile(0.05)
+    percentile_high = df_measures_filtered['Data_Value'].quantile(0.95)
+    
     if selected_state:
         # Filter DataFrame based on selected state
-        filtered_df = df_ranking[df_ranking['StateDesc'].isin(selected_state)]
+        filtered_df = df_measures_filtered[df_measures_filtered['StateDesc'].isin(selected_state)]
     else:
         # If no state is selected, use the full dataset
-        filtered_df = df_ranking
+        filtered_df = df_measures_filtered
     # Get top and bottom values based on filtered DataFrame
 
-    top_bottom_df = find_top_bottom_values(filtered_df, 'Weighted_Score_Normalized', max_values)
+    top_bottom_df = find_top_bottom_values(filtered_df, 'Data_Value', max_values)
     # Calculate colors for each row in the top_bottom_df based on overall min and max values
-    top_bottom_df['Color'] = top_bottom_df['Weighted_Score_Normalized'].apply(lambda x: value_to_color(x, percentile_low, percentile_high))
-    top_bottom_df['Weighted_Score_Normalized'] = round(top_bottom_df.Weighted_Score_Normalized,2)
+    top_bottom_df['Color'] = top_bottom_df['Data_Value'].apply(lambda x: value_to_color(x, percentile_low, percentile_high))
+    #top_bottom_df['Weighted_Score_Normalized'] = round(top_bottom_df.Weighted_Score_Normalized,2)
 
-    top_bottom_df['Per capita personal income'] = round(top_bottom_df['Per capita personal income'],0)
-    top_bottom_df.fillna("NA",inplace=True)
+    #top_bottom_df['Per capita personal income'] = round(top_bottom_df['Per capita personal income'],0)
+    #top_bottom_df.fillna("NA",inplace=True)
 
     # Convert DataFrame to dictionary for DataTable
     data = top_bottom_df.to_dict('records')

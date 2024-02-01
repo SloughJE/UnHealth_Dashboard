@@ -54,7 +54,7 @@ app.layout = dbc.Container([
             ], style={'display': 'flex', 'justifyContent': 'center'})  # Center-align the button
         ], width=12)
         ])  # Apply common_div_style to the wrapping Div
-    ], style={**common_div_style, **centered_div_style, 'width':'50%','marginLeft': 'auto','marginRight': 'auto'}),
+    ], style={**common_div_style, **centered_div_style, 'width':'50%','marginLeft': 'auto','marginRight': 'auto','margin-bottom': '10px'}),
 
     html.Div(id='selected-title', style={'text-align': 'center', 'font-size': '3.5em', 'margin-bottom': '0px', 'margin': '0 auto'}),  
     

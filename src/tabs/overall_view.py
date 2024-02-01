@@ -217,7 +217,7 @@ def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals, p
 
         # Update the layout for a dark and minimalist theme
         fig_bubble.update_layout(
-            title='Income per Capita vs Health Score',
+            title='Income per Capita and Health Score',
             title_x=0.5,  # Center the title
             title_font=dict(size=24),  # Adjust the font size if needed
             margin=dict(l=0, r=0, t=40, b=0),
@@ -274,7 +274,7 @@ def create_updated_map(df, selected_state):
         colorscale="RdYlGn_r",
         customdata=filtered_df_by_state[['GEOID', 'LocationName', 'StateDesc', 'Rank', 'Weighted_Score_Normalized','Per capita personal income','Population','Note']],
         hovertemplate = (
-            '%{customdata[1]} County, %{customdata[2]}<br>'
+            '%{customdata[1]}, %{customdata[2]}<br>'
             'Health Score: %{customdata[4]:.2f}<br>'
             'Rank: %{customdata[3]} of ' + str(num_counties) + '<br>'
             'Per capita personal income: %{customdata[5]:,.0f}<br>'
