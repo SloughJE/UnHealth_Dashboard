@@ -54,9 +54,9 @@ app.layout = dbc.Container([
             ], style={'display': 'flex', 'justifyContent': 'center'})  # Center-align the button
         ], width=12)
         ])  # Apply common_div_style to the wrapping Div
-    ], style={**common_div_style, **centered_div_style}),
+    ], style={**common_div_style, **centered_div_style, 'width':'50%','marginLeft': 'auto','marginRight': 'auto'}),
 
-    html.Div(id='selected-title', style={'text-align': 'center', 'font-size': '3.5em', 'margin-bottom': '0px'}),  # Placeholder for the dynamic title
+    html.Div(id='selected-title', style={'text-align': 'center', 'font-size': '3.5em', 'margin-bottom': '0px', 'margin': '0 auto'}),  
     
     dbc.Row([
         dbc.Col(html.Div(id='kpi-display', style={**common_div_style,'height': '95%'}), width=6),
