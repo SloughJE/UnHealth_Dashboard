@@ -17,12 +17,12 @@ from src.tabs.helper_data import health_score_explanation, common_div_style, tab
 
 info_icon = html.I(className="bi bi-info-circle", id="health-score-tooltip-target", style={'cursor': 'pointer', 'font-size': '22px', 'marginLeft': '10px'})
 health_score_with_icon = html.H2(
-    ["UnHealth Score™ and Economic Data by County", info_icon],
+    ["UnHealth Score™ and Economic Data Summary", info_icon],
     style={
         'color': 'white',
         'textAlign': 'center',
         'fontSize': '28px',
-        'margin': '0',
+        'margin': '20px',
     }
 )
 health_score_tooltip = dbc.Tooltip(
@@ -38,13 +38,6 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc.icons.BOO
 def overall_view_tab_layout():
     layout = dbc.Container([
 
-    html.H1("Summary View", style={
-        'color': 'white',
-        'font-size':'5em',
-        'textAlign': 'center',
-        'margin-top': '20px',
-    }), 
-
     health_score_with_icon,
     health_score_tooltip,
     html.Div([
@@ -58,12 +51,13 @@ def overall_view_tab_layout():
                 'backgroundColor': '#303030',  # Dropdown background color
                 'borderRadius': '5px',  # Rounded corners
                 'fontSize': '20px',
+                'margin-bottom': '20px'
             }
         )
     ], style={
         'width': '30%',
         'margin': 'auto',
-        'padding': '20px 0',
+        #'padding': '20px 0',
         'border': 'none',  # Remove any border from the parent div
         'backgroundColor': 'transparent',  # Ensure background is transparent
     }),

@@ -11,6 +11,24 @@ from src.tabs.county_view import (
 
 from src.tabs.helper_data import common_div_style, centered_div_style, health_score_explanation
 
+
+info_icon = html.I(className="bi bi-info-circle", id="health-score-tooltip-target", style={'cursor': 'pointer', 'font-size': '22px', 'marginLeft': '10px'})
+county_health_score_with_icon = html.H2(
+    ["UnHealth Score™ and Economic Data by County", info_icon],
+    style={
+        'color': 'white',
+        'textAlign': 'center',
+        'fontSize': '28px',
+        'margin': '20px',
+    }
+)
+county_health_score_tooltip = dbc.Tooltip(
+    health_score_explanation,
+    target="health-score-tooltip-target",
+    placement="right",
+    className='custom-tooltip'
+)
+
 default_state = 'Alaska'  
 default_county = 'Kusilvak'
 
@@ -27,10 +45,9 @@ def county_view_tab_layout():
         n_intervals=0,
         max_intervals=1  # Ensure it triggers only once
     ),
-    html.H1("County View", style={'text-align': 'center', 'margin-top': '20px','margin-bottom': '20px','font-size':'5em'}),
-    
+    county_health_score_with_icon,
+    county_health_score_tooltip,
     html.Div([
-        html.Div("Please select a state and county from the dropdowns below and press the button to view county data.", style={'textAlign': 'center'}),
         
         html.Div([
             dbc.Col([
@@ -56,7 +73,13 @@ def county_view_tab_layout():
             ], style={'display': 'flex', 'justifyContent': 'center'})  # Center-align the button
         ], width=12)
         ])  # Apply common_div_style to the wrapping Div
-    ], style={**common_div_style, **centered_div_style, 'width':'50%','marginLeft': 'auto','marginRight': 'auto','margin-bottom': '10px'}),
+    ], style={
+        'width': '30%',
+        'margin': 'auto',
+        #'padding': '20px 20px',
+        'border': 'none',  # Remove any border from the parent div
+        'backgroundColor': 'transparent',  # Ensure background is transparent
+    }),
 
     html.Div(id='selected-title', style={'text-align': 'center', 'font-size': '3.5em', 'margin-bottom': '0px', 'margin': '0 auto'}),  
     

@@ -22,7 +22,7 @@ health_score_with_icon = html.H2(
         'color': 'white',
         'textAlign': 'center',
         'fontSize': '28px',
-        'margin': '0',
+        'margin': '20px',
     }
 )
 health_tooltip = dbc.Tooltip(
@@ -38,12 +38,6 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc.icons.BOO
 # Define the app layout with responsive design
 def measure_view_tab_layout():
     layout = dbc.Container([
-        html.H1("Measure View", style={
-        'color': 'white',
-        'font-size':'5em',
-        'textAlign': 'center',
-        'margin-top': '20px',
-    }), 
 
     health_score_with_icon,
     health_tooltip,
@@ -60,6 +54,8 @@ def measure_view_tab_layout():
                 'backgroundColor': '#303030',  # Dropdown background color
                 'borderRadius': '5px',  # Rounded corners
                 'fontSize': '20px',
+                'margin-bottom': '10px'
+
             }
         ),
         dcc.Dropdown(
@@ -72,12 +68,13 @@ def measure_view_tab_layout():
                 'backgroundColor': '#303030',  # Dropdown background color
                 'borderRadius': '5px',  # Rounded corners
                 'fontSize': '20px',
+                'margin-bottom': '20px'
             }
         )
     ], style={
         'width': '30%',
         'margin': 'auto',
-        'padding': '20px 0',
+        #'padding': '20px 20px',
         'border': 'none',  # Remove any border from the parent div
         'backgroundColor': 'transparent',  # Ensure background is transparent
     }),
