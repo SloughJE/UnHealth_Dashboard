@@ -135,7 +135,7 @@ def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals, p
         filtered_df = filtered_df[filtered_df['StateDesc'].isin(selected_state)]
 
     hover_text = [
-        f"{row['LocationName']}, {row['StateDesc']}<br>Health Score: {row['Weighted_Score_Normalized']:.2f}<br>Rank: {row['Rank']:,.0f} of {num_counties}<br>Per capita personal income: {row['Per capita personal income']:,.0f}<br>Population: {row['Population']:,.0f}<br>{row['Note']}"
+        f"{row['LocationName']}, {row['StateDesc']}<br>UnHealth Score: {row['Weighted_Score_Normalized']:.2f}<br>Rank: {row['Rank']:,.0f} of {num_counties}<br>Per capita personal income: {row['Per capita personal income']:,.0f}<br>Population: {row['Population']:,.0f}<br>{row['Note']}"
         for index, row in filtered_df.iterrows()
     ]
 
@@ -186,7 +186,7 @@ def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals, p
         trend_line = go.Scatter(x=x_pred['Per capita personal income'], y=y_pred, mode='lines', 
                                 name='GAM Trend Line (overall)', 
                                 line=dict(color='darkgrey', width=5),
-                                hovertemplate='Per capita personal income: %{x:,.0f}<br>Health Score (predicted): %{y:.2f}<br>GAM Model Pseudo R²: ' + str(round(pseudo_r2_value, 2))
+                                hovertemplate='Per capita personal income: %{x:,.0f}<br>UnHealth Score (predicted): %{y:.2f}<br>GAM Model Pseudo R²: ' + str(round(pseudo_r2_value, 2))
 )
 
         # Add prediction intervals
@@ -217,13 +217,14 @@ def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals, p
 
         # Update the layout for a dark and minimalist theme
         fig_bubble.update_layout(
-            title='Income per Capita and Health Score',
+            height=600,
+            title='Income per Capita and UnHealth Score',
             title_x=0.5,  # Center the title
             title_font=dict(size=24),  # Adjust the font size if needed
             margin=dict(l=0, r=0, t=40, b=0),
             xaxis=dict(title='Income per Capita',range=[min_x,200000], showgrid=False, linecolor='darkgrey', linewidth=1),  # Hide grid lines and set axis line color
             yaxis=dict(range=[0, 101], showgrid=False, linecolor='darkgrey', linewidth=1),  # Hide grid lines and set axis line color
-            yaxis_title='Health Score',
+            yaxis_title='UnHealth Score',
             #width=700, height=600,
             coloraxis_showscale=False,
             
@@ -275,7 +276,7 @@ def create_updated_map(df, selected_state):
         customdata=filtered_df_by_state[['GEOID', 'LocationName', 'StateDesc', 'Rank', 'Weighted_Score_Normalized','Per capita personal income','Population','Note']],
         hovertemplate = (
             '%{customdata[1]}, %{customdata[2]}<br>'
-            'Health Score: %{customdata[4]:.2f}<br>'
+            'UnHealth Score: %{customdata[4]:.2f}<br>'
             'Rank: %{customdata[3]} of ' + str(num_counties) + '<br>'
             'Per capita personal income: %{customdata[5]:,.0f}<br>'
             'Population: %{customdata[6]:,.0f}<br>'
@@ -298,6 +299,7 @@ def create_updated_map(df, selected_state):
     )
 
     fig.update_layout(
+        height=600,
         geo=dict(
             scope="usa",
             lakecolor='black',
@@ -313,7 +315,7 @@ def create_updated_map(df, selected_state):
         ),
         paper_bgcolor='black',
         plot_bgcolor='black',
-        title_text='Health Score',
+        title_text='UnHealth Score',
         title_x=0.5,  # Center the title
         margin=dict(l=0, r=0, t=40, b=0),
         title_font=dict(size=24, color='white'),

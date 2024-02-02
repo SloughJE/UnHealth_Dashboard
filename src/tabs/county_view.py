@@ -56,7 +56,7 @@ def create_kpi_layout(df_ranking_cv, fips_county, df_bea_county, fips_county_bea
         
     info_icon = html.I(className="bi bi-info-circle", id="health-score-tooltip-target", style={'cursor': 'pointer','font-size': '22px'})
     health_score_with_icon = html.H3(
-        ["Health Score ", info_icon],
+        ["UnHealth Score™ ", info_icon],
         style={'color': 'white'}
     )
     health_score_tooltip = dbc.Tooltip(
@@ -299,7 +299,7 @@ def create_county_health_charts(df_ranking_cv,df_all_counties,fips_county='01011
         yref="y2",  # Referencing the y-axis of the second subplot
         x=1,  # Centered on the x-axis for the stacked bar
         y=total + 1.7,  # Slightly above the top of the stacked bar
-        text=f"Health Score: {total}",
+        text=f"UnHealth Score: {total}",
         showarrow=False,
         font=dict(size=16, color="white"),
         bgcolor="rgba(0,0,0,0.5)",
@@ -330,7 +330,7 @@ def create_county_health_charts(df_ranking_cv,df_all_counties,fips_county='01011
     fig.update_xaxes(title_text="Percent", row=1, col=1)
     fig.update_yaxes(title_text="", row=1, col=1)
     fig.update_xaxes(showticklabels=False, row=1, col=2)
-    fig.update_yaxes(title_text="Health Score", row=1, col=2)
+    fig.update_yaxes(title_text="UnHealth Score", row=1, col=2)
 
     fig.update_traces(textposition='inside', textangle=0, insidetextanchor='middle', 
                     textfont=dict(size=18), selector=dict(orientation='v'))
@@ -403,7 +403,7 @@ def create_county_map(selected_state, selected_county, df_ranking_cv,counties):
         ),
         paper_bgcolor='black',
         plot_bgcolor='black',
-        #title_text='Health Score for ' + selected_county + ', ' + selected_state,
+        #title_text='UnHealth Score for ' + selected_county + ', ' + selected_state,
         title_x=0.5,
         margin=dict(l=0, r=0, t=40, b=0),
         title_font=dict(size=20, color='white'),

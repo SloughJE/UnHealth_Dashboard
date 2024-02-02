@@ -82,7 +82,7 @@ df_bea_pivot = df_bea.pivot(index='GeoFips', columns='Statistic', values='DataVa
 ###### MAP #########
 ####################
 
-def create_updated_map(df, selected_state, selected_measure):
+def create_updated_map_measures(df, selected_state, selected_measure):
     
     filtered_df = df[(df['Measure_short'] == selected_measure)]
     # Calculate the 10th and 90th percentiles of the data
@@ -129,6 +129,7 @@ def create_updated_map(df, selected_state, selected_measure):
     )
 
     fig.update_layout(
+        height=600,
         geo=dict(
             scope="usa",
             lakecolor='black',
