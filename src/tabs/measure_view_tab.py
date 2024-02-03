@@ -17,11 +17,11 @@ from src.tabs.helper_data import CDC_PLACES_help, common_div_style, table_style,
 
 info_icon = html.I(className="bi bi-info-circle", id="health-score-tooltip-target", style={'cursor': 'pointer', 'font-size': '22px', 'marginLeft': '10px'})
 health_score_with_icon = html.H2(
-    ["CDC PLACES Health Measures by County", info_icon],
+    ["CDC PLACES Health Measures", info_icon],
     style={
         'color': 'white',
         'textAlign': 'center',
-        'fontSize': '28px',
+        'fontSize': '32px',
         'margin': '20px',
     }
 )

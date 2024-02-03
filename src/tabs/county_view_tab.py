@@ -18,7 +18,7 @@ county_health_score_with_icon = html.H2(
     style={
         'color': 'white',
         'textAlign': 'center',
-        'fontSize': '28px',
+        'fontSize': '32px',
         'margin': '20px',
     }
 )
@@ -48,23 +48,21 @@ def county_view_tab_layout():
     county_health_score_with_icon,
     county_health_score_tooltip,
     html.Div([
-        
-        html.Div([
-            dbc.Col([
-                dcc.Dropdown(
-                    id='county-view-state-dropdown',
-                    options=[{'label': state, 'value': state} for state in sorted(df_ranking_cv['StateDesc'].unique())],
-                    value=default_state,  # Set default value
-                    placeholder="Select a State",
-                    style={'marginBottom': '10px', 'fontSize': '1.2em', 'width': '400px','marginTop': '10px'}
-                ),
-                dcc.Dropdown(
-                    id='county-view-county-dropdown',
-                    value=default_county,  # Set default value
-                    placeholder="Select a County",
-                    style={'marginBottom': '10px', 'fontSize': '1.2em', 'width': '400px'}
-                ),
-                html.Div([
+        dbc.Col([
+            dcc.Dropdown(
+                id='county-view-state-dropdown',
+                options=[{'label': state, 'value': state} for state in sorted(df_ranking_cv['StateDesc'].unique())],
+                value=default_state,  # Set default value
+                placeholder="Select a State",
+                style={'marginBottom': '10px', 'fontSize': '1.2em', 'width': '400px', 'margin': '10px auto', 'textAlign': 'left'}
+            ),
+            dcc.Dropdown(
+                id='county-view-county-dropdown',
+                value=default_county,  # Set default value
+                placeholder="Select a County",
+                style={'marginBottom': '10px', 'fontSize': '1.2em', 'width': '400px', 'margin': '0 auto', 'textAlign': 'left'}
+            ),
+            html.Div([
                 html.Button(
                     'Show County Data', 
                     id='show-data-button', 
@@ -72,14 +70,13 @@ def county_view_tab_layout():
                 )
             ], style={'display': 'flex', 'justifyContent': 'center'})  # Center-align the button
         ], width=12)
-        ])  # Apply common_div_style to the wrapping Div
     ], style={
-        'width': '30%',
+        'textAlign': 'center',  # This centers the container's content but won't affect dropdown text alignment.
         'margin': 'auto',
-        #'padding': '20px 20px',
-        'border': 'none',  # Remove any border from the parent div
-        'backgroundColor': 'transparent',  # Ensure background is transparent
-    }),
+        'width': '50%',  # Adjust the width as per design requirements
+        'border': 'none',
+        'backgroundColor': 'transparent',
+        }),
 
     html.Div(id='selected-title', style={'text-align': 'center', 'font-size': '3.5em', 'margin-bottom': '0px', 'margin': '0 auto'}),  
     

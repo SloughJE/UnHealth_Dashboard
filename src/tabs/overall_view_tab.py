@@ -21,7 +21,7 @@ health_score_with_icon = html.H2(
     style={
         'color': 'white',
         'textAlign': 'center',
-        'fontSize': '28px',
+        'fontSize': '32px',
         'margin': '20px',
     }
 )
