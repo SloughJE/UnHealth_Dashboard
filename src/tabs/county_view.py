@@ -283,13 +283,15 @@ def create_county_health_charts(df_ranking_cv,df_all_counties,fips_county='01011
                         customdata=sorted_df['absolute_contribution'],
                         name='All County Metrics'),
                 row=1, col=1)
-
+    # for axis range:
+    new_max_range = 0
     for category in sorted_categories:
         df_filtered = sorted_grouped_df[sorted_grouped_df['Category'] == category]
         fig.add_trace(go.Bar(y=df_filtered['absolute_contribution'], x=[1]*len(df_filtered),
                             name=category, marker_color=color_scale[category],
                             text=category, orientation='v'),
                     row=1, col=2)
+        new_max_range+=df_filtered['absolute_contribution'].iloc[0]
 
     total = df_ranking_county['Weighted_Score_Normalized'].iloc[0].round(2)
 
@@ -327,10 +329,13 @@ def create_county_health_charts(df_ranking_cv,df_all_counties,fips_county='01011
                     barmode='stack',
                     margin=dict(t=150),)
 
+    print(new_max_range)
+
     fig.update_xaxes(title_text="Percent", row=1, col=1)
     fig.update_yaxes(title_text="", row=1, col=1)
     fig.update_xaxes(showticklabels=False, row=1, col=2)
-    fig.update_yaxes(title_text="UnHealth Score", row=1, col=2)
+    fig.update_yaxes(title_text="UnHealth Score", range=[0, new_max_range],
+                     row=1, col=2)
 
     fig.update_traces(textposition='inside', textangle=0, insidetextanchor='middle', 
                     textfont=dict(size=18), selector=dict(orientation='v'))
