@@ -70,12 +70,12 @@ def county_view_tab_layout():
                 )
             ], style={'display': 'flex', 'justifyContent': 'center'})  # Center-align the button
         ], width=12)
-    ], style={
-        'textAlign': 'center',  # This centers the container's content but won't affect dropdown text alignment.
-        'margin': 'auto',
-        'width': '50%',  # Adjust the width as per design requirements
-        'border': 'none',
-        'backgroundColor': 'transparent',
+        ], style={
+            'textAlign': 'center',  # This centers the container's content but won't affect dropdown text alignment.
+            'margin': 'auto',
+            'width': '50%',  # Adjust the width as per design requirements
+            'border': 'none',
+            'backgroundColor': 'transparent',
         }),
 
     html.Div(id='selected-title', style={'text-align': 'center', 'font-size': '3.5em', 'margin-bottom': '0px', 'margin': '0 auto'}),  

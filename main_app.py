@@ -6,6 +6,7 @@ from dash.dependencies import Input, Output, State
 from src.tabs.overall_view_tab import overall_view_tab_layout
 from src.tabs.county_view_tab import county_view_tab_layout,default_state, default_county
 from src.tabs.measure_view_tab import measure_view_tab_layout
+from src.tabs.info_view_tab import info_view_tab_layout, create_collapsible_card
 
 from src.tabs.overall_view import (create_updated_map, create_updated_bubble_chart, find_top_bottom_values, value_to_color,
                                    df_ranking, df_gam, x_pred, y_pred, y_intervals, percentile_low, percentile_high, pseudo_r2_value)
@@ -18,6 +19,8 @@ from src.tabs.county_view import (
 from src.tabs.measure_view import (create_updated_map_measures,find_top_bottom_values, value_to_color,
     df_measures, 
 )
+from src.tabs.info_view import *
+
 from src.tabs.helper_data import health_score_explanation
 
 
@@ -37,7 +40,7 @@ app.layout = dbc.Container([
         dcc.Tab(label='Summary View', value='tab-1', className='custom-tab', selected_className='custom-tab-active', children=overall_view_tab_layout()),
         dcc.Tab(label='County View', value='tab-2', className='custom-tab', selected_className='custom-tab-active', children=county_view_tab_layout()),
         dcc.Tab(label='Measure View', value='tab-3', className='custom-tab', selected_className='custom-tab-active',children=measure_view_tab_layout()),
-        dcc.Tab(label='Help / Information', value='tab-4', className='custom-tab', selected_className='custom-tab-active'),
+        dcc.Tab(label='Info', value='tab-4', className='custom-tab', selected_className='custom-tab-active',children=info_view_tab_layout()),
     ]),
         
         html.Div(id='tabs-content')
@@ -220,6 +223,50 @@ def update_table(selected_measure, selected_state):
 
     ])
     return data, style
+
+@app.callback(
+    Output('measure-subtitle', 'children'),
+    [Input('measure-dropdown', 'value')]
+)
+def update_measure_subtitle(selected_measure):
+ 
+    return selected_measure
+
+#######################
+######INFO TAB#########
+#######################
+
+# Callbacks for toggling the collapse
+
+toggle_callbacks = [
+    {"trigger": "collapse-button-dashboard-info", "target": "collapse-dashboard-info"},
+    {"trigger": "collapse-button-tab-info", "target": "collapse-tab-info"},
+    {"trigger": "collapse-button-summary-view", "target": "collapse-summary-view"},
+    {"trigger": "collapse-button-county-view", "target": "collapse-county-view"},
+    {"trigger": "collapse-button-measure-view", "target": "collapse-measure-view"},
+    {"trigger": "collapse-button-data-sources", "target": "collapse-data-sources"},
+    {"trigger": "collapse-button-cdc-places", "target": "collapse-cdc-places"},
+    {"trigger": "collapse-button-bea", "target": "collapse-bea"},
+    {"trigger": "collapse-button-census", "target": "collapse-census"},
+    {"trigger": "collapse-button-bls", "target": "collapse-bls"},
+    {"trigger": "collapse-button-data-loading", "target": "collapse-data-loading"},
+    {"trigger": "collapse-button-cdc-places-loading", "target": "collapse-cdc-places-loading"},
+    {"trigger": "collapse-button-bea-gdp-income", "target": "collapse-bea-gdp-income"},
+    {"trigger": "collapse-button-bls-cpi", "target": "collapse-bls-cpi"},
+    {"trigger": "collapse-button-bea-bls-further-processing", "target": "collapse-bea-bls-further-processing"},
+
+]
+
+for callback in toggle_callbacks:
+    @app.callback(
+        Output(callback["target"], "is_open"),
+        [Input(callback["trigger"], "n_clicks")],
+        [State(callback["target"], "is_open")],
+    )
+    def toggle_collapse(n, is_open):
+        if n:
+            return not is_open
+        return is_open
 
 
 # Run the app

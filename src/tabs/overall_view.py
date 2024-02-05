@@ -12,7 +12,6 @@ import matplotlib.colors as mcolors
 
 ### Load data#####
 df_ranking = pd.read_pickle("data/processed/CDC_PLACES_county_rankings.pickle")
-#df_ranking = df_ranking[df_ranking.Year==2020]
 num_counties = len(df_ranking)
 
 df_bea = pd.read_pickle("data/processed/bea_economic_data.pickle")
@@ -119,11 +118,24 @@ def fit_gam(df):
     y_pred = gam.predict(x_pred)
     y_intervals = gam.prediction_intervals(x_pred, width=0.8)
     y_intervals[:, 0] = np.maximum(y_intervals[:, 0], 0)  # Set lower bounds to 0 if they are below 0
+    
+    # Plot the residuals
+    #residuals = df['Weighted_Score_Normalized'] - gam.predict(df[['Per capita personal income']])
+    #plt.figure(figsize=(10, 6))
+    #plt.scatter(x, residuals, facecolors='none', edgecolors='r')
+    #plt.axhline(y=0, color='k', linestyle='--')
+    #plt.xlabel('Feature Value')
+    #plt.ylabel('Residuals')
+    #plt.title('Residual Plot for GAM')
+    #plt.grid(True)
+    # Save the plot
+    #plt.savefig('gam_residuals.png')
 
     return x_pred, y_pred, y_intervals, pseudo_r2_value
 
 #df_gam = filter_outliers(df_gam)
 x_pred, y_pred, y_intervals, pseudo_r2_value = fit_gam(df_gam)
+
 
 def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals, pseudo_r2_value):
 

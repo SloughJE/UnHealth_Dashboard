@@ -100,21 +100,18 @@ def measure_view_tab_layout():
             'backgroundColor': 'black',
             'padding': '0'
         }),
+            html.H4("", id='measure-subtitle', style={
+                'color': 'white',
+                'textAlign': 'center',
+                'fontSize': '26px',
+                'marginTop': '0px',
+                'marginBottom': '10px',
+            }),
             dash_table.DataTable(
                 id='measure-view-state-data-table',
                 columns=[
                     {"name": "County", "id": "LocationName"},
                     {"name": "State", "id": "StateDesc"},
-                    #{
-                    #    "name": "Income per Capita", 
-                    #    "id": "Per capita personal income",
-                    #    "type": "numeric", 
-                    #    "format": Format(group=Group.yes)  # Group by thousands
-                    #},
-                    {
-                        "name": "Measure", 
-                        "id": "Measure_short", 
-                    },
                     {"name": "Percent", "id": "Data_Value", "type": "numeric", "format": Format(precision=2, scheme=Scheme.percentage)},
                     {"name": "Measure Rank", "id": "County Measure Rank"},
                 ],
