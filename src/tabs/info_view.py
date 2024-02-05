@@ -5,14 +5,15 @@ dashboard_information_title = "Dashboard Information"
 developed_by = "JS Data Science Services LLC"
 
 # Goal of Dashboard
-goal_of_dashboard_title = "Goal of Dashboard"
-goal_of_dashboard = """
-The goal of this Dashboard is to provide comprehensive insights into the health and economic status of U.S. counties by integrating data from various government sources, including CDC health metrics, BEA economic data, BLS CPI data, and Census geolocation data. 
-We create an \"UnHealth Score\" that facilitates the comparison of health outcomes and economic indicators, offering users an interactive platform to explore county-level data patterns and correlations.
-"""
+dashboard_info_title = "Dashboard Overview"
+#goal_of_dashboard = """
+#The goal of this Dashboard is to provide comprehensive insights into the health status of U.S. counties by integrating data from various government sources, including CDC health metrics, BEA economic data, BLS CPI data, and Census geolocation data. 
+#The UnHealth Score™ was created to provide an in-depth assessment of county-level health, aggregating data from a spectrum of health indicators, including chronic disease prevalence, lifestyle choices, and disability rates.
+#The UnHealth Score™ facilitates direct comparisons between counties on all health metrics, clearly highlighting regions that necessitate urgent health interventions and support. 
+#"""
 
 # Tab Information
-tab_information_title = "Tab Information"
+tab_information_title = "Views Information"
 
 # Summary View Tab
 summary_view_tab_title = "Summary View"

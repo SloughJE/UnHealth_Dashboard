@@ -40,12 +40,19 @@ def info_view_tab_layout():
     
     layout = dbc.Container([
         
-        # Dashboard Information Section (Non-collapsible example)
-        create_collapsible_card("collapse-button-dashboard-info", "collapse-dashboard-info", dashboard_information_title, [
-            html.H4(f"Developed by {developed_by}"),
-            html.P(goal_of_dashboard, style={'white-space': 'pre-line'}),
-            html.A("Dashboard GitHub Repo", href="https://github.com/SloughJE/usa_health", target="_blank"),
-
+        # Dashboard Information Section with Enhanced "UnHealth Score" Highlight
+        create_collapsible_card("collapse-button-dashboard-info", "collapse-dashboard-info", dashboard_info_title, [
+            html.P([
+                "The aim of this Dashboard is to provide comprehensive insights into the health status of U.S. counties by integrating data from various government sources, including CDC health metrics, BEA economic data, BLS CPI data, and Census geolocation data. "
+                "A key feature of our dashboard is the ",
+                html.Strong("UnHealth Score™", style={'color': '#FF6347', 'fontSize': '16px'}),  # Styling can be adjusted
+                ", a summary statistic designed to offer an in-depth assessment of county-level health. This score aggregates data from a multiple health indicators, including chronic disease prevalence, lifestyle choices, and disability rates, facilitating direct comparisons between counties. The UnHealth Score™ highlights regions in urgent need of health interventions and support, serving as a critical tool for public health analysis and decision-making."
+                "\nThe UnHealth Dashboard consists of 3 main tabs, Summary View, County View and Measure View, described in the next section."
+            ], style={'white-space': 'pre-line'}),
+            html.H5(f"Developed by {developed_by}", style={'fontSize': '18px'}),
+            html.Div([
+                html.A("Dashboard GitHub Repo", href="https://github.com/SloughJE/usa_health", target="_blank", style={'fontSize': '18px'})  # Example link styling
+            ], style={'marginTop': '10px'}),
         ], header_style=main_section_style, is_main=True),
         
         # Tab Information Section
