@@ -1,11 +1,11 @@
 import pandas as pd
+import numpy as np
 import json
+import pickle
 
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-
-from src.models.gam_model import fit_gam
 
 ### Load data#####
 df_ranking = pd.read_pickle("data/processed/df_summary_final.pickle")
@@ -26,7 +26,18 @@ percentile_low_scatter = percentile_low
 percentile_high_scatter = percentile_high
 
 # fit the GAM model
-x_pred, y_pred, y_intervals, pseudo_r2_value = fit_gam(df_ranking)
+# load output from GAM
+with open("models/x_pred.pkl", "rb") as f:
+    x_pred = pickle.load(f)
+
+with open("models/y_pred.pkl", "rb") as f:
+    y_pred = pickle.load(f)
+
+with open("models/y_intervals.pkl", "rb") as f:
+    y_intervals = pickle.load(f)
+
+with open("models/pseudo_r2_value.pkl", "rb") as f:
+    pseudo_r2_value = pickle.load(f)
 
 
 def create_updated_scatter_chart(df,selected_state,x_pred, y_pred, y_intervals, pseudo_r2_value):

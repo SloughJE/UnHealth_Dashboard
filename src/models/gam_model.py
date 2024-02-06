@@ -1,6 +1,7 @@
 from pygam import LinearGAM, s
 import pandas as pd
 import numpy as np
+import pickle
 
 
 def filter_outliers(df):
@@ -46,11 +47,19 @@ def fit_gam(df):
     #plt.grid(True)
     # Save the plot
     #plt.savefig('gam_residuals.png')
-    np.save("models/x_pred.npy", x_pred)
-    np.save("models/y_pred.npy", y_pred)
-    np.save("models/y_intervals.npy", y_intervals)
-    np.save("models/pseudo_r2_value.npy", pseudo_r2_value)
+# Assuming x_pred is a pandas DataFrame and the rest are NumPy arrays or scalars
+    with open("models/x_pred.pkl", "wb") as f:
+        pickle.dump(x_pred, f)
 
-    print("output saved to models/")
+    with open("models/y_pred.pkl", "wb") as f:
+        pickle.dump(y_pred, f)
 
+    with open("models/y_intervals.pkl", "wb") as f:
+        pickle.dump(y_intervals, f)
+
+    with open("models/pseudo_r2_value.pkl", "wb") as f:
+        pickle.dump(pseudo_r2_value, f)
+
+    print("All output saved to models/ using pickle.")
+    
     return x_pred, y_pred, y_intervals, pseudo_r2_value
