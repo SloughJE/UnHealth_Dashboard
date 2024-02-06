@@ -1,5 +1,3 @@
-
-import plotly.graph_objects as go
 import pandas as pd
 import json
 
@@ -29,7 +27,6 @@ percentile_low_scatter = percentile_low
 percentile_high_scatter = percentile_high
 
 
-# FILTER outliers based on IQR
 def filter_outliers(df):
     # not used
     Q1 = df['Per capita personal income'].quantile(0.01)
