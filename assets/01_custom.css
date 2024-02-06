@@ -1,3 +1,15 @@
+/* Define the primary color variables */
+:root {
+    --primary-color: #F08080; /* Coral Pink for active and hover state border */
+    --hover-color: #C06070; /* Darker variant for hover states */
+    --inactive-color: #333; /* Color for inactive tabs */
+}
+
+/* Style for text input within the multi-select dropdown */
+.Select--multi .Select-input > input {
+    color: white !important; /* Ensures text color is white */
+}
+
 /* Style for the selected value in a single select dropdown */
 .Select--single > .Select-control .Select-value,
 .Select-placeholder {
@@ -10,6 +22,16 @@
 /* Style for the text of the selected value */
 .Select-value .Select-value-label {
     color: white !important; /* Ensures text color is white */
+}
+/* Style for text input within the single select dropdown */
+.Select--single > .Select-control .Select-input input {
+    color: white !important; /* Ensures text color is white */
+}
+
+/* Ensure the placeholder color in the single select dropdown matches */
+.Select--single > .Select-control .Select-placeholder {
+    color: white !important; /* Ensures placeholder text color is white */
+    background-color: #303030 !important; /* Ensures background color is dark */
 }
 
 /* Style for the control part of the dropdown, including border */
@@ -51,7 +73,7 @@ body {
     margin-top: 1rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    background-color: #F08080;
+    background-color: var(--primary-color);
     border: none;
     color: white;
     border-radius: 5px;
@@ -62,7 +84,7 @@ body {
 
 .custom-button:hover,
 .custom-button:focus {
-    background-color: #C06070;
+    background-color: var(--hover-color);
     outline: none;
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
@@ -97,12 +119,7 @@ body {
     max-width: 450px;
 }
 
-/* Define the primary color variables */
-:root {
-    --primary-color: #F08080; /* Coral Pink for active and hover state border */
-    --hover-color: #C06070; /* Darker variant for hover states */
-    --inactive-color: #333; /* Color for inactive tabs */
-}
+
 
 /* Tab styling to match the nav bar */
 .custom-tab {

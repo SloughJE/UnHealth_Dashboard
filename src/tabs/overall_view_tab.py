@@ -47,7 +47,7 @@ def overall_view_tab_layout():
             multi=True,
             placeholder='Select a State or States',
             style={
-                'color': 'white',  # Text color
+                #'color': 'white',  # Text color
                 'backgroundColor': '#303030',  # Dropdown background color
                 'borderRadius': '5px',  # Rounded corners
                 'fontSize': '20px',

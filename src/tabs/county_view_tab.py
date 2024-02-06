@@ -54,13 +54,15 @@ def county_view_tab_layout():
                 options=[{'label': state, 'value': state} for state in sorted(df_ranking_cv['StateDesc'].unique())],
                 value=default_state,  # Set default value
                 placeholder="Select a State",
-                style={'marginBottom': '10px', 'fontSize': '1.2em', 'width': '400px', 'margin': '10px auto', 'textAlign': 'left'}
+                style={'marginBottom': '10px', 'fontSize': '1.2em', 'width': '400px', 'margin': '10px auto', 'textAlign': 'left',
+                                       'backgroundColor': '#303030'}
             ),
             dcc.Dropdown(
                 id='county-view-county-dropdown',
                 value=default_county,  # Set default value
                 placeholder="Select a County",
-                style={'marginBottom': '10px', 'fontSize': '1.2em', 'width': '400px', 'margin': '0 auto', 'textAlign': 'left'}
+                style={'marginBottom': '10px', 'fontSize': '1.2em', 'width': '400px', 'margin': '0 auto', 'textAlign': 'left',
+                       'backgroundColor': '#303030'}
             ),
             html.Div([
                 html.Button(
