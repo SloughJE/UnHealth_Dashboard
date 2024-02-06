@@ -46,5 +46,11 @@ def fit_gam(df):
     #plt.grid(True)
     # Save the plot
     #plt.savefig('gam_residuals.png')
+    np.save("models/x_pred.npy", x_pred)
+    np.save("models/y_pred.npy", y_pred)
+    np.save("models/y_intervals.npy", y_intervals)
+    np.save("models/pseudo_r2_value.npy", pseudo_r2_value)
+
+    print("output saved to models/")
 
     return x_pred, y_pred, y_intervals, pseudo_r2_value
