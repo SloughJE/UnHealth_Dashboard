@@ -8,7 +8,7 @@ from src.tabs.county_view_tab import county_view_tab_layout,default_state, defau
 from src.tabs.measure_view_tab import measure_view_tab_layout
 from src.tabs.info_view_tab import info_view_tab_layout, create_collapsible_card
 
-from src.tabs.overall_view import (create_updated_map, create_updated_bubble_chart, find_top_bottom_values, value_to_color,
+from src.tabs.overall_view import (create_updated_map, create_updated_scatter_chart, find_top_bottom_values, value_to_color,
                                    df_ranking, df_gam, x_pred, y_pred, y_intervals, percentile_low, percentile_high, pseudo_r2_value)
 
 from src.tabs.county_view import (
@@ -21,7 +21,7 @@ from src.tabs.measure_view import (create_updated_map_measures,find_top_bottom_v
 )
 from src.tabs.info_view import *
 
-from src.tabs.helper_data import health_score_explanation
+from src.tabs.helper_data import unhealth_score_explanation
 
 
 # Initialize the main Dash app
@@ -53,16 +53,16 @@ app.layout = dbc.Container([
 
 # Define callback to update map and chart based on user input
 @app.callback(
-    [Output('choropleth-map', 'figure'), Output('bubble-chart', 'figure')],
+    [Output('choropleth-map', 'figure'), Output('scatter-chart', 'figure')],
     [Input('state-dropdown', 'value')]
 )
 def update_map_and_chart(selected_state):
 
-    # Create and return the updated figures for map and bubble chart
+    # Create and return the updated figures for map and scatter chart
     updated_map_fig = create_updated_map(df_ranking, selected_state)
-    updated_bubble_chart_fig = create_updated_bubble_chart(df_gam, selected_state,x_pred, y_pred, y_intervals,pseudo_r2_value)
+    updated_scatter_chart_fig = create_updated_scatter_chart(df_gam, selected_state,x_pred, y_pred, y_intervals,pseudo_r2_value)
 
-    return updated_map_fig, updated_bubble_chart_fig
+    return updated_map_fig, updated_scatter_chart_fig
 
 @app.callback(
     Output('state-data-table', 'data'),
@@ -150,7 +150,7 @@ def update_charts(n_intervals, n_clicks, currency_type, selected_state, selected
     df_bea_county = df_bea[(df_bea.GeoFips=="00000") | (df_bea.GeoFips==fips_county_bea)]
     county_map_figure = create_county_map(selected_state, selected_county, df_ranking_cv, counties)
 
-    kpi_layout = create_kpi_layout(df_ranking_cv, fips_county, df_bea_county, fips_county_bea, health_score_explanation) 
+    kpi_layout = create_kpi_layout(df_ranking_cv, fips_county, df_bea_county, fips_county_bea, unhealth_score_explanation) 
     county_health_figure = create_county_health_charts(df_ranking_cv, df_all_counties, fips_county)
     
     fig_adj_income, fig_income, fig_real_gdp, fig_gdp, fig_pop= create_county_econ_charts(df_bea_county)
@@ -175,7 +175,7 @@ def update_charts(n_intervals, n_clicks, currency_type, selected_state, selected
 )
 def update_map_and_chart(selected_measure, selected_state):
 
-    # Create and return the updated figures for map and bubble chart
+    # Create and return the updated figures for map and scatter chart
     updated_map_fig = create_updated_map_measures(df_measures, selected_state, selected_measure)
 
     return updated_map_fig

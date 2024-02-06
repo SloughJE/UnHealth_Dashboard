@@ -94,22 +94,18 @@ def process_cdc_data(CDC_filepath):
     df = df.sort_values('Year', ascending=False).groupby(['GEOID', 'Measure']).first().reset_index()
     df.drop_duplicates(inplace=True)
 
-    def invert_normalize_within_group(df, column_name):
-        min_val = df[column_name].min()
-        max_val = df[column_name].max()
-        df[column_name + '_Normalized'] = ((df[column_name] - min_val) / (max_val - min_val)) * 100
-        return df
-
-    # Assuming impact_scores is defined
-    df = df.groupby('Measure').apply(lambda x: invert_normalize_within_group(x, 'Data_Value')).reset_index(drop=True)
-
-    df['Weighted_Score'] = df.apply(lambda row: row['Data_Value_Normalized'] * impact_scores.get(row['Measure'], 0), axis=1)
-
     def normalize_within_group(df, column_name):
         min_val = df[column_name].min()
         max_val = df[column_name].max()
         df[column_name + '_Normalized'] = ((df[column_name] - min_val) / (max_val - min_val)) * 100
         return df
+    
+    # Assuming impact_scores is defined
+    df = df.groupby('Measure').apply(lambda x: normalize_within_group(x, 'Data_Value')).reset_index(drop=True)
+
+    df['Weighted_Score'] = df.apply(lambda row: row['Data_Value_Normalized'] * impact_scores.get(row['Measure'], 0), axis=1)
+
+
 
     county_scores = df.groupby(['GEOID', 'LocationName', 'StateDesc', 'StateAbbr'])['Weighted_Score'].sum().reset_index()
     county_scores = normalize_within_group(county_scores, 'Weighted_Score')

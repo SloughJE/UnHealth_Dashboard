@@ -140,7 +140,7 @@ def create_county_econ_charts(df_bea_county):
         traces.append(trace)
 
     # Create the layout
-    layout = go.Layout(title='Income per Capita: CPI Adjusted (~1983 dollars, counties with regional CPI)',
+    layout = go.Layout(title='Income per Capita:<br>CPI Adjusted (~1983 dollars, counties with regional CPI)',
                     xaxis=dict(title=''),
                     yaxis=dict(title='Income per Capita (adjusted)'),
                     template='plotly_dark',
@@ -162,7 +162,7 @@ def create_county_econ_charts(df_bea_county):
         traces.append(trace)
 
     # Create the layout
-    layout = go.Layout(title='Income per Capita: Current Dollars',
+    layout = go.Layout(title='Income per Capita:<br>Current Dollars',
                     xaxis=dict(title=''),
                     yaxis=dict(title='Income per Capita (current)'),
                     template='plotly_dark',
@@ -185,7 +185,7 @@ def create_county_econ_charts(df_bea_county):
         traces.append(trace)
 
     # Create the layout
-    layout = go.Layout(title='GDP per Capita: Adjusted (2017 dollars)',
+    layout = go.Layout(title='GDP per Capita:<br>Adjusted (2017 dollars)',
                     xaxis=dict(title=''),
                     yaxis=dict(title='GDP per Capita (adjusted)'),
                     template='plotly_dark',
@@ -208,7 +208,7 @@ def create_county_econ_charts(df_bea_county):
         traces.append(trace)
 
     # Create the layout
-    layout = go.Layout(title='GDP per Capita: Current Dollars',
+    layout = go.Layout(title='GDP per Capita:<br>Current Dollars',
                     xaxis=dict(title=''),
                     yaxis=dict(title='GDP per Capita (current)'),
                     template='plotly_dark',
@@ -248,12 +248,15 @@ def create_county_health_charts(df_ranking_cv,df_all_counties,fips_county='01011
     df_ranking_county = df_ranking_cv[df_ranking_cv.GEOID==fips_county]
     df_county_measures = df_all_counties[df_all_counties.GEOID==fips_county]
 
-    # Assuming df_county is your DataFrame and it contains a 'Category' column
+    custom_color_scale = {
+        'Disability': '#673AB7',  
+        'Health Outcomes': '#FFA726',  
+        'Health Risk Behaviors': '#FFEB3B',  
+        'Health Status': '#D32F2F',  
+        'Prevention': '#4CAF50'  
+    }
     categories = df_county_measures['Category'].unique()
-    colors = px.colors.qualitative.Plotly  # Or any other color sequence you prefer
-
-    # Map each category to a color
-    color_scale = {category: color for category, color in zip(categories, colors)}
+    color_scale = {category: custom_color_scale.get(category, '#000000') for category in categories}  # Default to black if not found
 
     sorted_df = df_county_measures.sort_values(by='absolute_contribution', ascending=False)
 
@@ -266,48 +269,34 @@ def create_county_health_charts(df_ranking_cv,df_all_counties,fips_county='01011
 
     sorted_df['Category'] = pd.Categorical(sorted_df['Category'], categories=sorted_categories, ordered=True)
     sorted_df = sorted_df.sort_values(by=['Category', 'Data_Value'], ascending=[True, True])
+    total = df_ranking_county['Weighted_Score_Normalized'].iloc[0].round(2)
+
     ###################################
 
     fig = make_subplots(rows=1, cols=2, column_widths=[0.75, 0.25], 
-                        subplot_titles=('CDC Health Survey',
-                                        'Contribution by Category'),
+                        subplot_titles=('CDC PLACES<br>Health Survey Results',
+                                        f"Contribution by Category<br>UnHealth Score Total: {total}"),
                                         )
-
+    fig.update_yaxes(domain=[0.02, 0.98], row=1, col=1)  # Adjust domains as needed
+    fig.update_yaxes(domain=[0.02, 0.98], row=1, col=2)
     # Map 'Category' to colors for the first chart
     colors_mapped = sorted_df['Category'].map(color_scale).tolist()
 
     # Add the first chart to the first column
     fig.add_trace(go.Bar(x=sorted_df['Data_Value'], y=sorted_df['Measure_short'],
                         orientation='h', marker_color=colors_mapped,
-                        hovertemplate='%{y}: %{x:.2f}<br>Data Value: %{customdata:.2f}',
-                        customdata=sorted_df['absolute_contribution'],
-                        name='All County Metrics'),
+                        hovertemplate='%{y}: %{x:.2f}%<br>Contribution to UnHealth Score: %{customdata[1]:.2f}',
+                        customdata=sorted_df[['Data_Value','absolute_contribution']],
+                        name=''),
                 row=1, col=1)
-    # for axis range:
-    new_max_range = 0
+
     for category in sorted_categories:
         df_filtered = sorted_grouped_df[sorted_grouped_df['Category'] == category]
         fig.add_trace(go.Bar(y=df_filtered['absolute_contribution'], x=[1]*len(df_filtered),
                             name=category, marker_color=color_scale[category],
-                            text=category, orientation='v'),
+                            text=category, orientation='v',
+                            hovertemplate='Total category contribution: %{y:.2f}'),  
                     row=1, col=2)
-        new_max_range+=df_filtered['absolute_contribution'].iloc[0]
-
-    total = df_ranking_county['Weighted_Score_Normalized'].iloc[0].round(2)
-
-    # Add an annotation for the total above the stacked bar chart
-    fig.add_annotation(
-        xref="x2",  # Referencing the x-axis of the second subplot
-        yref="y2",  # Referencing the y-axis of the second subplot
-        x=1,  # Centered on the x-axis for the stacked bar
-        y=total + 1.7,  # Slightly above the top of the stacked bar
-        text=f"UnHealth Score: {total}",
-        showarrow=False,
-        font=dict(size=16, color="white"),
-        bgcolor="rgba(0,0,0,0.5)",
-        borderpad=4,
-        xanchor="center"
-    )
 
 
     fig.update_layout(
@@ -332,7 +321,7 @@ def create_county_health_charts(df_ranking_cv,df_all_counties,fips_county='01011
     fig.update_xaxes(title_text="Percent", row=1, col=1)
     fig.update_yaxes(title_text="", row=1, col=1)
     fig.update_xaxes(showticklabels=False, row=1, col=2)
-    fig.update_yaxes(title_text="UnHealth Score", range=[0, new_max_range],
+    fig.update_yaxes(title_text="UnHealth Score", range=[0, total],
                      row=1, col=2)
 
     fig.update_traces(textposition='inside', textangle=0, insidetextanchor='middle', 
