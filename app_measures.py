@@ -107,12 +107,7 @@ app.layout = app.layout = dbc.Container([
                 columns=[
                     {"name": "County", "id": "LocationName"},
                     {"name": "State", "id": "StateDesc"},
-                    #{
-                    #    "name": "Income per Capita", 
-                    #    "id": "Per capita personal income",
-                    #    "type": "numeric", 
-                    #    "format": Format(group=Group.yes)  # Group by thousands
-                    #},
+              
                     {
                         "name": "Measure", 
                         "id": "Measure_short", 

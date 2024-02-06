@@ -9,7 +9,7 @@ from src.tabs.county_view import (
                                 df_all_counties, df_ranking_cv, df_bea, counties
                                 )
 
-from src.tabs.helper_data import common_div_style, centered_div_style, unhealth_score_explanation
+from src.tabs.helper_data import common_div_style, unhealth_score_explanation
 
 
 info_icon = html.I(className="bi bi-info-circle", id="unhealth-score-county-tooltip-target", style={'cursor': 'pointer', 'font-size': '22px', 'marginLeft': '10px'})

@@ -10,6 +10,7 @@ from src.data.load_data import (load_process_CDC_PLACES_data, process_gdp_data, 
 from src.data.merge_data import merge_gdp_ranking_data
 from src.data.process_CDC_data import process_cdc_data
 from src.data.process_bea_data import process_bea_data
+from src.data.create_final_datasets import create_final_summary_df, create_final_measures_df
 
 load_dotenv()
 # Load environment variables from .env file
@@ -86,6 +87,17 @@ if __name__ == "__main__":
         action="store_true"
     )
 
+    parser.add_argument(
+        "--create_final_summary_dataset",
+        help="create final summary df from BEA and df_ranking data",
+        action="store_true"
+    )
+
+    parser.add_argument(
+        "--create_final_measures_dataset",
+        help="create final measures df from full measures df",
+        action="store_true"
+    )
     args = parser.parse_args()
 
     if len(sys.argv) == 1:
@@ -163,3 +175,18 @@ if __name__ == "__main__":
                 usa_cpi_file = "data/interim/df_bls_usa_cpi_1969_2023.pickle",
                 gdp_file = "data/interim/df_BEA_gdp_2017_2023.pickle"
                 )
+            
+        if args.create_final_summary_dataset:
+            create_final_summary_df(
+                df_ranking_path="data/processed/CDC_PLACES_county_rankings.pickle", 
+                df_bea_path="data/processed/bea_economic_data.pickle", 
+                bea_year=2022,
+                fileout_path="data/processed/df_summary_final.pickle"
+                )
+            
+        if args.create_final_measures_dataset:
+            create_final_measures_df(
+                df_measures_path="data/processed/CDC_PLACES_county_measures.pickle",
+                fileout_path="data/processed/df_measures_final.pickle"
+                )
+            

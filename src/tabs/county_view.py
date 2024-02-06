@@ -14,8 +14,8 @@ fips_usa = '00000'
 fips_county = '01011'
 
 df_bea = pd.read_pickle("data/processed/bea_economic_data.pickle")
-df_all_counties = pd.read_pickle("data/processed/CDC_PLACES_county_measures.pickle")
-df_ranking_cv = pd.read_pickle("data/processed/CDC_PLACES_county_rankings.pickle")
+df_all_counties = pd.read_pickle("data/processed/df_measures_final.pickle")
+df_ranking_cv = pd.read_pickle("data/processed/df_summary_final.pickle")
 
 # GeoJSON file
 file_path_geo_json = "data/interim/us_census_counties_geojson.json"

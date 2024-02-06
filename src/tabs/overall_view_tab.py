@@ -10,7 +10,7 @@ import json
 
 import plotly.graph_objects as go
 from src.tabs.overall_view import (create_updated_scatter_chart,create_updated_map,find_top_bottom_values, value_to_color,
-    df_ranking, df_gam, x_pred, y_pred, y_intervals, available_states,percentile_low, percentile_high, pseudo_r2_value
+    df_ranking, x_pred, y_pred, y_intervals, available_states,percentile_low, percentile_high, pseudo_r2_value
 )
 from src.tabs.helper_data import unhealth_score_explanation, common_div_style, table_style,style_cell_conditional, style_header_conditional
 

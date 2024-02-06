@@ -9,7 +9,7 @@ from src.tabs.measure_view_tab import measure_view_tab_layout
 from src.tabs.info_view_tab import info_view_tab_layout, create_collapsible_card
 
 from src.tabs.overall_view import (create_updated_map, create_updated_scatter_chart, find_top_bottom_values, value_to_color,
-                                   df_ranking, df_gam, x_pred, y_pred, y_intervals, percentile_low, percentile_high, pseudo_r2_value)
+                                   df_ranking, x_pred, y_pred, y_intervals, percentile_low, percentile_high, pseudo_r2_value)
 
 from src.tabs.county_view import (
                                 create_county_econ_charts, create_county_health_charts, create_county_map, 
@@ -60,7 +60,7 @@ def update_map_and_chart(selected_state):
 
     # Create and return the updated figures for map and scatter chart
     updated_map_fig = create_updated_map(df_ranking, selected_state)
-    updated_scatter_chart_fig = create_updated_scatter_chart(df_gam, selected_state,x_pred, y_pred, y_intervals,pseudo_r2_value)
+    updated_scatter_chart_fig = create_updated_scatter_chart(df_ranking, selected_state,x_pred, y_pred, y_intervals,pseudo_r2_value)
 
     return updated_map_fig, updated_scatter_chart_fig
 
