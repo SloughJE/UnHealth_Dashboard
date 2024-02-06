@@ -265,7 +265,17 @@ def create_county_health_charts(df_ranking_cv,df_all_counties,fips_county='01011
 
     # Sort the grouped DataFrame by 'percent_contribution' in ascending order
     sorted_grouped_df = grouped_df.sort_values(by='absolute_contribution', ascending=False)
-    sorted_categories = sorted_grouped_df['Category'].tolist()
+    # sorted_categories = sorted_grouped_df['Category'].tolist()
+
+    fixed_order = [
+        'Health Outcomes',
+        'Disability', 
+        'Prevention',
+        'Health Status',
+        'Health Risk Behaviors',
+    ]
+    # Ensure all categories from the data are included in the fixed order
+    sorted_categories = [cat for cat in fixed_order if cat in categories]
 
     sorted_df['Category'] = pd.Categorical(sorted_df['Category'], categories=sorted_categories, ordered=True)
     sorted_df = sorted_df.sort_values(by=['Category', 'Data_Value'], ascending=[True, True])

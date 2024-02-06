@@ -105,8 +105,6 @@ def process_cdc_data(CDC_filepath):
 
     df['Weighted_Score'] = df.apply(lambda row: row['Data_Value_Normalized'] * impact_scores.get(row['Measure'], 0), axis=1)
 
-
-
     county_scores = df.groupby(['GEOID', 'LocationName', 'StateDesc', 'StateAbbr'])['Weighted_Score'].sum().reset_index()
     county_scores = normalize_within_group(county_scores, 'Weighted_Score')
 
