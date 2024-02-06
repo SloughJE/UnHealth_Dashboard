@@ -1,14 +1,8 @@
 import dash
 from dash import html, dcc
-from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 
-from src.tabs.county_view import (
-                                create_county_econ_charts, create_county_health_charts, create_county_map, 
-                                check_fips_county_data, create_kpi_layout,
-                                df_all_counties, df_ranking_cv, df_bea, counties
-                                )
-
+from src.tabs.county_view import df_ranking_cv
 from src.tabs.helper_data import common_div_style, unhealth_score_explanation
 
 

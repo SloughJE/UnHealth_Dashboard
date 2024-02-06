@@ -1,18 +1,10 @@
 import dash
 from dash import html, dcc, dash_table
 
-from dash.dependencies import Input, Output
 from dash.dash_table.Format import Format, Scheme
 import dash_bootstrap_components as dbc
 
-import plotly.graph_objects as go
-import pandas as pd
-import json
-
-import plotly.graph_objects as go
-from src.tabs.measure_view import (create_updated_map_measures,find_top_bottom_values, value_to_color,
-    df_measures, available_states, available_measures
-)
+from src.tabs.measure_view import available_states, available_measures
 from src.tabs.helper_data import CDC_PLACES_help, common_div_style, table_style,style_cell_conditional, style_header_conditional
 
 info_icon = html.I(className="bi bi-info-circle", id="cdc-places-tooltip-target", style={'cursor': 'pointer', 'font-size': '22px', 'marginLeft': '10px'})

@@ -6,7 +6,7 @@ from dash.dependencies import Input, Output, State
 from src.tabs.overall_view_tab import overall_view_tab_layout
 from src.tabs.county_view_tab import county_view_tab_layout,default_state, default_county
 from src.tabs.measure_view_tab import measure_view_tab_layout
-from src.tabs.info_view_tab import info_view_tab_layout, create_collapsible_card
+from src.tabs.info_view_tab import info_view_tab_layout
 
 from src.tabs.overall_view import (create_updated_map, create_updated_scatter_chart, find_top_bottom_values, value_to_color,
                                    df_ranking, x_pred, y_pred, y_intervals, percentile_low, percentile_high, pseudo_r2_value)

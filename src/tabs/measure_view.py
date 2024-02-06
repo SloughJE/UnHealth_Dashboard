@@ -4,14 +4,12 @@ import pandas as pd
 import json
 
 import plotly.graph_objects as go
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 
 
 ### Load data#####
 df_measures = pd.read_pickle("data/processed/df_measures_final.pickle")
-
 num_counties = df_measures.GEOID.nunique()
 
 # GeoJSON file
@@ -69,7 +67,6 @@ def create_updated_map_measures(df, selected_state, selected_measure):
     )
 
     fig.update_layout(
-        height=600,
         geo=dict(
             scope="usa",
             lakecolor='black',
@@ -106,7 +103,7 @@ def create_updated_map_measures(df, selected_state, selected_measure):
 
     fig.update_layout(
         autosize=True,  # Enable autosize
-        #margin=dict(l=0, r=0, t=0, b=0)  # Remove margin
+        height=600,
     )
     return fig
 

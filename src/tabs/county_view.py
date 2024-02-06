@@ -1,14 +1,10 @@
 import pandas as pd
-import numpy as np
 import json
 import plotly.graph_objects as go
-import plotly.express as px
 from plotly.subplots import make_subplots
 
-import dash
 from dash import html
 import dash_bootstrap_components as dbc
-from .helper_data import unhealth_score_explanation
 
 fips_usa = '00000'
 fips_county = '01011'

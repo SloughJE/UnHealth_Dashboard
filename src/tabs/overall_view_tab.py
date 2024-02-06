@@ -1,17 +1,9 @@
 import dash
 from dash import html, dcc, dash_table
-from dash.dependencies import Input, Output
 from dash.dash_table.Format import Format, Group
 import dash_bootstrap_components as dbc
 
-import plotly.graph_objects as go
-import pandas as pd
-import json
-
-import plotly.graph_objects as go
-from src.tabs.overall_view import (create_updated_scatter_chart,create_updated_map,find_top_bottom_values, value_to_color,
-    df_ranking, x_pred, y_pred, y_intervals, available_states,percentile_low, percentile_high, pseudo_r2_value
-)
+from src.tabs.overall_view import available_states
 from src.tabs.helper_data import unhealth_score_explanation, common_div_style, table_style,style_cell_conditional, style_header_conditional
 
 
