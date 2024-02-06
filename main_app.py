@@ -26,6 +26,7 @@ from src.tabs.helper_data import unhealth_score_explanation
 
 # Initialize the main Dash app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc.icons.BOOTSTRAP])
+server = app.server # Expose the Flask server for Gunicorn
 
 # Main app layout
 app.layout = dbc.Container([
@@ -271,4 +272,4 @@ for callback in toggle_callbacks:
 
 # Run the app
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)
