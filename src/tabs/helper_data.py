@@ -1,5 +1,5 @@
 
-health_score_explanation = """
+unhealth_score_explanation = """
 The UnHealth Score™ provides a comprehensive overview of a county's health by combining data on various health indicators, such as the prevalence of chronic diseases, lifestyle factors, and disabilities. A higher UnHealth Score corresponds to a greater prevalence of unfavorable health indicators. Each indicator is assigned an impact score, reflecting its significance on public health. High-impact indicators include stroke, diabetes, and cancer, among others, while lower-impact indicators cover aspects like sleep duration and health screenings.
 
 

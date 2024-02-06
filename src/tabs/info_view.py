@@ -32,7 +32,7 @@ summary_view_tab_data = (
 gam_model_description = (
     "\nThe Generalized Additive Model (GAM) used in this tab is to aid in understanding the relationship between per capita income and health scores. Unlike traditional linear models, GAM can capture non-linear relationships without assuming a specific form of interaction between variables. This flexibility makes it suitable for revealing the underlying 'structure' of data relationships, especially when the connection between health scores and economic indicators is complex and not strictly linear."
     """\nThe GAM's value in this context lies more in exploratory data analysis and understanding data patterns rather than predictive accuracy. It helps us visualize how the UnHealth scores tend to vary with changes in per capita income across counties, providing a more accurate representation of this relationship than linear models. This approach was chosen after comparing with other models (linear, linear with log transformation), as GAM offered a better fit and visualization of the data's inherent relationships. 
-        It is interesting to note where the GAM curve flattens out, indicating that at about $70,000, additional marginal income has a diminished affect on the UnHealth score."""
+        It is interesting to note where the GAM curve flattens out, indicating that at about $75,000, additional marginal income has a diminished affect on the UnHealth score."""
 )
 
 # County View Tab

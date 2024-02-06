@@ -2,7 +2,7 @@ import dash
 from dash import html, dcc, dash_table
 
 from dash.dependencies import Input, Output
-from dash_table.Format import Format, Scheme
+from dash.dash_table.Format import Format, Scheme
 import dash_bootstrap_components as dbc
 
 import plotly.graph_objects as go
@@ -15,7 +15,7 @@ from src.tabs.measure_view import (create_updated_map_measures,find_top_bottom_v
 )
 from src.tabs.helper_data import CDC_PLACES_help, common_div_style, table_style,style_cell_conditional, style_header_conditional
 
-info_icon = html.I(className="bi bi-info-circle", id="health-score-tooltip-target", style={'cursor': 'pointer', 'font-size': '22px', 'marginLeft': '10px'})
+info_icon = html.I(className="bi bi-info-circle", id="cdc-places-tooltip-target", style={'cursor': 'pointer', 'font-size': '22px', 'marginLeft': '10px'})
 health_score_with_icon = html.H2(
     ["CDC PLACES Health Measures", info_icon],
     style={
@@ -27,7 +27,7 @@ health_score_with_icon = html.H2(
 )
 health_tooltip = dbc.Tooltip(
     CDC_PLACES_help,
-    target="health-score-tooltip-target",
+    target="cdc-places-tooltip-target",
     placement="right",
     className='custom-tooltip'
 )

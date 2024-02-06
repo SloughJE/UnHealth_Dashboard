@@ -9,11 +9,11 @@ from src.tabs.county_view import (
                                 df_all_counties, df_ranking_cv, df_bea, counties
                                 )
 
-from src.tabs.helper_data import common_div_style, centered_div_style, health_score_explanation
+from src.tabs.helper_data import common_div_style, centered_div_style, unhealth_score_explanation
 
 
-info_icon = html.I(className="bi bi-info-circle", id="health-score-tooltip-target", style={'cursor': 'pointer', 'font-size': '22px', 'marginLeft': '10px'})
-county_health_score_with_icon = html.H2(
+info_icon = html.I(className="bi bi-info-circle", id="unhealth-score-county-tooltip-target", style={'cursor': 'pointer', 'font-size': '22px', 'marginLeft': '10px'})
+county_unhealth_score_with_icon = html.H2(
     ["UnHealth Score™ and Economic Data by County", info_icon],
     style={
         'color': 'white',
@@ -22,9 +22,9 @@ county_health_score_with_icon = html.H2(
         'margin': '20px',
     }
 )
-county_health_score_tooltip = dbc.Tooltip(
-    health_score_explanation,
-    target="health-score-tooltip-target",
+county_unhealth_score_tooltip = dbc.Tooltip(
+    unhealth_score_explanation,
+    target="unhealth-score-county-tooltip-target",
     placement="right",
     className='custom-tooltip'
 )
@@ -45,8 +45,8 @@ def county_view_tab_layout():
         n_intervals=0,
         max_intervals=1  # Ensure it triggers only once
     ),
-    county_health_score_with_icon,
-    county_health_score_tooltip,
+    county_unhealth_score_with_icon,
+    county_unhealth_score_tooltip,
     html.Div([
         dbc.Col([
             dcc.Dropdown(

@@ -8,7 +8,7 @@ from plotly.subplots import make_subplots
 import dash
 from dash import html
 import dash_bootstrap_components as dbc
-from .helper_data import health_score_explanation
+from .helper_data import unhealth_score_explanation
 
 fips_usa = '00000'
 fips_county = '01011'
@@ -328,8 +328,6 @@ def create_county_health_charts(df_ranking_cv,df_all_counties,fips_county='01011
                     
                     barmode='stack',
                     margin=dict(t=150),)
-
-    print(new_max_range)
 
     fig.update_xaxes(title_text="Percent", row=1, col=1)
     fig.update_yaxes(title_text="", row=1, col=1)

@@ -9,14 +9,14 @@ import pandas as pd
 import json
 
 import plotly.graph_objects as go
-from src.tabs.overall_view import (create_updated_bubble_chart,create_updated_map,find_top_bottom_values, value_to_color,
+from src.tabs.overall_view import (create_updated_scatter_chart,create_updated_map,find_top_bottom_values, value_to_color,
     df_ranking, df_gam, x_pred, y_pred, y_intervals, available_states,percentile_low, percentile_high, pseudo_r2_value
 )
-from src.tabs.helper_data import health_score_explanation, common_div_style, table_style,style_cell_conditional, style_header_conditional
+from src.tabs.helper_data import unhealth_score_explanation, common_div_style, table_style,style_cell_conditional, style_header_conditional
 
 
-info_icon = html.I(className="bi bi-info-circle", id="health-score-tooltip-target", style={'cursor': 'pointer', 'font-size': '22px', 'marginLeft': '10px'})
-health_score_with_icon = html.H2(
+info_icon = html.I(className="bi bi-info-circle", id="unhealth-score-tooltip-target", style={'cursor': 'pointer', 'font-size': '22px', 'marginLeft': '10px'})
+unhealth_score_with_icon = html.H2(
     ["UnHealth Score™ and Economic Data Summary", info_icon],
     style={
         'color': 'white',
@@ -25,9 +25,9 @@ health_score_with_icon = html.H2(
         'margin': '20px',
     }
 )
-health_score_tooltip = dbc.Tooltip(
-    health_score_explanation,
-    target="health-score-tooltip-target",
+unhealth_score_tooltip = dbc.Tooltip(
+    unhealth_score_explanation,
+    target="unhealth-score-tooltip-target",
     placement="right",
     className='custom-tooltip'
 )
@@ -38,8 +38,8 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc.icons.BOO
 def overall_view_tab_layout():
     layout = dbc.Container([
 
-    health_score_with_icon,
-    health_score_tooltip,
+    unhealth_score_with_icon,
+    unhealth_score_tooltip,
     html.Div([
         dcc.Dropdown(
             id='state-dropdown',
@@ -68,7 +68,7 @@ def overall_view_tab_layout():
                 width=6
             ),
             dbc.Col(
-                    html.Div(dcc.Graph(id='bubble-chart', figure={}), style=common_div_style),
+                    html.Div(dcc.Graph(id='scatter-chart', figure={}), style=common_div_style),
                 width=6
             )
         ]),

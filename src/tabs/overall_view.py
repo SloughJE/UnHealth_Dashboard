@@ -137,7 +137,7 @@ def fit_gam(df):
 x_pred, y_pred, y_intervals, pseudo_r2_value = fit_gam(df_gam)
 
 
-def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals, pseudo_r2_value):
+def create_updated_scatter_chart(df,selected_state,x_pred, y_pred, y_intervals, pseudo_r2_value):
 
     # Always start with the full dataset
     filtered_df = df.copy()
@@ -152,11 +152,11 @@ def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals, p
     ]
 
     
-    fig_bubble = go.Figure()
+    fig_scatter = go.Figure()
     # Check if there is data after filtering
     if len(filtered_df) == 0:
         # If no data, display a message
-        fig_bubble.update_layout(
+        fig_scatter.update_layout(
             xaxis={'visible': False},  # Hide x axis
             yaxis={'visible': False},  # Hide y axis
             annotations=[
@@ -222,13 +222,13 @@ def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals, p
             showlegend=True
         )
 
-        fig_bubble.add_trace(scatter_plot)
-        fig_bubble.add_trace(lower_interval)
-        fig_bubble.add_trace(upper_interval)
-        fig_bubble.add_trace(trend_line)
+        fig_scatter.add_trace(scatter_plot)
+        fig_scatter.add_trace(lower_interval)
+        fig_scatter.add_trace(upper_interval)
+        fig_scatter.add_trace(trend_line)
 
         # Update the layout for a dark and minimalist theme
-        fig_bubble.update_layout(
+        fig_scatter.update_layout(
             height=600,
             title='Income per Capita and UnHealth Score',
             title_x=0.5,  # Center the title
@@ -256,13 +256,13 @@ def create_updated_bubble_chart(df,selected_state,x_pred, y_pred, y_intervals, p
             plot_bgcolor="black",  # Plot area background color
             font=dict(color="white"),  # Text color
         )
-    fig_bubble.update_xaxes(zeroline=True, zerolinewidth=0.5, zerolinecolor="gray")
-    fig_bubble.update_yaxes(zeroline=True, zerolinewidth=0.5, zerolinecolor="gray")
+    fig_scatter.update_xaxes(zeroline=True, zerolinewidth=0.5, zerolinecolor="gray")
+    fig_scatter.update_yaxes(zeroline=True, zerolinewidth=0.5, zerolinecolor="gray")
 
-    fig_bubble.update_layout(
-        autosize=True,  # Enable autosize
+    fig_scatter.update_layout(
+        autosize=False,  # Enable autosize
     )
-    return fig_bubble
+    return fig_scatter
 
 
 ####################
@@ -347,7 +347,7 @@ def create_updated_map(df, selected_state):
     )
 
     fig.update_layout(
-        autosize=True,  # Enable autosize
+        autosize=False,  # Enable autosize
         #margin=dict(l=0, r=0, t=0, b=0)  # Remove margin
     )
     return fig

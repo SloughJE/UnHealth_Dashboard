@@ -88,9 +88,6 @@ def create_updated_map_measures(df, selected_state, selected_measure):
     # Calculate the 10th and 90th percentiles of the data
     percentile_low = filtered_df['Data_Value'].quantile(0.05)
     percentile_high = filtered_df['Data_Value'].quantile(0.95)
-    print(selected_measure)
-    print(percentile_low)
-    print(percentile_high)
     
     # Filter the dataframe based on selected_state (if it's not None)
     if selected_state is not None and len(selected_state) > 0:

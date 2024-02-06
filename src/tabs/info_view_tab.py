@@ -43,7 +43,7 @@ def info_view_tab_layout():
         # Dashboard Information Section with Enhanced "UnHealth Score" Highlight
         create_collapsible_card("collapse-button-dashboard-info", "collapse-dashboard-info", dashboard_info_title, [
             html.P([
-                "The aim of this Dashboard is to provide comprehensive insights into the health status of U.S. counties by integrating data from various government sources, including CDC health metrics, BEA economic data, BLS CPI data, and Census geolocation data. "
+                "The aim of this Dashboard is to provide comprehensive insights into the health status of U.S. counties by integrating data from various government sources, including CDC health metrics, BEA economic data, BLS CPI data, and Census geolocation data. The focus is on the health measures provided by the CDC PLACES program. "
                 "A key feature of our dashboard is the ",
                 html.Strong("UnHealth Score™", style={'color': '#FF6347', 'fontSize': '16px'}),  # Styling can be adjusted
                 ", a summary statistic designed to offer an in-depth assessment of county-level health. This score aggregates data from multiple health indicators, including chronic disease prevalence, lifestyle choices, and disability rates, facilitating direct comparisons between counties.\
