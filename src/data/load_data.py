@@ -66,7 +66,7 @@ def load_process_CDC_PLACES_data(save_og_files):
     us_counties_geojson_dict = json.loads(us_counties_geojson)
 
     # Write the dictionary to a file in JSON format
-    file_path_geo_json = "data/interim/us_census_counties_geojson.json"
+    file_path_geo_json = "data/processed/us_census_counties_geojson.json"
     with open(file_path_geo_json, 'w') as f:
         json.dump(us_counties_geojson_dict, f)
     print(f"GeoJSON file saved to: {file_path_geo_json}")
