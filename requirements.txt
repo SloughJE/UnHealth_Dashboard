@@ -5,5 +5,5 @@ pyaml
 plotly
 dash
 pygam
-dash_bootstrap_components
+dash-bootstrap-components
 gunicorn
