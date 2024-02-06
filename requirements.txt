@@ -1,11 +1,7 @@
-jupyter
 numpy
 pandas
 matplotlib
 pyaml
-us
 plotly
-geopandas
 dash
-python-dotenv
 pygam
