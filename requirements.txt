@@ -2,10 +2,7 @@ jupyter
 numpy
 pandas
 matplotlib
-seaborn
-scikit-learn
 pyaml
-openpyxl
 us
 plotly
 geopandas
