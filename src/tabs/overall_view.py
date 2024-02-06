@@ -31,7 +31,7 @@ percentile_high_scatter = percentile_high
 
 # FILTER outliers based on IQR
 def filter_outliers(df):
-        
+    # not used
     Q1 = df['Per capita personal income'].quantile(0.01)
     Q3 = df['Per capita personal income'].quantile(0.99)
     IQR = Q3 - Q1
@@ -139,7 +139,7 @@ def create_updated_scatter_chart(df,selected_state,x_pred, y_pred, y_intervals, 
 
         # Add the GAM trend line
         trend_line = go.Scatter(x=x_pred['Per capita personal income'], y=y_pred, mode='lines', 
-                                name='GAM Trend Line (overall)', 
+                                name='GAM Model (all counties)', 
                                 line=dict(color='darkgrey', width=5),
                                 hovertemplate='Per capita personal income: %{x:,.0f}<br>UnHealth Score (predicted): %{y:.2f}<br>GAM Model Pseudo R²: ' + str(round(pseudo_r2_value, 2))
 )
