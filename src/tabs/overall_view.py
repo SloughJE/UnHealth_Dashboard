@@ -12,7 +12,7 @@ df_ranking = pd.read_pickle("data/processed/df_summary_final.pickle")
 num_counties = len(df_ranking)
 
 # GeoJSON file
-file_path_geo_json = "data/interim/us_census_counties_geojson.json"
+file_path_geo_json = "data/processed/us_census_counties_geojson.json"
 with open(file_path_geo_json) as f:
     counties = json.load(f)
 
