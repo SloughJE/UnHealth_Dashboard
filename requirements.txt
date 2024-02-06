@@ -5,3 +5,4 @@ pyaml
 plotly
 dash
 pygam
+gunicorn
