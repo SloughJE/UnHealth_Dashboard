@@ -52,7 +52,7 @@ def info_view_tab_layout():
             ], style={'white-space': 'pre-line'}),
             html.H5(f"Developed by {developed_by}", style={'fontSize': '18px'}),
             html.Div([
-                html.A("Dashboard GitHub Repo", href="https://github.com/SloughJE/usa_health", target="_blank", style={'fontSize': '18px'})  # Example link styling
+                html.A("Dashboard GitHub Repo", href="https://github.com/SloughJE/UnHealth_Dashboard", target="_blank", style={'fontSize': '18px'})  # Example link styling
             ], style={'marginTop': '10px'}),
         ], header_style=main_section_style, is_main=True),
         
