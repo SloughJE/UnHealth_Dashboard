@@ -126,11 +126,14 @@ body {
     background-color: var(--inactive-color) !important; /* Inactive tab background color */
     color: white !important; /* Text color for all states */
     border: none !important; /* Remove default borders */
-    padding: 10px 20px; /* Match the nav link padding */
+    padding: 5px 20px; /* Match the nav link padding */
     cursor: pointer; /* Cursor for clickable items */
-    font-size: 2em; /* Match the nav link font size */
+    font-size: 1.5vw; /* Match the nav link font size */
     transition: background-color 0.3s, color 0.3s, border-color 0.3s; /* Smooth transition for background, color, and border color change */
     border-bottom: 3px solid transparent; /* Transparent border for a uniform height */
+    display: flex;
+    align-items: center !important;
+    justify-content: center;
 }
 
 .custom-tab:hover, .custom-tab:focus {

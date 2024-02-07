@@ -32,17 +32,21 @@ server = app.server # Expose the Flask server for Gunicorn
 app.layout = dbc.Container([
     html.H1("The UnHealth™ Dashboard", style={
         'color': 'white',
-        'font-size':'5em',
+        'font-size':'3vw',
         'textAlign': 'center',
         'margin-top': '20px',
-    }),
+        #'position': 'sticky',
+        #'top': '0',
+        #'zIndex': '1000',
+        #'backgroundColor': '#333',
+        }),
 
     dcc.Tabs(id="tabs", value='tab-1', className='tab-container', children=[
         dcc.Tab(label='Summary View', value='tab-1', className='custom-tab', selected_className='custom-tab-active', children=overall_view_tab_layout()),
         dcc.Tab(label='County View', value='tab-2', className='custom-tab', selected_className='custom-tab-active', children=county_view_tab_layout()),
         dcc.Tab(label='Measure View', value='tab-3', className='custom-tab', selected_className='custom-tab-active',children=measure_view_tab_layout()),
         dcc.Tab(label='Info', value='tab-4', className='custom-tab', selected_className='custom-tab-active',children=info_view_tab_layout()),
-    ]),
+    ], style={'position': 'sticky', 'top': '0', 'zIndex': '1000'}),
         
         html.Div(id='tabs-content')
     ], fluid=True)
