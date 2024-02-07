@@ -1,8 +1,6 @@
 from pygam import LinearGAM, s
 import pandas as pd
 import numpy as np
-import pickle
-
 
 def filter_outliers(df):
     # not used
@@ -60,9 +58,8 @@ def fit_gam(df_path = "data/processed/df_summary_final.pickle"):
     df_pred.attrs['pseudo_r2_value'] = pseudo_r2_value
     print(df_pred.head())
     # Save combined DataFrame using pickle
-    with open("models/gam_model_output.pkl", "wb") as f:
-        pickle.dump(df_pred, f)
 
+    df_pred.to_pickle("models/gam_model_output.pkl")
     print("All output saved to models/gam_model_output.pkl.")
 
     return df_pred
