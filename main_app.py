@@ -48,7 +48,8 @@ app.layout = dbc.Container([
         dcc.Tab(label='Info', value='tab-4', className='custom-tab', selected_className='custom-tab-active',children=info_view_tab_layout()),
     ], style={'position': 'sticky', 'top': '0', 'zIndex': '1000'}),
         
-        html.Div(id='tabs-content')
+    
+    html.Div(id='tabs-content')
     ], fluid=True)
 
 
@@ -160,7 +161,7 @@ def update_charts(n_intervals, n_clicks, currency_type, selected_state, selected
     
     fig_adj_income, fig_income, fig_real_gdp, fig_gdp, fig_pop= create_county_econ_charts(df_bea_county)
     
-    dynamic_title = f"{selected_county}, {selected_state}"  # Format the title
+    dynamic_title = f"{selected_county}, {selected_state}"  
 
     if currency_type == 'adj':
         return dynamic_title, kpi_layout, county_map_figure, county_health_figure, fig_adj_income, fig_real_gdp, fig_pop
@@ -210,10 +211,6 @@ def update_table(selected_measure, selected_state):
     top_bottom_df = find_top_bottom_values(filtered_df, 'Data_Value', max_values)
     # Calculate colors for each row in the top_bottom_df based on overall min and max values
     top_bottom_df['Color'] = top_bottom_df['Data_Value'].apply(lambda x: value_to_color(x, percentile_low, percentile_high))
-    #top_bottom_df['Weighted_Score_Normalized'] = round(top_bottom_df.Weighted_Score_Normalized,2)
-
-    #top_bottom_df['Per capita personal income'] = round(top_bottom_df['Per capita personal income'],0)
-    #top_bottom_df.fillna("NA",inplace=True)
 
     # Convert DataFrame to dictionary for DataTable
     data = top_bottom_df.to_dict('records')

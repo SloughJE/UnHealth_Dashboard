@@ -17,14 +17,12 @@ with open(file_path_geo_json) as f:
 
 min_x = df_ranking['Per capita personal income'].min()
 
-# Calculate IQR for 'Per capita personal income'
 
 percentile_low = df_ranking['Weighted_Score_Normalized'].quantile(0.05)
 percentile_high = df_ranking['Weighted_Score_Normalized'].quantile(0.95)
 percentile_low_scatter = percentile_low
 percentile_high_scatter = percentile_high
 
-# fit the GAM model
 # load output from GAM
 gam_model_output = pd.read_pickle("models/gam_model_output.pkl")
 
@@ -54,8 +52,8 @@ def create_updated_scatter_chart(df,selected_state,x_pred, y_pred, y_intervals, 
     if len(filtered_df) == 0:
         # If no data, display a message
         fig_scatter.update_layout(
-            xaxis={'visible': False},  # Hide x axis
-            yaxis={'visible': False},  # Hide y axis
+            xaxis={'visible': False},  
+            yaxis={'visible': False}, 
             annotations=[
                 {
                     'text': 'No data available for this state or county',
@@ -65,9 +63,9 @@ def create_updated_scatter_chart(df,selected_state,x_pred, y_pred, y_intervals, 
                     'font': {'size': 20}
                 }
             ],
-            paper_bgcolor="black",  # Background color
-            plot_bgcolor="black",  # Plot area background color
-            font=dict(color="white"),  # Text color
+            paper_bgcolor="black",  
+            plot_bgcolor="black",  
+            font=dict(color="white"),  
         )
     else:
         scatter_plot = go.Scatter(
@@ -75,10 +73,10 @@ def create_updated_scatter_chart(df,selected_state,x_pred, y_pred, y_intervals, 
             y=filtered_df['Weighted_Score_Normalized'],
             mode='markers',
             marker=dict(
-                color=list(filtered_df['Weighted_Score_Normalized']),  # The variable for color scale
+                color=list(filtered_df['Weighted_Score_Normalized']),  
                 colorscale='RdYlGn_r',  # Red-Yellow-Green color scale
-                cmin=percentile_low_scatter,  # 5th percentile
-                cmax=percentile_high_scatter,  # 95th percentile
+                cmin=percentile_low_scatter,  
+                cmax=percentile_high_scatter,  
                 line=dict(
                     width=.2,
                     color='black'
@@ -103,7 +101,7 @@ def create_updated_scatter_chart(df,selected_state,x_pred, y_pred, y_intervals, 
             x=x_pred['Per capita personal income'],
             y=y_intervals[:, 0],
             mode='lines',
-            line=dict(color='lightgrey', width=1, dash='dot'),  # Lighter color, dashed line
+            line=dict(color='lightgrey', width=1, dash='dot'),  
             name='Lower Interval',
             showlegend=False
         )
@@ -113,9 +111,9 @@ def create_updated_scatter_chart(df,selected_state,x_pred, y_pred, y_intervals, 
             y=y_intervals[:, 1],
             fill='tonexty',
             mode='lines',
-            line=dict(color='lightgrey', width=1, dash='dot'),  # Lighter color, dashed line
+            line=dict(color='lightgrey', width=1, dash='dot'),  
             name='80% Prediction Interval',
-            fillcolor='rgba(150, 150, 150, 0.3)',  # Light fill color with reduced opacity
+            fillcolor='rgba(150, 150, 150, 0.3)',  
             showlegend=True
         )
 
@@ -124,17 +122,15 @@ def create_updated_scatter_chart(df,selected_state,x_pred, y_pred, y_intervals, 
         fig_scatter.add_trace(upper_interval)
         fig_scatter.add_trace(trend_line)
 
-        # Update the layout for a dark and minimalist theme
         fig_scatter.update_layout(
             height=600,
             title='Income per Capita and UnHealth Score',
-            title_x=0.5,  # Center the title
-            title_font=dict(size=24),  # Adjust the font size if needed
+            title_x=0.5,  
+            title_font=dict(size=24), 
             margin=dict(l=0, r=0, t=40, b=0),
             xaxis=dict(title='Income per Capita',range=[min_x,200000], showgrid=False, linecolor='darkgrey', linewidth=1),  # Hide grid lines and set axis line color
             yaxis=dict(range=[0, 101], showgrid=False, linecolor='darkgrey', linewidth=1),  # Hide grid lines and set axis line color
             yaxis_title='UnHealth Score',
-            #width=700, height=600,
             coloraxis_showscale=False,
             
             legend=dict(
@@ -157,7 +153,7 @@ def create_updated_scatter_chart(df,selected_state,x_pred, y_pred, y_intervals, 
     fig_scatter.update_yaxes(zeroline=True, zerolinewidth=0.5, zerolinecolor="gray")
 
     fig_scatter.update_layout(
-        autosize=False,  # Enable autosize
+        autosize=False,  
     )
     return fig_scatter
 
@@ -196,9 +192,9 @@ def create_updated_map(df, selected_state):
             thickness=15,
             len=0.5,
             tickformat="0",
-            x=0.05,  # Adjust this value to move the colorbar closer
-            xpad=0,  # Adjust padding if needed
-            tickfont=dict(color='white'),  # Set tick font color
+            x=0.05,  
+            xpad=0,  
+            tickfont=dict(color='white'), 
         ),
         zmin=percentile_low,
         zmax=percentile_high,
@@ -225,7 +221,7 @@ def create_updated_map(df, selected_state):
         paper_bgcolor='black',
         plot_bgcolor='black',
         title_text='UnHealth Score',
-        title_x=0.5,  # Center the title
+        title_x=0.5,  
         margin=dict(l=0, r=0, t=40, b=0),
         title_font=dict(size=24, color='white'),
         
@@ -237,33 +233,28 @@ def create_updated_map(df, selected_state):
         showarrow=False,
         xref='paper', yref='paper',
         x=0.95, y=0.15,
-        bgcolor="black",  # Set background color
-        bordercolor="gray",  # Set border color
+        bgcolor="black",  
+        bordercolor="gray",  
         borderpad=4,
-        font=dict(color='white')  # Set text color
+        font=dict(color='white')  
     )
 
     fig.update_layout(
-        autosize=False,  # Enable autosize
-        #margin=dict(l=0, r=0, t=0, b=0)  # Remove margin
+        autosize=False,  
     )
     return fig
 
 
-
-# Extract unique states and counties from your data
 available_states = df_ranking['StateDesc'].unique()
 available_states.sort()
 
 def find_top_bottom_values(df, column_name, max_values):
-    # Sort the DataFrame based on a column
+
     sorted_df = df.sort_values(by=column_name)
 
-    # Select the top and bottom values
     bottom_df = sorted_df.head(max_values)
     top_df = sorted_df.tail(max_values)
 
-    # Combine both top and bottom DataFrames
     combined_df = pd.concat([bottom_df, top_df])
 
     return combined_df

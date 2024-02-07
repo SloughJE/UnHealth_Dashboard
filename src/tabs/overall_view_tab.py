@@ -24,10 +24,10 @@ unhealth_score_tooltip = dbc.Tooltip(
     className='custom-tooltip',
     style={'white-space': 'pre-line'}
 )
-# Initialize the Dash app
+
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc.icons.BOOTSTRAP])
 
-# Define a function that returns the layout
+
 def overall_view_tab_layout():
     layout = dbc.Container([
 
@@ -40,9 +40,9 @@ def overall_view_tab_layout():
             multi=True,
             placeholder='Select a State or States',
             style={
-                #'color': 'white',  # Text color
-                'backgroundColor': '#303030',  # Dropdown background color
-                'borderRadius': '5px',  # Rounded corners
+
+                'backgroundColor': '#303030',  
+                'borderRadius': '5px', 
                 'fontSize': '20px',
                 'margin-bottom': '20px'
             }
@@ -50,9 +50,8 @@ def overall_view_tab_layout():
     ], style={
         'width': '30%',
         'margin': 'auto',
-        #'padding': '20px 0',
-        'border': 'none',  # Remove any border from the parent div
-        'backgroundColor': 'transparent',  # Ensure background is transparent
+        'border': 'none',  
+        'backgroundColor': 'transparent', 
     }),
 
     dbc.Row([
@@ -95,7 +94,7 @@ def overall_view_tab_layout():
                         "name": "Population", 
                         "id": "Population",
                         "type": "numeric", 
-                        "format": Format(group=Group.yes)  # Group by thousands
+                        "format": Format(group=Group.yes)  
                     },
                     {"name": "UnHealth Score", "id": "Weighted_Score_Normalized"},
                     {"name": "Overall Rank", "id": "Rank"},
@@ -106,7 +105,7 @@ def overall_view_tab_layout():
                 **table_style
             )
         ], style=common_div_style),
-            width=12  # Use the full width of the row
+            width=12  
         )
     ]),
 

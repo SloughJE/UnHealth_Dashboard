@@ -5,17 +5,16 @@ from src.tabs.info_view import *
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc.icons.BOOTSTRAP])
 
-# Define custom styles for the CardHeader elements
 main_section_style = {
-    'font-size': '2.5rem',  # Adjust the font size as needed
-    'background-color': '#C06070',  # Main section background color
-    'color': 'white',  # Text color for main section
+    'font-size': '2.5rem',  
+    'background-color': '#C06070',  
+    'color': 'white',  
 }
 
 sub_section_style = {
-    'font-size': '2rem',  # Adjust the font size as needed
-    'background-color': '#F08080',  # Sub-section background color
-    'color': 'white',  # Text color for sub-section
+    'font-size': '2rem', 
+    'background-color': '#F08080',  
+    'color': 'white',  
 }
 
 # Function to create a collapsible card
@@ -35,7 +34,6 @@ def create_collapsible_card(header_id, collapse_id, title, content, header_style
     
     return card
 
-# Define the app layout with responsive design
 def info_view_tab_layout():
     
     layout = dbc.Container([
@@ -45,14 +43,14 @@ def info_view_tab_layout():
             html.P([
                 "The aim of this Dashboard is to provide comprehensive insights into the health status of U.S. counties by integrating data from various government sources, including CDC health metrics, BEA economic data, BLS CPI data, and Census geolocation data. The focus is on the health measures provided by the CDC PLACES program. "
                 "A key feature of our dashboard is the ",
-                html.Strong("UnHealth Score™", style={'color': '#FF6347', 'fontSize': '16px'}),  # Styling can be adjusted
+                html.Strong("UnHealth Score™", style={'color': '#FF6347', 'fontSize': '16px'}),  
                 ", a summary statistic designed to offer an in-depth assessment of county-level health. This score aggregates data from multiple health indicators, including chronic disease prevalence, lifestyle choices, and disability rates, facilitating direct comparisons between counties.\
                     The UnHealth Score™ highlights regions in urgent need of health interventions and support, serving as a critical tool for public health analysis and decision-making. Economic data is not factored into the UnHealth score."
                 "\nThe UnHealth Dashboard consists of 3 main tabs, Summary View, County View and Measure View, described in the next section."
             ], style={'white-space': 'pre-line'}),
             html.H5(f"Developed by {developed_by}", style={'fontSize': '18px'}),
             html.Div([
-                html.A("Dashboard GitHub Repo", href="https://github.com/SloughJE/UnHealth_Dashboard", target="_blank", style={'fontSize': '18px'})  # Example link styling
+                html.A("Dashboard GitHub Repo", href="https://github.com/SloughJE/UnHealth_Dashboard", target="_blank", style={'fontSize': '18px'})  
             ], style={'marginTop': '10px'}),
         ], header_style=main_section_style, is_main=True),
         

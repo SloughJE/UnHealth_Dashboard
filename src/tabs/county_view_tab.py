@@ -36,7 +36,6 @@ default_county = 'Kusilvak'
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc.icons.BOOTSTRAP])
 
 # App layout
-# Define a function that returns the layout
 def county_view_tab_layout():
     layout = dbc.Container([
         dcc.Interval(
@@ -52,14 +51,14 @@ def county_view_tab_layout():
             dcc.Dropdown(
                 id='county-view-state-dropdown',
                 options=[{'label': state, 'value': state} for state in sorted(df_ranking_cv['StateDesc'].unique())],
-                value=default_state,  # Set default value
+                value=default_state,  
                 placeholder="Select a State",
                 style={'marginBottom': '10px', 'fontSize': '1.2em', 'width': '400px', 'margin': '10px auto', 'textAlign': 'left',
                                        'backgroundColor': '#303030'}
             ),
             dcc.Dropdown(
                 id='county-view-county-dropdown',
-                value=default_county,  # Set default value
+                value=default_county,  
                 placeholder="Select a County",
                 style={'marginBottom': '10px', 'fontSize': '1.2em', 'width': '400px', 'margin': '0 auto', 'textAlign': 'left',
                        'backgroundColor': '#303030'}
@@ -70,12 +69,12 @@ def county_view_tab_layout():
                     id='show-data-button', 
                     className='custom-button'
                 )
-            ], style={'display': 'flex', 'justifyContent': 'center'})  # Center-align the button
+            ], style={'display': 'flex', 'justifyContent': 'center'})  
         ], width=12)
         ], style={
-            'textAlign': 'center',  # This centers the container's content but won't affect dropdown text alignment.
+            'textAlign': 'center',  
             'margin': 'auto',
-            'width': '50%',  # Adjust the width as per design requirements
+            'width': '50%',  
             'border': 'none',
             'backgroundColor': 'transparent',
         }),
@@ -85,14 +84,14 @@ def county_view_tab_layout():
     dbc.Row([
         dbc.Col(html.Div(id='kpi-display', style={**common_div_style,'height': '95%'}), width=6),
         dbc.Col(html.Div(dcc.Graph(id='county-map'), style={**common_div_style, 'height': '95%'}), width=6)
-    ], align="stretch"),  # Setting align to "stretch" for equal height columns
+    ], align="stretch"),  
     dbc.Row([
         dbc.Col(
             html.Div(
                 dcc.Graph(id='county-health-chart', style={'height': '800px'}),
                 style=common_div_style
             ),
-            width=12  # Use the full width of the row
+            width=12  
         )
     ]),
     dbc.Row(
@@ -104,10 +103,10 @@ def county_view_tab_layout():
                     {'label': 'Adjusted Dollars (CPI)', 'value': 'adj'},
                     {'label': 'Current Dollars', 'value': 'current'}
                 ],
-                value='adj',  # Default value
+                value='adj',  
                 className='radio-button-style',
                 inputStyle={"margin-right": "5px"},
-                labelStyle={"display": "inline-block", "margin-right": "20px"},  # Make labels inline
+                labelStyle={"display": "inline-block", "margin-right": "20px"},  
                 style={'text-align': 'center'}
             ),
             html.P("Select the basis for dollar values displayed in the charts below.", className='radio-button-instruction')
@@ -130,7 +129,7 @@ def county_view_tab_layout():
                 dcc.Graph(id='econ-pop'), 
                 style=common_div_style
             ),
-            width=12  # Use the full width of the row
+            width=12  
         )
     ]),
     ], fluid=True)
