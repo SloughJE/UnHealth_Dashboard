@@ -1,6 +1,4 @@
 import sys 
-import os
-import yaml
 import argparse
 #from dotenv import load_dotenv
 
@@ -119,9 +117,6 @@ if __name__ == "__main__":
     if len(sys.argv) == 1:
         print("No arguments, please add arguments")
     else:
-        with open("params.yaml") as f:
-            params = yaml.safe_load(f)
-
   
         if args.get_CDC_PLACES_data:
             get_CDC_PLACES_data(
