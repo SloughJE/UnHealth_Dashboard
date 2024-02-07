@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 import json
-import pickle
 
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
@@ -27,13 +26,12 @@ percentile_high_scatter = percentile_high
 
 # fit the GAM model
 # load output from GAM
-with open("models/gam_model_output.pkl", "rb") as f:
-    combined_data = pickle.load(f)
+gam_model_output = pd.read_pickle("models/gam_model_output.pkl")
 
-x_pred = combined_data[['Per capita personal income']]
-y_pred = combined_data['y_pred']
-y_intervals = combined_data[['lower_interval', 'upper_interval']].to_numpy()
-pseudo_r2_value = combined_data.attrs['pseudo_r2_value']
+x_pred = gam_model_output[['Per capita personal income']]
+y_pred = gam_model_output['y_pred']
+y_intervals = gam_model_output[['lower_interval', 'upper_interval']].to_numpy()
+pseudo_r2_value = gam_model_output.attrs['pseudo_r2_value']
 
 
 def create_updated_scatter_chart(df,selected_state,x_pred, y_pred, y_intervals, pseudo_r2_value):
