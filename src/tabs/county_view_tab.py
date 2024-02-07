@@ -6,7 +6,12 @@ from src.tabs.county_view import df_ranking_cv
 from src.tabs.helper_data import common_div_style, unhealth_score_explanation
 
 
-info_icon = html.I(className="bi bi-info-circle", id="unhealth-score-county-tooltip-target", style={'cursor': 'pointer', 'font-size': '22px', 'marginLeft': '10px'})
+info_icon = html.I(className="bi bi-info-circle", id="unhealth-score-county-tooltip-target", 
+                   style={
+                       'cursor': 'pointer', 
+                        'font-size': '22px', 
+                        'marginLeft': '10px',
+                        })
 county_unhealth_score_with_icon = html.H2(
     ["UnHealth Score™ and Economic Data by County", info_icon],
     style={
@@ -20,7 +25,8 @@ county_unhealth_score_tooltip = dbc.Tooltip(
     unhealth_score_explanation,
     target="unhealth-score-county-tooltip-target",
     placement="right",
-    className='custom-tooltip'
+    className='custom-tooltip',    
+    style={'white-space': 'pre-line'}
 )
 
 default_state = 'Alaska'  

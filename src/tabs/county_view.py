@@ -59,7 +59,8 @@ def create_kpi_layout(df_ranking_cv, fips_county, df_bea_county, fips_county_bea
         health_score_explanation,
         target="health-score-tooltip-target",
         placement="right",
-        className='custom-tooltip'
+        className='custom-tooltip',
+        style={'white-space': 'pre-line'}
     )
     kpi_layout = html.Div([
         #html.H2(f"{county_name}, {state_name}", style={'color': 'white','text-align': 'center'}),

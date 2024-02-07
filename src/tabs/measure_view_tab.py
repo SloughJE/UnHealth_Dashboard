@@ -21,7 +21,8 @@ health_tooltip = dbc.Tooltip(
     CDC_PLACES_help,
     target="cdc-places-tooltip-target",
     placement="right",
-    className='custom-tooltip'
+    className='custom-tooltip',
+    style={'white-space': 'pre-line'}
 )
 
 # Initialize the Dash app

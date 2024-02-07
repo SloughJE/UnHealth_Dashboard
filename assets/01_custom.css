@@ -115,8 +115,9 @@ body {
 }
 
 .custom-tooltip .tooltip-inner {
-    font-size: 18px; 
-    max-width: 450px;
+    font-size: 16px; 
+    max-width: 550px;
+    text-align: left;
 }
 
 

@@ -1,16 +1,14 @@
-
-unhealth_score_explanation = """
-The UnHealth Score™ provides a comprehensive overview of a county's health by combining data on various health indicators, such as the prevalence of chronic diseases, lifestyle factors, and disabilities. A higher UnHealth Score corresponds to a greater prevalence of unfavorable health indicators. Each indicator is assigned an impact score, reflecting its significance on public health. High-impact indicators include stroke, diabetes, and cancer, among others, while lower-impact indicators cover aspects like sleep duration and health screenings.
-
-
-The process involves normalizing data across all indicators to create a score out of 100, where a higher score signals more significant health challenges within the county. This normalized score allows for direct comparison across counties, offering insights into areas needing most health-related interventions and support.
+unhealth_score_explanation = """The UnHealth Score:
+• Combines multiple health indicators from CDC PLACES data into 1 metric
+• Range from 0 to 100, higher is more UnHealthy
+• Includes chronic diseases, lifestyle factors, prevention, and disabilities
+• Each indicator is weighted; indicators like stroke, diabetes, and cancer have high impact; others like sleep duration, lower impact
 """
 
-CDC_PLACES_help = """
-CDC's PLACES is a public health initiative that provides detailed local health data across the US. It offers insights into chronic diseases, health outcomes, and behaviors at the community level, including counties, cities, and ZIP codes. The project supports informed public health decisions by highlighting health disparities and guiding resource allocation to improve community health and reduce inequalities.
-The data for CDC's PLACES comes from several sources, including the Behavioral Risk Factor Surveillance System (BRFSS), which is a nationwide health-related telephone survey. The project uses advanced statistical methods to extrapolate and estimate health-related measures for smaller geographic areas, such as census tracts and ZIP Code Tabulation Areas (ZCTAs), from this larger dataset. These methods allow PLACES to provide detailed local health data even for areas not directly surveyed, ensuring comprehensive coverage across the United States.
-The data mainly comes from 2019-2022. When there are the same measures for multiple years, we show the most recent.
-"""
+CDC_PLACES_help = """CDC's PLACES is a public health initiative providing local health data across the US, focusing on chronic diseases, health outcomes, and behaviors at community levels (counties, cities, ZIP codes).
+Data is shown as percentages of population.
+e.g. for the Measure 'Sleeping < 7 hours (>=18)', in the county of Aroostook, Maine a value of 34.6% indicates that 34.6% of adults 18 or over sleep less than 7 hours per night, according to a CDC survey."""
+
 
 
 common_div_style = {

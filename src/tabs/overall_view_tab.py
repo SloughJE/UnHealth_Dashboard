@@ -7,7 +7,7 @@ from src.tabs.overall_view import available_states
 from src.tabs.helper_data import unhealth_score_explanation, common_div_style, table_style,style_cell_conditional, style_header_conditional
 
 
-info_icon = html.I(className="bi bi-info-circle", id="unhealth-score-tooltip-target", style={'cursor': 'pointer', 'font-size': '22px', 'marginLeft': '10px'})
+info_icon = html.I(className="bi bi-info-circle", id="unhealth-score-tooltip-target", style={'cursor': 'pointer','textAlign':'left', 'font-size': '22px', 'marginLeft': '10px'})
 unhealth_score_with_icon = html.H2(
     ["UnHealth Score™ and Economic Data Summary", info_icon],
     style={
@@ -21,7 +21,8 @@ unhealth_score_tooltip = dbc.Tooltip(
     unhealth_score_explanation,
     target="unhealth-score-tooltip-target",
     placement="right",
-    className='custom-tooltip'
+    className='custom-tooltip',
+    style={'white-space': 'pre-line'}
 )
 # Initialize the Dash app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc.icons.BOOTSTRAP])
