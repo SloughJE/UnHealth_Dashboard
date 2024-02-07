@@ -4,6 +4,5 @@ matplotlib
 pyaml
 plotly
 dash
-pygam
 dash-bootstrap-components
 gunicorn
