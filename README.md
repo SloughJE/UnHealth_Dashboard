@@ -1,6 +1,6 @@
 # Dashboard Information
 
-**Developed by**: JS Data Science Services LLC
+**Developed by**: [JS Data Science Services LLC](https://sloughje.github.io/)
 
 ## Dashboard Overview
 
