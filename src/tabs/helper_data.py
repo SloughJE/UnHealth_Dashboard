@@ -3,6 +3,7 @@ unhealth_score_explanation = """The UnHealth Score:
 • Range from 0 to 100, higher is more UnHealthy
 • Includes chronic diseases, lifestyle factors, prevention, and disabilities
 • Each indicator is weighted; indicators like stroke, diabetes, and cancer have high impact; others like sleep duration, lower impact
+• Economic data is not factored into the UnHealth score
 """
 
 CDC_PLACES_help = """CDC's PLACES is a public health initiative providing local health data across the US, focusing on chronic diseases, health outcomes, and behaviors at community levels (counties, cities, ZIP codes).
