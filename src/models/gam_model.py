@@ -20,20 +20,22 @@ def filter_outliers(df):
     
     return df
 
-def fit_gam(df):
+
+def fit_gam(df_path = "data/processed/df_summary_final.pickle"):
+    df = pd.read_pickle(df_path)
+    
     # Fit a GAM model
     gam = LinearGAM(s(0, n_splines=20, lam=2, constraints='monotonic_dec'))
     gam.fit(df[['Per capita personal income']], df['Weighted_Score_Normalized'])
-    # Get the summary of the GAM model
-    #gam_summary = gam.summary()
-    # Extract the R-squared (R2) value from the summary
+    
+    print(gam.summary())
     pseudo_r2_value = gam.statistics_['pseudo_r2']['explained_deviance']
-    #print(gam.summary())
-    #print(pseudo_r2_value)
-    # Generate predictions and intervals as before
-    x_pred = pd.DataFrame({'Per capita personal income': np.linspace(df['Per capita personal income'].min(), df['Per capita personal income'].max(), 500)})
-    y_pred = gam.predict(x_pred)
-    y_intervals = gam.prediction_intervals(x_pred, width=0.8)
+    print(pseudo_r2_value)
+    
+    df_pred = pd.DataFrame({'Per capita personal income': np.linspace(df['Per capita personal income'].min(), df['Per capita personal income'].max(), 500)})
+    y_pred = gam.predict(df_pred)
+
+    y_intervals = gam.prediction_intervals(df_pred, width=0.8)
     y_intervals[:, 0] = np.maximum(y_intervals[:, 0], 0)  # Set lower bounds to 0 if they are below 0
     
     # Plot the residuals
@@ -47,19 +49,21 @@ def fit_gam(df):
     #plt.grid(True)
     # Save the plot
     #plt.savefig('gam_residuals.png')
-# Assuming x_pred is a pandas DataFrame and the rest are NumPy arrays or scalars
-    with open("models/x_pred.pkl", "wb") as f:
-        pickle.dump(x_pred, f)
+    # Assuming x_pred is a pandas DataFrame and the rest are NumPy arrays or scalars
 
-    with open("models/y_pred.pkl", "wb") as f:
-        pickle.dump(y_pred, f)
-
-    with open("models/y_intervals.pkl", "wb") as f:
-        pickle.dump(y_intervals, f)
-
-    with open("models/pseudo_r2_value.pkl", "wb") as f:
-        pickle.dump(pseudo_r2_value, f)
-
-    print("All output saved to models/ using pickle.")
+    # Combining y_pred and y_intervals with x_pred DataFrame
+    df_pred['y_pred'] = y_pred
+    df_pred['lower_interval'] = y_intervals[:, 0]
+    df_pred['upper_interval'] = y_intervals[:, 1]
     
-    return x_pred, y_pred, y_intervals, pseudo_r2_value
+    # Add pseudo R² as an attribute to the DataFrame (optional)
+    df_pred.attrs['pseudo_r2_value'] = pseudo_r2_value
+    print(df_pred.head())
+    # Save combined DataFrame using pickle
+    with open("models/gam_model_output.pkl", "wb") as f:
+        pickle.dump(df_pred, f)
+
+    print("All output saved to models/gam_model_output.pkl.")
+
+    return df_pred
+

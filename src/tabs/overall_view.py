@@ -27,17 +27,13 @@ percentile_high_scatter = percentile_high
 
 # fit the GAM model
 # load output from GAM
-with open("models/x_pred.pkl", "rb") as f:
-    x_pred = pickle.load(f)
+with open("models/gam_model_output.pkl", "rb") as f:
+    combined_data = pickle.load(f)
 
-with open("models/y_pred.pkl", "rb") as f:
-    y_pred = pickle.load(f)
-
-with open("models/y_intervals.pkl", "rb") as f:
-    y_intervals = pickle.load(f)
-
-with open("models/pseudo_r2_value.pkl", "rb") as f:
-    pseudo_r2_value = pickle.load(f)
+x_pred = combined_data[['Per capita personal income']]
+y_pred = combined_data['y_pred']
+y_intervals = combined_data[['lower_interval', 'upper_interval']].to_numpy()
+pseudo_r2_value = combined_data.attrs['pseudo_r2_value']
 
 
 def create_updated_scatter_chart(df,selected_state,x_pred, y_pred, y_intervals, pseudo_r2_value):

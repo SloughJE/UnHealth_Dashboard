@@ -11,6 +11,8 @@ from src.data.merge_data import merge_gdp_ranking_data
 from src.data.process_CDC_data import process_cdc_data
 from src.data.process_bea_data import process_bea_data
 from src.data.create_final_datasets import create_final_summary_df, create_final_measures_df
+from src.models.gam_model import fit_gam
+
 
 load_dotenv()
 # Load environment variables from .env file
@@ -98,6 +100,14 @@ if __name__ == "__main__":
         help="create final measures df from full measures df",
         action="store_true"
     )
+
+    parser.add_argument(
+        "--fit_gam",
+        help="fit GAM to final dataset",
+        action="store_true"
+    )
+
+
     args = parser.parse_args()
 
     if len(sys.argv) == 1:
@@ -189,4 +199,7 @@ if __name__ == "__main__":
                 df_measures_path="data/processed/CDC_PLACES_county_measures.pickle",
                 fileout_path="data/processed/df_measures_final.pickle"
                 )
-            
+        if args.fit_gam:
+            fit_gam(
+                df_path = "data/processed/df_summary_final.pickle"
+            )
