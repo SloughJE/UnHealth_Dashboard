@@ -2,9 +2,9 @@ import sys
 import os
 import yaml
 import argparse
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 
-from src.data.load_data import (load_process_CDC_PLACES_data, process_gdp_data, get_spending_data, 
+from src.data.load_data import (get_CDC_PLACES_data, initial_processing_CDC_PLACES_data, process_gdp_data, get_spending_data, 
                                 get_bea_income_data, get_bea_gdp_data, get_regional_bls_cpi_data, get_usa_bls_cpi_data,
                                 get_state_census_geo_file)
 from src.data.merge_data import merge_gdp_ranking_data
@@ -14,10 +14,10 @@ from src.data.create_final_datasets import create_final_summary_df, create_final
 from src.models.gam_model import fit_gam
 
 
-load_dotenv()
+#load_dotenv()
 # Load environment variables from .env file
-bea_api_key = os.getenv("bea_api_key")
-bls_api_key = os.getenv("bls_api_key")
+#bea_api_key = os.getenv("bea_api_key")
+#bls_api_key = os.getenv("bls_api_key")
 
 
 if __name__ == "__main__":
@@ -25,10 +25,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--get_CDC_LOCALS_data",
+        "--get_CDC_PLACES_data",
         help="load and process raw data from CDC",
         action="store_true"
     )
+    parser.add_argument(
+        "--initial_processing_CDC_PLACES_data",
+        help="fix Florida and geo merge",
+        action="store_true"
+    )
+
     parser.add_argument(
         "--process_cdc_data",
         help="create a subjective ranking of counties",
@@ -117,8 +123,17 @@ if __name__ == "__main__":
             params = yaml.safe_load(f)
 
   
-        if args.get_CDC_LOCALS_data:
-            load_process_CDC_PLACES_data(save_og_files=True)
+        if args.get_CDC_PLACES_data:
+            get_CDC_PLACES_data(
+                link_2022_csv = "https://data.cdc.gov/api/views/duw2-7jbt/rows.csv?accessType=DOWNLOAD",
+                link_2023_csv = "https://data.cdc.gov/api/views/swc5-untb/rows.csv?accessType=DOWNLOAD"
+            )
+
+        if args.initial_processing_CDC_PLACES_data:
+            initial_processing_CDC_PLACES_data(
+                filepath_PLACES="data/raw/df_CDC_PLACES_raw.pickle",
+                us_counties_geojson_url = 'https://www2.census.gov/geo/tiger/GENZ2021/shp/cb_2021_us_county_20m.zip'
+            )
 
         if args.process_cdc_data:
             process_cdc_data(CDC_filepath="data/interim/CDC_PLACES_GEOID.pickle")
