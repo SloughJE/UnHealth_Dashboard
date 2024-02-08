@@ -13,7 +13,7 @@ from src.tabs.overall_view import (create_updated_map, create_updated_scatter_ch
 
 from src.tabs.county_view import (
                                 create_county_econ_charts, create_county_health_charts, create_county_map, 
-                                check_fips_county_data, create_kpi_layout,
+                                create_kpi_layout,
                                 df_all_counties, df_ranking_cv, df_bea, counties, 
                                 )
 from src.tabs.measure_view import (create_updated_map_measures,find_top_bottom_values, value_to_color,
@@ -149,9 +149,9 @@ def update_charts(n_intervals, n_clicks, currency_type, selected_state, selected
     # Ensure selected_state and selected_county have values
     selected_state = selected_state or default_state
     selected_county = selected_county or default_county
-    
-    fips_county = df_ranking_cv[(df_ranking_cv.StateDesc == selected_state) & (df_ranking_cv.LocationName == selected_county)].GEOID.iloc[0]
-    fips_county_bea = check_fips_county_data(df_bea,fips_county,selected_state, selected_county)
+    fips_county, fips_county_bea = df_ranking_cv.loc[(df_ranking_cv.StateDesc == selected_state) & \
+                                                     (df_ranking_cv.LocationName == selected_county), ['GEOID', 'matched_GEOID']].iloc[0]
+
     # fips_usa = 00000
     df_bea_county = df_bea[(df_bea.GeoFips=="00000") | (df_bea.GeoFips==fips_county_bea)]
     county_map_figure = create_county_map(selected_state, selected_county, df_ranking_cv, counties)

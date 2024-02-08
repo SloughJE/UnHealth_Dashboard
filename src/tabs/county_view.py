@@ -63,11 +63,9 @@ def create_kpi_layout(df_ranking_cv, fips_county, df_bea_county, fips_county_bea
         style={'white-space': 'pre-line'}
     )
     kpi_layout = html.Div([
-        #html.H2(f"{county_name}, {state_name}", style={'color': 'white','text-align': 'center'}),
         html.Div([
             health_score_with_icon,
             html.P(f"{health_metric:.2f} (out of 100)", style={'color': 'white', 'font-size': '1.2em'}),
-            #html.Small("Note: Higher scores indicate worse health outcomes.", style={'color': 'yellow', 'font-size': '0.8em'}),  # Explanatory note
             html.H3("Rank", style={'color': 'white'}),
             html.P(f"{rank} of {len(df_ranking_cv)}", style={'color': 'white', 'font-size': '1.2em'}),
         ], className='kpi-box-health-rank-box'),
@@ -85,41 +83,6 @@ def create_kpi_layout(df_ranking_cv, fips_county, df_bea_county, fips_county_bea
     ], className='kpi-container')
 
     return html.Div([kpi_layout, health_score_tooltip]) 
-
-def check_fips_county_data(df_bea, fips_county, selected_state, selected_county):
-    
-    # Check if FIPS code exists in the dataset
-    if len(df_bea[df_bea.GeoFips == fips_county]) == 0:
-        # map full state name to abbr
-        state_mapping = {
-            "Alabama": "AL", "Alaska": "AK", "Arizona": "AZ", "Arkansas": "AR", "California": "CA",
-            "Colorado": "CO", "Connecticut": "CT", "Delaware": "DE", "Florida": "FL", "Georgia": "GA",
-            "Hawaii": "HI", "Idaho": "ID", "Illinois": "IL", "Indiana": "IN", "Iowa": "IA",
-            "Kansas": "KS", "Kentucky": "KY", "Louisiana": "LA", "Maine": "ME", "Maryland": "MD",
-            "Massachusetts": "MA", "Michigan": "MI", "Minnesota": "MN", "Mississippi": "MS", "Missouri": "MO",
-            "Montana": "MT", "Nebraska": "NE", "Nevada": "NV", "New Hampshire": "NH", "New Jersey": "NJ",
-            "New Mexico": "NM", "New York": "NY", "North Carolina": "NC", "North Dakota": "ND", "Ohio": "OH",
-            "Oklahoma": "OK", "Oregon": "OR", "Pennsylvania": "PA", "Rhode Island": "RI", "South Carolina": "SC",
-            "South Dakota": "SD", "Tennessee": "TN", "Texas": "TX", "Utah": "UT", "Vermont": "VT",
-            "Virginia": "VA", "Washington": "WA", "West Virginia": "WV", "Wisconsin": "WI", "Wyoming": "WY"
-        }
-        selected_state_abbr = state_mapping[selected_state]
-        # Filter by selected state
-        df_bea_find_fips = df_bea[df_bea.State == selected_state_abbr]
-        
-        # Try finding the county using the full selected_county name
-        matching_rows = df_bea_find_fips[df_bea_find_fips.GeoName.str.contains(selected_county, case=False, na=False)]
-        
-        # If not found, split the selected_county and try with the first part
-        if matching_rows.empty and ' ' in selected_county:
-            first_part_of_county = selected_county.split(' ')[0]
-            matching_rows = df_bea_find_fips[df_bea_find_fips.GeoName.str.contains(first_part_of_county, case=False, na=False)]
-        
-        # Update fips_county if a match is found
-        if not matching_rows.empty:
-            fips_county = matching_rows.GeoFips.iloc[0]
-
-    return fips_county
 
 
 def create_county_econ_charts(df_bea_county):

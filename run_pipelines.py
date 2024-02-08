@@ -2,7 +2,7 @@ import sys
 import argparse
 #from dotenv import load_dotenv
 
-from src.data.load_data import (get_CDC_PLACES_data, initial_processing_CDC_PLACES_data, get_spending_data, 
+from src.data.load_data import (get_cdc_places_data, initial_processing_cdc_places_data, get_spending_data, 
                                 get_bea_income_data, get_bea_gdp_data, get_regional_bls_cpi_data, get_usa_bls_cpi_data,
                                 get_state_census_geo_file)
 from src.data.merge_data import merge_gdp_ranking_data

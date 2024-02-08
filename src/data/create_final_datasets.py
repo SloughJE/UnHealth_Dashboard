@@ -85,7 +85,7 @@ def create_final_summary_df(
 
     # Merge the DataFrames
     df_summary = pd.merge(df_ranking, df_bea_pivot, left_on='matched_GEOID', right_index=True, how='left')
-    df_summary = df_summary[['GEOID', 'LocationName', 'StateDesc', 'StateAbbr', 'Weighted_Score_Normalized', 
+    df_summary = df_summary[['GEOID','matched_GEOID', 'LocationName', 'StateDesc', 'StateAbbr', 'Weighted_Score_Normalized', 
                              'Rank', 'Population', 'Per capita personal income', 'Note']]
 
     # Save the final summary DataFrame
