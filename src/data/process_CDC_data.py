@@ -1,8 +1,17 @@
 import pandas as pd
-import numpy as np
 
-def process_cdc_data(CDC_filepath):
-    
+
+def process_cdc_data(CDC_filepath: str) -> None:
+    """
+    Processes CDC data to normalize and weight scores by measure, then ranks counties based on these scores.
+
+    Args:
+        CDC_filepath (str): File path to the CDC data pickle file.
+
+    Returns:
+        None: Saves two pickle files, one with county measures and another with county rankings.
+    """
+        
     impact_scores = {
         "Stroke among adults aged >=18 years": 5,
         "Chronic obstructive pulmonary disease among adults aged >=18 years": 5,
@@ -100,7 +109,7 @@ def process_cdc_data(CDC_filepath):
         df[column_name + '_Normalized'] = ((df[column_name] - min_val) / (max_val - min_val)) * 100
         return df
     
-    # Assuming impact_scores is defined
+
     df = df.groupby('Measure').apply(lambda x: normalize_within_group(x, 'Data_Value')).reset_index(drop=True)
 
     df['Weighted_Score'] = df.apply(lambda row: row['Data_Value_Normalized'] * impact_scores.get(row['Measure'], 0), axis=1)
