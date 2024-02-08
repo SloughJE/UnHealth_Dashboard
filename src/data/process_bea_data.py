@@ -1,12 +1,26 @@
 import pandas as pd
 import numpy as np
 
+
 def process_bea_data(
-                    bea_income_file="data/interim/df_BEA_income_1969_2023.pickle",
-                    regional_cpi_file="data/interim/df_bls_regional_cpi_1969_2023.pickle", 
-                    usa_cpi_file = "data/interim/df_bls_usa_cpi_1969_2023.pickle",
-                    gdp_file = "data/interim/df_BEA_gdp_2017_2023.pickle"
-                    ):
+    bea_income_file: str = "data/interim/df_BEA_income_1969_2023.pickle",
+    regional_cpi_file: str = "data/interim/df_bls_regional_cpi_1969_2023.pickle", 
+    usa_cpi_file: str = "data/interim/df_bls_usa_cpi_1969_2023.pickle",
+    gdp_file: str = "data/interim/df_BEA_gdp_2017_2023.pickle"
+) -> None:
+    """
+    Processes BEA income, regional CPI, USA CPI, and GDP data, performing various calculations
+    and adjustments to create a comprehensive dataset of economic indicators by state and region.
+
+    Args:
+        bea_income_file (str): File path to the BEA income data pickle file.
+        regional_cpi_file (str): File path to the regional CPI data pickle file.
+        usa_cpi_file (str): File path to the USA CPI data pickle file.
+        gdp_file (str): File path to the GDP data pickle file.
+
+    Returns:
+        None: Does not return any value but saves the processed data to a pickle file.
+    """
 
     regions_dict = {
         "West": ["WA", "OR", "ID", "MT", "WY", "CA", "NV", "UT", "CO", "AZ", "NM", "AK", "HI"],
@@ -14,7 +28,6 @@ def process_bea_data(
         "South": ["TX", "OK", "AR", "LA", "MS", "AL", "GA", "FL", "SC", "NC", "VA", "WV", "KY", "TN", "DC", "MD", "DE"],
         "NorthEast": ["PA", "NJ", "NY", "CT", "RI", "MA", "VT", "NH", "ME"]
     }
-
 
     df_bea_income = pd.read_pickle(bea_income_file)
 
