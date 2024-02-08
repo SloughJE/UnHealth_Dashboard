@@ -4,6 +4,7 @@ import pandas as pd
 import geopandas as gpd
 from shapely import wkt
 
+from src.data.measures_dicts import measure_mapping
 
 def get_cdc_places_data(
     link_2022_csv: str = "https://data.cdc.gov/api/views/duw2-7jbt/rows.csv?accessType=DOWNLOAD",
@@ -120,19 +121,7 @@ def initial_processing_cdc_places_data(
     cols_wanted = ['Year', 'StateAbbr', 'StateDesc', 'LocationName', 'Category', 'Measure', 'Data_Value', 'Data_Value_Unit', 'GEOID', 'Geolocation']
     merged_gdf = merged_gdf[cols_wanted]
     
-    
     # transform 'positive outcome' measures and values to inverse
-    measure_mapping = {
-        "Visits to doctor for routine checkup within the past year among adults aged >=18 years": "No doctor visit for checkup in past year among adults aged >=18 years",
-        "Visits to dentist or dental clinic among adults aged >=18 years": "No dental visit in past year among adults aged >=18 years",
-        "Fecal occult blood test, sigmoidoscopy, or colonoscopy among adults aged 50-75 years": "No colorectal cancer screening among adults aged 50-75 years",
-        "Cervical cancer screening among adult women aged 21-65 years": "No cervical cancer screening among adult women aged 21-65 years",
-        "Taking medicine for high blood pressure control among adults aged >=18 years with high blood pressure": "Not taking medicine for high blood pressure among adults aged >=18 years",
-        "Cholesterol screening among adults aged >=18 years": "No cholesterol screening among adults aged >=18 years",
-        "Mammography use among women aged 50-74 years": "No mammography use among women aged 50-74 years",
-        "Older adult men aged >=65 years who are up to date on a core set of clinical preventive services: Flu shot past year, PPV shot ever, Colorectal cancer screening": "Older adult men aged >=65 years not up to date on clinical preventive services",
-        "Older adult women aged >=65 years who are up to date on a core set of clinical preventive services: Flu shot past year, PPV shot ever, Colorectal cancer screening, and Mammogram past 2 years": "Older adult women aged >=65 years not up to date on clinical preventive services"
-    }
 
     merged_gdf.rename(columns={'Measure': 'Original_Measure'}, inplace=True)
 
