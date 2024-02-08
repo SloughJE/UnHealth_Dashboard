@@ -13,8 +13,6 @@ def process_cdc_data(CDC_filepath: str) -> None:
     Returns:
         None: Saves two pickle files, one with county measures and another with county rankings.
     """
-        
-
 
     df = pd.read_pickle(CDC_filepath)
     df = df[df['LocationName'] != df['StateDesc']]  # Remove state data if any
