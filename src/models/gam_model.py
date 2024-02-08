@@ -1,6 +1,8 @@
 from pygam import LinearGAM, s
 import pandas as pd
 import numpy as np
+# import matplotlib.pyplot as plt
+
 
 def filter_outliers(df):
     # not used
@@ -19,7 +21,20 @@ def filter_outliers(df):
     return df
 
 
-def fit_gam(df_path = "data/processed/df_summary_final.pickle"):
+def fit_gam(df_path: str = "data/processed/df_summary_final.pickle") -> pd.DataFrame:
+    """
+    Fits a Generalized Additive Model (GAM) to the data specified by the dataframe path,
+    predicting normalized weighted scores from per capita personal income. Also, computes
+    prediction intervals and saves the model output.
+
+    Args:
+        df_path (str): Path to the pickle file containing the dataframe with necessary data.
+
+    Returns:
+        pd.DataFrame: A dataframe containing the original feature values, predictions, and prediction intervals,
+                      along with model statistics as an attribute.
+    """
+    
     df = pd.read_pickle(df_path)
     
     # Fit a GAM model
