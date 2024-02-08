@@ -127,12 +127,6 @@ if __name__ == "__main__":
         if args.process_cdc_data:
             process_cdc_data(CDC_filepath="data/interim/CDC_PLACES_GEOID.pickle")
 
-        if args.process_gdp:
-            process_gdp_data(
-                filepath_in="data/raw/BEA/county_gdp_fips_2020.csv",
-                filepath_out="data/interim/county_gdp_fips_2020.pickle"
-                )
-
         if args.get_spending:
             get_spending_data(2020)
 
