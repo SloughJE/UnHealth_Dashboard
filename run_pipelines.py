@@ -2,7 +2,7 @@ import sys
 import argparse
 #from dotenv import load_dotenv
 
-from src.data.load_data import (get_CDC_PLACES_data, initial_processing_CDC_PLACES_data, process_gdp_data, get_spending_data, 
+from src.data.load_data import (get_CDC_PLACES_data, initial_processing_CDC_PLACES_data, get_spending_data, 
                                 get_bea_income_data, get_bea_gdp_data, get_regional_bls_cpi_data, get_usa_bls_cpi_data,
                                 get_state_census_geo_file)
 from src.data.merge_data import merge_gdp_ranking_data
@@ -36,12 +36,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--process_cdc_data",
         help="create a subjective ranking of counties",
-        action="store_true"
-    )
-
-    parser.add_argument(
-        "--process_gdp",
-        help="make features",
         action="store_true"
     )
 
