@@ -10,7 +10,7 @@ from src.data.process_CDC_data import process_cdc_data
 from src.data.process_bea_data import process_bea_data
 from src.data.create_final_datasets import create_final_summary_df, create_final_measures_df
 from src.models.gam_model import fit_gam
-
+from src.data.patient_data import create_AI_patient_summary
 
 #load_dotenv()
 # Load environment variables from .env file
@@ -105,6 +105,12 @@ if __name__ == "__main__":
         action="store_true"
     )
 
+    parser.add_argument(
+        "--create_patient_summary",
+        help="create summary of patient history",
+        action="store_true"
+    )
+
 
     args = parser.parse_args()
 
@@ -113,13 +119,13 @@ if __name__ == "__main__":
     else:
   
         if args.get_CDC_PLACES_data:
-            get_CDC_PLACES_data(
+            get_cdc_places_data(
                 link_2022_csv = "https://data.cdc.gov/api/views/duw2-7jbt/rows.csv?accessType=DOWNLOAD",
                 link_2023_csv = "https://data.cdc.gov/api/views/swc5-untb/rows.csv?accessType=DOWNLOAD"
             )
 
         if args.initial_processing_CDC_PLACES_data:
-            initial_processing_CDC_PLACES_data(
+            initial_processing_cdc_places_data(
                 filepath_PLACES="data/raw/df_CDC_PLACES_raw.pickle",
                 us_counties_geojson_url = 'https://www2.census.gov/geo/tiger/GENZ2021/shp/cb_2021_us_county_20m.zip'
             )
@@ -201,3 +207,6 @@ if __name__ == "__main__":
             fit_gam(
                 df_path = "data/processed/df_summary_final.pickle"
             )
+
+        if args.create_patient_summary:
+            create_AI_patient_summary()
