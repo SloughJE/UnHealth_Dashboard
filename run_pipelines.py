@@ -1,6 +1,6 @@
 import sys 
 import argparse
-#from dotenv import load_dotenv
+from dotenv import load_dotenv
 
 from src.data.load_data import (get_cdc_places_data, initial_processing_cdc_places_data, get_spending_data, 
                                 get_bea_income_data, get_bea_gdp_data, get_regional_bls_cpi_data, get_usa_bls_cpi_data,
@@ -12,11 +12,11 @@ from src.data.create_final_datasets import create_final_summary_df, create_final
 from src.models.gam_model import fit_gam
 from src.data.patient_data import create_AI_patient_summary, save_patient_labs
 
-#load_dotenv()
+load_dotenv()
 # Load environment variables from .env file
-#bea_api_key = os.getenv("bea_api_key")
-#bls_api_key = os.getenv("bls_api_key")
-
+bea_api_key = os.getenv("bea_api_key")
+bls_api_key = os.getenv("bls_api_key")
+open_ai_key = os.getenv("OPENAI_API_KEY")
 
 if __name__ == "__main__":
 
@@ -215,7 +215,7 @@ if __name__ == "__main__":
             )
 
         if args.create_patient_summary:
-            create_AI_patient_summary()
+            create_AI_patient_summary(open_ai_key)
 
         if args.save_patient_labs:
             save_patient_labs(
