@@ -10,7 +10,7 @@ from src.data.process_CDC_data import process_cdc_data
 from src.data.process_bea_data import process_bea_data
 from src.data.create_final_datasets import create_final_summary_df, create_final_measures_df
 from src.models.gam_model import fit_gam
-from src.data.patient_data import create_AI_patient_summary
+from src.data.patient_data import create_AI_patient_summary, save_patient_labs
 
 #load_dotenv()
 # Load environment variables from .env file
@@ -108,6 +108,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--create_patient_summary",
         help="create summary of patient history",
+        action="store_true"
+    )
+
+    parser.add_argument(
+        "--save_patient_labs",
+        help="load observation, process and save labs",
         action="store_true"
     )
 
@@ -210,3 +216,9 @@ if __name__ == "__main__":
 
         if args.create_patient_summary:
             create_AI_patient_summary()
+
+        if args.save_patient_labs:
+            save_patient_labs(
+                synthea_pickle_dir="data/Synthea/pickle_optimized_output/",
+                output_dir="data/processed/patient_labs"
+                )
