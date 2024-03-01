@@ -1,5 +1,6 @@
 import sys 
 import argparse
+import os
 from dotenv import load_dotenv
 
 from src.data.load_data import (get_cdc_places_data, initial_processing_cdc_places_data, get_spending_data, 
