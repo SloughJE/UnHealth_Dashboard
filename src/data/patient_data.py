@@ -362,22 +362,51 @@ def save_patient_labs(
     #patient_row_counts_sorted_by_count_desc = patient_row_counts.sort_values(ascending=True)
     #print(patient_row_counts_sorted_by_count_desc.head(20))
 
+    #print(df_lab[df_lab.PATIENT=='1310eed2-dd47-7cd3-01d9-7a362182e402'].head())
+    print("number of unique labs BEFORE filtering:")
+    print(len(df_lab.DESCRIPTION.unique()))
+
+    # Define the list of important labs with their units
+    # we have too many labs to show so we take just the 'important' ones (obv this is subjective)
+    important_labs = [
+        "Hemoglobin A1c/Hemoglobin.total in Blood,%",
+        "Glucose [Mass/volume] in Blood,mg/dL",
+        "Creatinine [Mass/volume] in Blood,mg/dL",
+        "Urea nitrogen [Mass/volume] in Blood,mg/dL",
+        "Cholesterol [Mass/volume] in Serum or Plasma,mg/dL",
+        "Triglycerides,mg/dL",
+        "Low Density Lipoprotein Cholesterol,mg/dL",
+        "Hemoglobin [Mass/volume] in Blood,g/dL",
+        "Hematocrit [Volume Fraction] of Blood,%",
+        "Leukocytes [#/volume] in Blood by Automated count,10*3/uL",
+        "Glomerular filtration rate/1.73 sq M.predicted [Volume Rate/Area] in Serum or Plasma by Creatinine-based formula (MDRD),mL/min/{1.73_m2}",
+        "Potassium [Moles/volume] in Blood,mmol/L",
+        "Sodium [Moles/volume] in Blood,mmol/L",
+        "Alanine aminotransferase [Enzymatic activity/volume] in Serum or Plasma,U/L",
+        "Aspartate aminotransferase [Enzymatic activity/volume] in Serum or Plasma,U/L"
+    ]
+
+    df_lab['combined'] = df_lab['DESCRIPTION'] + ',' + df_lab['UNITS']
+    df_lab = df_lab[df_lab['combined'].isin(important_labs)]
+    df_lab = df_lab.drop(columns=['combined'])
+    print("number of unique labs AFTER filtering:")
+    #print(len(df_lab[df_lab.PATIENT=='1310eed2-dd47-7cd3-01d9-7a362182e402'].DESCRIPTION.unique()))
+    print(f"num unique labs ALL: {len(df_lab.DESCRIPTION.unique())}")
+
+    #print(df_vital_signs[df_vital_signs.PATIENT=='1ad0f32b-5c6c-e747-5fa8-65c6cb790359'].head())
+    print("number of unique vital signs:")
+    print(len(df_vital_signs[df_vital_signs.PATIENT=='1ad0f32b-5c6c-e747-5fa8-65c6cb790359'].DESCRIPTION.unique()))
+
+    # final dfs:
     print("labs:")
     print(df_lab.head(2))
     print("vital signs:")
     print(df_vital_signs.head(2))
     print("QOLS:")
     print(df_qols_scores.head(2))
-    print(f"patient data saved to {output_dir}")
-
-    print(df_lab[df_lab.PATIENT=='1310eed2-dd47-7cd3-01d9-7a362182e402'].head())
-    print("number of unique labs:")
-    print(len(df_lab[df_lab.PATIENT=='1310eed2-dd47-7cd3-01d9-7a362182e402'].DESCRIPTION.unique()))
-
-    print(df_vital_signs[df_vital_signs.PATIENT=='1ad0f32b-5c6c-e747-5fa8-65c6cb790359'].head())
-    print("number of unique vital signs:")
-    print(len(df_vital_signs[df_vital_signs.PATIENT=='1ad0f32b-5c6c-e747-5fa8-65c6cb790359'].DESCRIPTION.unique()))
 
     df_lab.to_pickle(f"{output_dir}/df_patient_labs.pkl")
     df_vital_signs.to_pickle(f"{output_dir}/df_vital_signs.pkl")
     df_qols_scores.to_pickle(f"{output_dir}/df_qols_scores.pkl")
+
+    print(f"patient data saved to {output_dir}")
