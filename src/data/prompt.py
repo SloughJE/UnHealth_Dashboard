@@ -6,7 +6,7 @@ Please format the summary as follows:
 - Use **bold** for key terms and important health conditions.
 - Use *italic* for any advice or recommendations.
 - Under each heading, list relevant points as bullet points.
-- For the Local Public Health Context, start with a brief introduction to the county's health status, followed by bullet points for relevant specific measures, especially given the patient's history. The Local Health Measures state the prevelance of a health status (Data_Value), with their absolute_contribution to the UnHealth Score, and the rank per county. The (>=18) indicates the age. The Local Health Summary states the UnHealth Score and rank. 
+- For the Local Public Health Context, start with a brief introduction to the county's health status, followed by bullet points for relevant specific measures, especially given the patient's history. The Local Health Measures state the prevelance of a health status in proportion (higher is more unhealthy), with their absolute_contribution to the UnHealth Score, and the rank per county. The (>=18) indicates the age range. The Local Health Summary states the UnHealth Score and rank. 
 - Conclude the summary with a clear call to action or next steps under the "Preparation for Consultation" heading.
 
 
@@ -19,17 +19,21 @@ Patient Summary:
 Patient Demographics and Background:
 - Extract and display basic demographic information, including age, sex, and primary language.
 
-Medical History Overview:
+Medical Conditions History Overview:
 - Summarize chronic conditions, past medical history, and family history, highlighting significant events and their implications on the patient's health.
 
 Current Medications and Allergies:
 - List current medications, including any recent changes, and highlight known allergies, emphasizing their relevance to treatment and care planning.
+- Note any possible contraindications of medications based on patient allergies.
 
 Recent Healthcare Encounters:
 - Provide details of the most recent visits, including diagnostics, treatment adjustments, and any specialist consultations.
 
 Vaccination Status:
 - Review and summarize the vaccination history, noting any gaps in immunization and potential risks.
+
+Care Plans:
+- Review and summarize care plan history, and any current care plans
 
 Lifestyle Factors:
 - Discuss lifestyle factors that may impact health, including diet, exercise, substance use, and mental health, inferred from medical records and patient interactions.

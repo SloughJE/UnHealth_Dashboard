@@ -123,53 +123,105 @@ def extract_patient_summary(data):
     else:
         conditions_summary = "No medical conditions data available.\n"
     
+    
     # Identify current medications (where STOP is NaN)
     current_medications = data['medications_patient'][data['medications_patient']['STOP'].isna()]
-    current_medications_list = "\n".join([f"- {row['DESCRIPTION']}" for index, row in current_medications.iterrows()])
-    current_medications_summary = f"Current Medications:\n{current_medications_list}\n"
+    if not current_medications.empty:
+        current_medications_list = "\n".join([
+            f"- {row['DESCRIPTION']} (Started: {datetime.strptime(row['START'], '%Y-%m-%dT%H:%M:%SZ').strftime('%B %d, %Y')}, Reason: {'Not specified' if pd.isna(row['REASONDESCRIPTION']) else row['REASONDESCRIPTION']})"
+            for index, row in current_medications.iterrows()
+        ])
+        current_medications_summary = f"Current Medications:\n{current_medications_list}\n"
+    else:
+        current_medications_summary = "Current Medications: None\n"
 
-    # Add a 'YEAR' column derived from the 'START' date for medications
-    data['medications_patient']['YEAR'] = data['medications_patient']['START'].str[:4]
+    # Historical Medications
+    if not data['medications_patient'].empty:
+        # Add a 'YEAR' column derived from the 'START' date for medications
+        data['medications_patient']['YEAR'] = data['medications_patient']['START'].str[:4]
 
-    # Group by 'DESCRIPTION' and 'YEAR' and count occurrences for historical medications
-    historical_medications = data['medications_patient'][data['medications_patient']['STOP'].notna()]
-    medications_grouped = historical_medications.groupby(['DESCRIPTION', 'YEAR']).size().reset_index(name='counts')
-    medications_grouped.sort_values(by=['DESCRIPTION', 'YEAR'], ascending=[True, False], inplace=True)
-    
-    historical_medications_summary = "Medication History by Type and Year:\n"
-    current_description = ""
-    for index, row in medications_grouped.iterrows():
-        if current_description != row['DESCRIPTION']:
-            current_description = row['DESCRIPTION']
-            historical_medications_summary += f"- {row['DESCRIPTION']}:\n"
-        historical_medications_summary += f"    - {row['YEAR']}: {row['counts']} times\n"
+        # Group by 'DESCRIPTION' and count occurrences for historical medications
+        historical_medications = data['medications_patient'][data['medications_patient']['STOP'].notna()]
+        medications_grouped = historical_medications.groupby(['DESCRIPTION']).agg(
+            year_min=pd.NamedAgg(column='YEAR', aggfunc='min'),
+            year_max=pd.NamedAgg(column='YEAR', aggfunc='max'),
+            count=pd.NamedAgg(column='YEAR', aggfunc='size')
+        ).reset_index()
 
-    # Combine the current and historical medications summaries
+        historical_medications_summary = "Medication History by Type and Year Range:\n"
+        for index, row in medications_grouped.iterrows():
+            year_range = f"{row['year_min']}-{row['year_max']}" if row['year_min'] != row['year_max'] else f"{row['year_min']}"
+            historical_medications_summary += f"- {row['DESCRIPTION']}: {row['count']} times ({year_range})\n"
+
+    else:
+        historical_medications_summary = "Historical Medications: None\n"
+
     medications_summary = f"{current_medications_summary}\n{historical_medications_summary}"
 
+
+    # Process allergies
+    # Process allergies
+    if not data['allergies_patient'].empty:
+        # Determine current vs. past allergies based on the presence of a STOP date
+        current_allergies = data['allergies_patient'][data['allergies_patient']['STOP'].isna()]
+        past_allergies = data['allergies_patient'][~data['allergies_patient']['STOP'].isna()]
+        
+        current_allergies_list = "\n".join([f"- {row['DESCRIPTION']}" for index, row in current_allergies.iterrows()])
+        past_allergies_list = "\n".join([f"- {row['DESCRIPTION']}" for index, row in past_allergies.iterrows()])
+        
+        allergies_summary = f"Current Allergies:\n{current_allergies_list if not current_allergies.empty else 'None'}\n" \
+                            f"Past Allergies:\n{past_allergies_list if not past_allergies.empty else 'None'}\n"
+    else:
+        allergies_summary = "Allergies Data: None\n"
+
+
+    # Process care plans
+    if not data['careplans_patient'].empty:
+        # Add 'YEAR' column derived from the 'START' date for care plans
+        data['careplans_patient']['YEAR'] = data['careplans_patient']['START'].str[:4]
+        
+        # Group by 'DESCRIPTION' and 'YEAR' and count occurrences for care plans
+        careplans_grouped = data['careplans_patient'].groupby(['DESCRIPTION', 'YEAR']).size().reset_index(name='counts')
+        careplans_grouped.sort_values(by=['DESCRIPTION', 'YEAR'], ascending=[True, True], inplace=True)
+        
+        careplans_summary = "Care Plan History by Type and Year:\n"
+        current_description = ""
+        for description, group in careplans_grouped.groupby('DESCRIPTION'):
+            years = group['YEAR'].unique()
+            year_range = f"{years.min()}-{years.max()}" if years.min() != years.max() else f"{years.min()}"
+            count = group['counts'].sum()
+            careplans_summary += f"- {description}: {count} times ({year_range})\n"
+    else:
+        careplans_summary = "Care Plan Data: None\n"
+
     # Format encounters
-    # Add a 'YEAR' column derived from the 'START' date
-    data['encounters_patient']['YEAR'] = data['encounters_patient']['START'].str[:4]
+    # Group by 'DESCRIPTION' to aggregate data
+    data['encounters_patient']['START'] = pd.to_datetime(data['encounters_patient']['START'])
 
-    # Group by 'DESCRIPTION' and 'YEAR' and count occurrences
-    encounters_grouped = data['encounters_patient'].groupby(['DESCRIPTION', 'YEAR']).size().reset_index(name='counts')
+    encounters_grouped = data['encounters_patient'].groupby('DESCRIPTION').agg(
+        first_encounter=pd.NamedAgg(column='START', aggfunc='min'),
+        last_encounter=pd.NamedAgg(column='START', aggfunc='max'),
+        total_encounters=pd.NamedAgg(column='DESCRIPTION', aggfunc='count')
+    ).reset_index()
 
-    # Sort encounters for readability (optional)
-    encounters_grouped.sort_values(by=['DESCRIPTION', 'YEAR'], ascending=[True, False], inplace=True)
-    
-    encounters_summary = "Healthcare Encounters by Type and Year:\n"
-    current_description = ""
+    # Convert first and last encounter dates to just the year for simplicity
+    encounters_grouped['first_encounter'] = encounters_grouped['first_encounter'].dt.year
+    encounters_grouped['last_encounter'] = encounters_grouped['last_encounter'].dt.year
+
+    # Sort for readability
+    encounters_grouped.sort_values(by=['DESCRIPTION', 'first_encounter'], ascending=[True, True], inplace=True)
+
+    # Generate summary
+    encounters_summary = "Healthcare Encounters by Type and Year Range:\n"
     for index, row in encounters_grouped.iterrows():
-        # Check if we are still listing the same encounter type
-        if current_description != row['DESCRIPTION']:
-            current_description = row['DESCRIPTION']
-            encounters_summary += f"- {row['DESCRIPTION']}:\n"
-        encounters_summary += f"    - {row['YEAR']}: {row['counts']} times\n"
+        year_range = f"{row['first_encounter']}-{row['last_encounter']}" if row['first_encounter'] != row['last_encounter'] else f"{row['first_encounter']}"
+        encounters_summary += f"- {row['DESCRIPTION']}: {row['total_encounters']} times ({year_range})\n"
 
     # Identify and add the latest encounter to the summary
     if not data['encounters_patient'].empty:
         latest_encounter = data['encounters_patient'].sort_values(by='START', ascending=False).iloc[0]
-        encounters_summary += f"Latest Encounter: {latest_encounter['DESCRIPTION']} on {latest_encounter['START']}\n"
+        latest_encounter_date = latest_encounter['START'].strftime('%B %d, %Y')
+        encounters_summary += f"Latest Encounter: {latest_encounter['DESCRIPTION']} on {latest_encounter_date}\n"
     else:
         encounters_summary += "No encounters recorded.\n"
 
@@ -191,18 +243,38 @@ def extract_patient_summary(data):
     # LABS get latest non-duplicated labs   
     if not data['df_lab_patient'].empty:
         # Convert 'DATE' to datetime to ensure sorting works on actual dates
-        data['df_lab_patient']['DATE'] = pd.to_datetime(data['df_lab_patient']['DATE'])
-        
-        # Sort by 'DESCRIPTION' and then 'DATE', so the latest comes first
-        sorted_labs = data['df_lab_patient'].sort_values(by=['DESCRIPTION', 'DATE'], ascending=[True, False])
-        
-        # Drop duplicates, keeping the first (latest) entry for each 'DESCRIPTION'
-        latest_labs = sorted_labs.drop_duplicates(subset='DESCRIPTION', keep='first')
-        
-        # Format lab results for the latest non-duplicated entries
-        lab_results_list = "\n".join([f"- {row['DESCRIPTION']}: {row['VALUE']} {row['UNITS']}" 
-                                      for index, row in latest_labs.iterrows()])
+        df_lab_patient = data['df_lab_patient']
+        df_lab_patient['DATE'] = pd.to_datetime(df_lab_patient['DATE'])
+        df_lab_patient['DESCRIPTION_LOWER'] = df_lab_patient['DESCRIPTION'].str.lower()
+    
+        # Function to assign a custom sort priority based on the description
+        def custom_priority(description):
+            if "in Serum or Plasma" in description:
+                return 1
+            elif "in Blood" in description:
+                return 2
+            else:
+                return 3
+
+        # Apply the custom priority to each row using the lowercase description
+        df_lab_patient['PRIORITY'] = df_lab_patient['DESCRIPTION_LOWER'].apply(custom_priority)
+
+        # Sort by the lowercase description, custom priority, and then by DATE to get the latest
+        sorted_labs = df_lab_patient.sort_values(by=['DESCRIPTION_LOWER', 'PRIORITY', 'DATE'], ascending=[True, True, False])
+
+        # Extract the base description without specifics to identify duplicates broadly
+        sorted_labs['BASE_DESCRIPTION'] = sorted_labs['DESCRIPTION_LOWER'].str.extract(r'([^\[]+)')[0].str.strip()
+
+        # Drop duplicates based on this broad lowercase description, keeping the most preferred and latest result
+        latest_labs = sorted_labs.drop_duplicates(subset=['BASE_DESCRIPTION'], keep='first')
+
+        # Format the results for the summary, using the original (case-sensitive) 'DESCRIPTION'
+        lab_results_list = "\n".join([
+            f"- {row['DESCRIPTION']}: {row['VALUE']} {row['UNITS']}"
+            for _, row in latest_labs.iterrows()
+        ])
         lab_results_summary = "Latest Lab Results:\n" + lab_results_list + "\n"
+        
     else:
         lab_results_summary = "No lab results available.\n"
    
@@ -219,8 +291,11 @@ def extract_patient_summary(data):
 
     public_health_context = health_measures_summary + health_summary
 
-    prompt = f"{patient_demographics}\n{conditions_summary}\n{medications_summary}\n{encounters_summary}\n{immunizations_summary}\n{lab_results_summary}\n{public_health_context}"
-
+    # Combine all summaries
+    prompt = (f"{patient_demographics}\n{conditions_summary}\n{medications_summary}\n"
+              f"{allergies_summary}\n{immunizations_summary}\n{lab_results_summary}\n"
+              f"{encounters_summary}\n{careplans_summary}\n{public_health_context}")
+    
     return prompt
 
 
@@ -302,7 +377,7 @@ def create_AI_patient_summary(open_ai_key):
             continue 
 
         patient_summary = extract_patient_summary(patient_data)
-        # print(patient_summary)
+        #print(patient_summary)
         send_patient_summary_to_openai_and_save(prompt_template, patient_summary, patient_id,open_ai_key)
 
 
@@ -365,33 +440,58 @@ def save_patient_labs(
     #print(df_lab[df_lab.PATIENT=='1310eed2-dd47-7cd3-01d9-7a362182e402'].head())
     print("number of unique labs BEFORE filtering:")
     print(len(df_lab.DESCRIPTION.unique()))
+    #print(df_lab.DESCRIPTION.unique())
 
     # Define the list of important labs with their units
     # we have too many labs to show so we take just the 'important' ones (obv this is subjective)
-    important_labs = [
-        "Hemoglobin A1c/Hemoglobin.total in Blood,%",
-        "Glucose [Mass/volume] in Blood,mg/dL",
-        "Creatinine [Mass/volume] in Blood,mg/dL",
-        "Urea nitrogen [Mass/volume] in Blood,mg/dL",
-        "Cholesterol [Mass/volume] in Serum or Plasma,mg/dL",
-        "Triglycerides,mg/dL",
-        "Low Density Lipoprotein Cholesterol,mg/dL",
-        "Hemoglobin [Mass/volume] in Blood,g/dL",
-        "Hematocrit [Volume Fraction] of Blood,%",
-        "Leukocytes [#/volume] in Blood by Automated count,10*3/uL",
-        "Glomerular filtration rate/1.73 sq M.predicted [Volume Rate/Area] in Serum or Plasma by Creatinine-based formula (MDRD),mL/min/{1.73_m2}",
-        "Potassium [Moles/volume] in Blood,mmol/L",
-        "Sodium [Moles/volume] in Blood,mmol/L",
-        "Alanine aminotransferase [Enzymatic activity/volume] in Serum or Plasma,U/L",
-        "Aspartate aminotransferase [Enzymatic activity/volume] in Serum or Plasma,U/L"
+    # Simplified list of important labs without specifying medium, all lowercase
+    important_labs_normalized = [
+        "hemoglobin a1c/hemoglobin.total",
+        "glucose",
+        "creatinine",
+        "urea nitrogen",
+        "cholesterol",
+        "triglycerides",
+        "low density lipoprotein cholesterol",
+        "hemoglobin",
+        "hematocrit",
+        "leukocytes",
+        "glomerular filtration rate/1.73 sq m.predicted",
+        "potassium",
+        "sodium",
+        "alanine aminotransferase",
+        "aspartate aminotransferase",
     ]
 
-    df_lab['combined'] = df_lab['DESCRIPTION'] + ',' + df_lab['UNITS']
-    df_lab = df_lab[df_lab['combined'].isin(important_labs)]
-    df_lab = df_lab.drop(columns=['combined'])
+    def normalize_lab_description(description):
+        # Remove specifics about the medium and convert to lowercase for uniformity
+        normalized = description.split('[')[0].strip().lower()
+        return normalized
+    # Normalize lab descriptions for generalization
+    df_lab['NORMALIZED_DESCRIPTION'] = df_lab['DESCRIPTION'].apply(normalize_lab_description)
+    df_lab = df_lab[df_lab['NORMALIZED_DESCRIPTION'].isin(important_labs_normalized)]
+
+    # Determine priority for "in Serum or Plasma" > "in Blood" > others
+    def determine_priority(description):
+        if "in serum or plasma" in description.lower():
+            return 1
+        elif "in blood" in description.lower():
+            return 2
+        else:
+            return 3
+
+    df_lab['PRIORITY'] = df_lab['DESCRIPTION'].apply(determine_priority)
+    
+    # Sort labs first by patient, then by normalized description, priority, and date to get the most relevant recent result
+    df_lab = df_lab.sort_values(by=['PATIENT', 'NORMALIZED_DESCRIPTION', 'PRIORITY', 'DATE'], ascending=[True, True, True, False])
+
+    # Drop duplicates to keep only the most relevant lab for each type per patient
+    df_lab = df_lab.drop_duplicates(subset=['PATIENT', 'NORMALIZED_DESCRIPTION'], keep='first')
+
     print("number of unique labs AFTER filtering:")
     #print(len(df_lab[df_lab.PATIENT=='1310eed2-dd47-7cd3-01d9-7a362182e402'].DESCRIPTION.unique()))
     print(f"num unique labs ALL: {len(df_lab.DESCRIPTION.unique())}")
+    print(df_lab.DESCRIPTION.unique())
 
     #print(df_vital_signs[df_vital_signs.PATIENT=='1ad0f32b-5c6c-e747-5fa8-65c6cb790359'].head())
     print("number of unique vital signs:")
