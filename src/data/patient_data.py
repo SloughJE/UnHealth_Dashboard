@@ -160,7 +160,6 @@ def extract_patient_summary(data):
 
 
     # Process allergies
-    # Process allergies
     if not data['allergies_patient'].empty:
         # Determine current vs. past allergies based on the presence of a STOP date
         current_allergies = data['allergies_patient'][data['allergies_patient']['STOP'].isna()]
@@ -482,11 +481,31 @@ def save_patient_labs(
 
     df_lab['PRIORITY'] = df_lab['DESCRIPTION'].apply(determine_priority)
     
-    # Sort labs first by patient, then by normalized description, priority, and date to get the most relevant recent result
     df_lab = df_lab.sort_values(by=['PATIENT', 'NORMALIZED_DESCRIPTION', 'PRIORITY', 'DATE'], ascending=[True, True, True, False])
 
-    # Drop duplicates to keep only the most relevant lab for each type per patient
-    df_lab = df_lab.drop_duplicates(subset=['PATIENT', 'NORMALIZED_DESCRIPTION'], keep='first')
+    # Group by 'PATIENT' and 'NORMALIZED_DESCRIPTION' to handle each lab type for each patient separately
+    grouped = df_lab.groupby(['PATIENT', 'NORMALIZED_DESCRIPTION'])
+
+    # Initialize an empty DataFrame to hold the filtered lab records
+    filtered_labs = pd.DataFrame()
+
+    for _, group in grouped:
+        # Within each group, further group by 'DESCRIPTION' to separate different mediums (e.g., 'in Serum' vs. 'in Blood')
+        subgroups = group.groupby('DESCRIPTION')
+        
+        # Initialize a variable to track the best priority seen so far (lower is better)
+        best_priority = group['PRIORITY'].min()
+        
+        for description, subgroup in subgroups:
+            # Check if the current subgroup's priority matches the best priority for this lab type
+            if subgroup['PRIORITY'].iloc[0] == best_priority:
+                # If so, append this subgroup to the filtered_labs DataFrame
+                filtered_labs = pd.concat([filtered_labs, subgroup])
+                break  # Stop looking at other subgroups for this lab type since we found the highest priority one
+
+    df_lab = filtered_labs.sort_values(by=['PATIENT', 'DATE'], ascending=[True, True])
+
+    df_lab.drop(columns=["NORMALIZED_DESCRIPTION","PRIORITY"], errors='ignore', inplace=True)
 
     print("number of unique labs AFTER filtering:")
     #print(len(df_lab[df_lab.PATIENT=='1310eed2-dd47-7cd3-01d9-7a362182e402'].DESCRIPTION.unique()))
@@ -496,6 +515,7 @@ def save_patient_labs(
     #print(df_vital_signs[df_vital_signs.PATIENT=='1ad0f32b-5c6c-e747-5fa8-65c6cb790359'].head())
     print("number of unique vital signs:")
     print(len(df_vital_signs[df_vital_signs.PATIENT=='1ad0f32b-5c6c-e747-5fa8-65c6cb790359'].DESCRIPTION.unique()))
+
 
     # final dfs:
     print("labs:")

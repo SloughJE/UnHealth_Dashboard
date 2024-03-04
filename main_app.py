@@ -7,6 +7,7 @@ from src.tabs.overall_view_tab import overall_view_tab_layout
 from src.tabs.county_view_tab import county_view_tab_layout,default_state, default_county
 from src.tabs.measure_view_tab import measure_view_tab_layout
 from src.tabs.info_view_tab import info_view_tab_layout
+from src.tabs.ai_patient_view_tab import ai_patient_view_tab_layout
 
 from src.tabs.overall_view import (create_updated_map, create_updated_scatter_chart, find_top_bottom_values, value_to_color,
                                    df_ranking, x_pred, y_pred, y_intervals, percentile_low, percentile_high, pseudo_r2_value)
@@ -45,7 +46,8 @@ app.layout = dbc.Container([
         dcc.Tab(label='Summary View', value='tab-1', className='custom-tab', selected_className='custom-tab-active', children=overall_view_tab_layout()),
         dcc.Tab(label='County View', value='tab-2', className='custom-tab', selected_className='custom-tab-active', children=county_view_tab_layout()),
         dcc.Tab(label='Measure View', value='tab-3', className='custom-tab', selected_className='custom-tab-active',children=measure_view_tab_layout()),
-        dcc.Tab(label='Info', value='tab-4', className='custom-tab', selected_className='custom-tab-active',children=info_view_tab_layout()),
+        dcc.Tab(label='AI Patient View', value='tab-4', className='custom-tab', selected_className='custom-tab-active',children=ai_patient_view_tab_layout()),
+        dcc.Tab(label='Info', value='tab-5', className='custom-tab', selected_className='custom-tab-active',children=info_view_tab_layout()),
     ], style={'position': 'sticky', 'top': '0', 'zIndex': '1000'}),
         
     
@@ -234,6 +236,53 @@ def update_measure_subtitle(selected_measure):
  
     return selected_measure
 
+
+##############################
+######AI PATIENT VIEW TAB#####
+##############################
+
+
+@app.callback(
+    Output("collapse-summary", "is_open"),
+    [Input("collapse-summary-header", "n_clicks")],
+    [State("collapse-summary", "is_open")],
+)
+def toggle_summary_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
+
+@app.callback(
+    Output("collapse-charts", "is_open"),
+    [Input("collapse-charts-header", "n_clicks")],
+    [State("collapse-charts", "is_open")]
+)
+def toggle_charts_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
+
+@app.callback(
+    Output("collapse-vital-signs", "is_open"),
+    [Input("collapse-vital-signs-header", "n_clicks")],
+    [State("collapse-vital-signs", "is_open")]
+)
+def toggle_vital_signs_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
+
+@app.callback(
+    Output("collapse-qols", "is_open"),
+    [Input("collapse-qols-header", "n_clicks")],
+    [State("collapse-qols", "is_open")]
+)
+def toggle_qols_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
+
+
 #######################
 ######INFO TAB#########
 #######################
@@ -269,8 +318,8 @@ for callback in toggle_callbacks:
         if n:
             return not is_open
         return is_open
-
+    
 
 # Run the app
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)
