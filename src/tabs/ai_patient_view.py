@@ -1,9 +1,9 @@
 import json
 import os
+
 import pandas as pd
-from dash import html
+from dash import html, dcc
 import dash_bootstrap_components as dbc
-from dash import dcc
 import plotly.graph_objects as go
 
 
@@ -28,7 +28,7 @@ for filename in os.listdir(directory_path):
 
 
 def load_patient_summary(patient_id):
-    filename = f"data/processed/AI_summaries/{patient_id}.json"  # Adjust the path as necessary
+    filename = f"data/processed/AI_summaries/{patient_id}.json"  
     with open(filename, 'r') as file:
         patient_summary = json.load(file)
     return patient_summary["summary"]
@@ -36,20 +36,46 @@ def load_patient_summary(patient_id):
 def create_collapsible_summary_card(title, content):
     header_id = "collapse-summary-header"
     collapse_id = "collapse-summary"
+    info_icon_id = "info-icon"
     
-    button = dbc.Button(
-        title, 
-        color="link", 
-        className="text-left", 
-        id=header_id, 
-        style={'font-size': '2.5rem', 'color': 'white'}
-    )
-    
+    # Define the button with the title and an information icon
+    button = html.Div([
+        dbc.Button(
+            title,
+            color="link",
+            className="text-left",
+            id=header_id,
+            style={'font-size': '2.5rem', 'color': 'white'},
+        ),
+        html.I(className="bi bi-info-circle", id=info_icon_id, style={'cursor': 'pointer', 'marginLeft': '0px', 'fontSize': '22px'}),
+    ], style={'display': 'flex', 'alignItems': 'center'})
+
+    # Content for the tooltip explaining the AI Patient Summary
+    ai_summary_explanation = """AI Patient Summary:
+    • AI generated using GPT-Turbo 3.5
+    • Utilizes patient health data and the UnHealth Score for local health insights
+    • Highlights critical health events, chronic conditions, and medications
+    • Intended to augment clinical judgment
+
+    Important:
+    • AI summaries complement but do not replace clinical judgment
+    • Always corroborate AI suggestions with professional guidelines
+    • AI-generated content is advisory and based on available data"""
+
+
     card = dbc.Card([
         dbc.CardHeader(button),
         dbc.Collapse(
             dbc.CardBody(dcc.Markdown(content, className="markdown-content")),
             id=collapse_id,
+        ),
+        # Tooltip associated with the info icon
+        dbc.Tooltip(
+            ai_summary_explanation,
+            target=info_icon_id,
+            placement="right",
+            className='custom-tooltip',
+            style={'white-space': 'pre-line'}
         )
     ], className="mb-4")
     
@@ -209,8 +235,8 @@ def create_vital_signs_charts(df_vital_signs_patient):
 
         fig_pain = go.Figure()
         fig_pain.add_trace(go.Scatter(
-            x=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'].str.contains('Pain severity')]['DATE'],
-            y=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'].str.contains('Pain severity')]['VALUE'],
+            x=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION']=='Pain severity - 0-10 verbal numeric rating [Score] - Reported']['DATE'],
+            y=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION']=='Pain severity - 0-10 verbal numeric rating [Score] - Reported']['VALUE'],
             mode='lines+markers',
             name='Pain Severity (0-10)',
             line=dict(color='#FFEB3B')  # Adjust as necessary
@@ -218,8 +244,8 @@ def create_vital_signs_charts(df_vital_signs_patient):
         fig_pain.update_layout(
             legend=dict(orientation='h', x=0.5, xanchor='center', y=-0.1, yanchor='top')
         )
-        fig_pain.update_layout(template="plotly_dark", title_text="Pain Severity", showlegend=True)
-        fig_pain.update_yaxes(title_text="Pain Severity (0-10)")
+        fig_pain.update_layout(template="plotly_dark", title_text="Pain Severity (reported)", showlegend=True)
+        fig_pain.update_yaxes(title_text="Pain Severity (0-10, reported)")
         
         return [fig_bmi, fig_bp, fig_hr_rr, fig_pain]
 

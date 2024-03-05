@@ -1,11 +1,9 @@
 import dash
-from dash import html, dcc
+from dash import html
 import dash_bootstrap_components as dbc
-import pandas as pd
 
-from src.tabs.county_view import df_ranking_cv
-from src.tabs.helper_data import common_div_style, unhealth_score_explanation
-from src.tabs.ai_patient_view import (create_updated_ai_patient_view, all_patient_ids)
+from src.tabs.helper_data import unhealth_score_explanation
+from src.tabs.ai_patient_view import create_updated_ai_patient_view
 
 default_patient_id = "e154f937-18c5-ebaa-1fd0-0b714169d18b"  
 
