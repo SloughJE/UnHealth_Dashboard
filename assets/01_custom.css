@@ -169,3 +169,32 @@ body {
 .markdown-content p, .markdown-content ul, .markdown-content ol {
     line-height: 1; /* Adjust line spacing as needed */
 }
+
+/* Custom button styling */
+.custom-button-ai {
+    display: flex; /* Use flexbox */
+    align-items: center; /* Center vertically */
+    font-size: 2rem;
+    padding: 15px 30px;
+    margin-top: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: var(--primary-color);
+    border: none;
+    color: white;
+    border-radius: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+}
+
+.custom-button-ai:hover,
+.custom-button-ai:focus {
+    background-color: var(--hover-color);
+    outline: none;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.custom-button-ai:hover {
+    transform: translateY(-1px);
+}
