@@ -1,23 +1,35 @@
-import os
 import json
+import os
+from datetime import datetime, timedelta
+from typing import Dict, Optional, Tuple, Any
 
 import pandas as pd
 from tqdm import tqdm
-from datetime import datetime, timedelta
-
-
 from openai import OpenAI
 
 from .prompt import prompt_template
 
 
 def load_files_for_summary(
-        synthea_pickle_dir="data/Synthea/pickle_optimized_output/",
-        df_unhealth_summary_path = "data/processed/df_summary_final.pickle", 
-        df_unhealth_measures_path="data/processed/df_measures_final.pickle"
-        ):
+    synthea_pickle_dir: str = "data/Synthea/pickle_optimized_output/",
+    df_unhealth_summary_path: str = "data/processed/df_summary_final.pickle",
+    df_unhealth_measures_path: str = "data/processed/df_measures_final.pickle"
+) -> Tuple[pd.DataFrame, ...]:
+    """
+    Loads necessary data files for generating patient summaries.
 
-    print("loading data for all patients")
+    Args:
+        synthea_pickle_dir (str): Directory containing Synthea generated pickle files.
+        df_unhealth_summary_path (str): Path to the pickle file containing unhealth summaries.
+        df_unhealth_measures_path (str): Path to the pickle file containing health measures data.
+
+    Returns:
+        Tuple[pd.DataFrame, ...]: A tuple containing pandas DataFrames for patient info,
+                                  allergies, careplans, conditions, encounters, immunizations,
+                                  medications, procedures, lab data, vital signs, QOLS scores,
+                                  summary, and measures.
+    """
+    # Load pickle files into pandas DataFrames
     allergies = pd.read_pickle(f"{synthea_pickle_dir}/allergies.pkl")
     careplans = pd.read_pickle(f"{synthea_pickle_dir}/careplans.pkl")
     conditions = pd.read_pickle(f"{synthea_pickle_dir}/conditions.pkl")
@@ -26,41 +38,46 @@ def load_files_for_summary(
     medications = pd.read_pickle(f"{synthea_pickle_dir}/medications.pkl")
     procedures = pd.read_pickle(f"{synthea_pickle_dir}/procedures.pkl")
     observations = pd.read_pickle(f"{synthea_pickle_dir}/observations.pkl")
-                                  
-    # need patient data for county info:
     df_patient_info = pd.read_pickle(f"{synthea_pickle_dir}/patients.pkl")
+    
+    # Process patient info DataFrame
     df_patient_info = df_patient_info[df_patient_info.DEATHDATE.isna()]
     df_patient_info = df_patient_info[df_patient_info.FIPS.notna()]
     df_patient_info['FIPS'] = df_patient_info['FIPS'].astype(int).astype(str).str.zfill(5)
 
+    # Load and process summary and measures DataFrames
     df_summary = pd.read_pickle(df_unhealth_summary_path)
     df_measures = pd.read_pickle(df_unhealth_measures_path)
-    
-    df_summary['Weighted_Score_Normalized'] = round(df_summary['Weighted_Score_Normalized'],2)
-
-    df_measures['absolute_contribution'] = round(df_measures['absolute_contribution'],2)
-    df_measures['Data_Value'] = round(df_measures['Data_Value'],2)
+    df_summary['Weighted_Score_Normalized'] = round(df_summary['Weighted_Score_Normalized'], 2)
+    df_measures['absolute_contribution'] = round(df_measures['absolute_contribution'], 2)
+    df_measures['Data_Value'] = round(df_measures['Data_Value'], 2)
     df_measures['County Measure Rank'] = df_measures['County Measure Rank'].astype(int)
-    
-    # create QOLS data, lab data, and vital-signs dfs
-    df_lab = observations[observations.CATEGORY=='laboratory'].copy()
-    df_lab = df_lab[df_lab.TYPE=='numeric']
-    #df_lab['VALUE'] = pd.to_numeric(df_lab.VALUE)
 
-    df_vital_signs = observations[observations.CATEGORY=='vital-signs'].copy()
-    #df_lab = df_lab[df_lab.TYPE=='numeric']
-    #df_vital_signs['VALUE'] = pd.to_numeric(df_vital_signs.VALUE)
-
+    # Extract specific categories from observations
+    df_lab = observations[observations.CATEGORY == 'laboratory'].copy()
+    df_lab = df_lab[df_lab.TYPE == 'numeric']
+    df_vital_signs = observations[observations.CATEGORY == 'vital-signs'].copy()
     df_qols_scores = observations[observations['DESCRIPTION'] == 'QOLS'].copy()
-    #df_lab = df_lab[df_lab.TYPE=='numeric']
-    #df_qols_scores['VALUE'] = pd.to_numeric(df_qols_scores.VALUE)
     
-    
-    return df_patient_info, allergies, careplans, conditions, encounters, immunizations, medications, procedures, df_lab, df_vital_signs, df_qols_scores, df_summary, df_measures
+    return (df_patient_info, allergies, careplans, conditions, encounters, immunizations,
+            medications, procedures, df_lab, df_vital_signs, df_qols_scores, df_summary, df_measures)
 
 
-def get_data_for_single_patient(patient_id, *dataframes):
-    # Unpack dataframes tuple into a dictionary
+def get_data_for_single_patient(patient_id: str, *dataframes: Tuple[pd.DataFrame]) -> Optional[Dict[str, pd.DataFrame]]:
+    """
+    Filters data for a single patient based on their ID from various dataframes.
+
+    Parameters:
+    - patient_id (str): The ID of the patient to filter data for.
+    - dataframes (Tuple[pd.DataFrame]): Tuple of dataframes to filter, expected to contain
+      df_patient_info, df_summary, df_measures, and potentially others.
+
+    Returns:
+    - Optional[Dict[str, pd.DataFrame]]: A dictionary with keys as dataframe names with '_patient' appended,
+      and values as the filtered dataframes for the given patient. Returns None if the patient's FIPS value
+      is not found in df_summary.
+    """
+    
     dataframes_dict = dict(dataframes)
     columns_to_drop = [
         'PATIENT', 'PAYER', 'ENCOUNTER',
@@ -82,12 +99,12 @@ def get_data_for_single_patient(patient_id, *dataframes):
 
     for df_name, df in dataframes_dict.items():
         if df_name in ['df_patient_info', 'df_measures', 'df_summary']:
-            # Use .copy(deep=True) to ensure you're working with a copy of the data
+
             filtered_df = df.loc[df['Id'] == patient_id].copy(deep=True) if df_name == 'df_patient_info' else df.loc[df['GEOID'] == fips_value].copy(deep=True) if fips_value is not None else pd.DataFrame()
         else:
             filtered_df = df.loc[df['PATIENT'] == patient_id].copy(deep=True) if 'PATIENT' in df.columns else df.loc[df['Id'] == patient_id].copy(deep=True)
             filtered_df.drop(columns=columns_to_drop, errors='ignore', inplace=True)
-        df_name += '_patient'  # Modify the name to indicate it's specific to a patient
+        df_name += '_patient'  
         dataframes_dict_new[df_name] = filtered_df
 
     return dataframes_dict_new
@@ -298,7 +315,19 @@ def extract_patient_summary(data):
     return prompt
 
 
-def save_summary_to_json(patient_id, summary_text, summaries_dir="data/processed/AI_summaries"):
+def save_summary_to_json(patient_id: str, summary_text: str, summaries_dir: str = "data/processed/AI_summaries") -> None:
+    """
+    Saves the patient summary as a JSON file in the specified directory.
+
+    Parameters:
+    - patient_id (str): The unique identifier for the patient.
+    - summary_text (str): The text of the patient's summary.
+    - summaries_dir (str, optional): The directory where the summary JSON files will be saved. Defaults to "data/processed/AI_summaries".
+
+    Returns:
+    - None
+    """
+    
     # Ensure the directory exists
     if not os.path.exists(summaries_dir):
         os.makedirs(summaries_dir)
@@ -307,7 +336,7 @@ def save_summary_to_json(patient_id, summary_text, summaries_dir="data/processed
     file_path = f"{summaries_dir}/{patient_id}.json"
     
     # Data to be saved
-    data = {
+    data: Dict[str, Any] = {
         "patient_id": patient_id,
         "summary": summary_text
     }
@@ -315,9 +344,22 @@ def save_summary_to_json(patient_id, summary_text, summaries_dir="data/processed
     # Write the JSON file
     with open(file_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
-    
 
-def send_patient_summary_to_openai_and_save(prompt_template, patient_summary, patient_id,open_ai_key):
+def send_patient_summary_to_openai_and_save(
+    prompt_template: str, patient_summary: str, patient_id: str, open_ai_key: str
+        ) -> None:
+    """
+    Sends a patient summary to OpenAI, receives a generated summary, and saves it to a JSON file.
+
+    Parameters:
+    - prompt_template (str): The template for the prompt to be sent to OpenAI.
+    - patient_summary (str): The patient summary that is used as input for the OpenAI model.
+    - patient_id (str): The unique identifier for the patient.
+    - open_ai_key (str): The API key for OpenAI.
+
+    Returns:
+    - None
+    """
 
     client = OpenAI(api_key=open_ai_key)
 
@@ -342,9 +384,19 @@ def send_patient_summary_to_openai_and_save(prompt_template, patient_summary, pa
         save_summary_to_json(patient_id, "No summary generated")
 
 
-def create_AI_patient_summary(open_ai_key):
+def create_AI_patient_summary(open_ai_key: str) -> None:
+    """
+    Generates AI-based patient summaries for a list of patients using OpenAI's API.
 
-    df_patient_info, allergies, careplans, conditions, encounters, immunizations, medications, procedures, df_lab, df_vital_signs, df_qols_scores, df_summary, df_measures = load_files_for_summary()    
+    Parameters:
+    - open_ai_key (str): The API key for accessing OpenAI's services.
+
+    Returns:
+    - None
+    """
+
+    df_patient_info, allergies, careplans, conditions, encounters, immunizations, medications, procedures, \
+        df_lab, df_vital_signs, df_qols_scores, df_summary, df_measures = load_files_for_summary()    
 
     # get list of all patients
     all_patients = list(df_patient_info.Id.unique())
@@ -380,10 +432,19 @@ def create_AI_patient_summary(open_ai_key):
         send_patient_summary_to_openai_and_save(prompt_template, patient_summary, patient_id,open_ai_key)
 
 
-def save_patient_labs(
-        synthea_pickle_dir="data/Synthea/pickle_optimized_output/",
-        output_dir="data/processed/patient_labs"
-        ):
+def save_patient_labs(synthea_pickle_dir: str = "data/Synthea/pickle_optimized_output/",
+                      output_dir: str = "data/processed/patient_labs") -> None:
+    """
+    Loads patient observation data, processes it to extract laboratory tests, vital signs, and QOLS scores,
+    and saves them into separate pickled dataframes.
+
+    Parameters:
+    - synthea_pickle_dir (str): Directory containing the Synthea generated pickle files.
+    - output_dir (str): Directory where the processed files will be saved.
+
+    Returns:
+    - None
+    """
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -418,17 +479,22 @@ def save_patient_labs(
     df_qols_scores.drop(columns=columns_to_drop, errors='ignore', inplace=True)
 
 
-    def keep_latest_labs(df_group):
-        return df_group.head(1000)
+    # filter vital signs
+    vitals_wanted = ['Body mass index (BMI) [Ratio]','Diastolic Blood Pressure',
+                     'Systolic Blood Pressure','Heart rate','Respiratory rate','Pain severity - 0-10 verbal numeric rating [Score] - Reported']
+    
+    df_vital_signs = df_vital_signs[df_vital_signs.DESCRIPTION.isin(vitals_wanted)]
+    #def keep_latest_labs(df_group):
+    #    return df_group.head(3000)
 
     df_lab = df_lab.sort_values(by=['PATIENT', 'DATE'], ascending=[True, False])
-    df_lab = df_lab.groupby('PATIENT').apply(keep_latest_labs).reset_index(drop=True)
+    #df_lab = df_lab.groupby('PATIENT').apply(keep_latest_labs).reset_index(drop=True)
 
     df_vital_signs = df_vital_signs.sort_values(by=['PATIENT', 'DATE'], ascending=[True, False])
-    df_vital_signs = df_vital_signs.groupby('PATIENT').apply(keep_latest_labs).reset_index(drop=True)
+    #df_vital_signs = df_vital_signs.groupby('PATIENT').apply(keep_latest_labs).reset_index(drop=True)
 
     df_qols_scores = df_qols_scores.sort_values(by=['PATIENT', 'DATE'], ascending=[True, False])
-    df_qols_scores = df_qols_scores.groupby('PATIENT').apply(keep_latest_labs).reset_index(drop=True)
+    #df_qols_scores = df_qols_scores.groupby('PATIENT').apply(keep_latest_labs).reset_index(drop=True)
 
     #patient_row_counts = df_vital_signs.groupby('PATIENT').size()
     #patient_row_counts_sorted_by_count_desc = patient_row_counts.sort_values(ascending=False)
@@ -489,6 +555,7 @@ def save_patient_labs(
     # Initialize an empty DataFrame to hold the filtered lab records
     filtered_labs = pd.DataFrame()
 
+    print("Extracting most important labs per patient. Please wait...")
     for _, group in grouped:
         # Within each group, further group by 'DESCRIPTION' to separate different mediums (e.g., 'in Serum' vs. 'in Blood')
         subgroups = group.groupby('DESCRIPTION')
@@ -510,7 +577,7 @@ def save_patient_labs(
     print("number of unique labs AFTER filtering:")
     #print(len(df_lab[df_lab.PATIENT=='1310eed2-dd47-7cd3-01d9-7a362182e402'].DESCRIPTION.unique()))
     print(f"num unique labs ALL: {len(df_lab.DESCRIPTION.unique())}")
-    print(df_lab.DESCRIPTION.unique())
+    #print(df_lab.DESCRIPTION.unique())
 
     #print(df_vital_signs[df_vital_signs.PATIENT=='1ad0f32b-5c6c-e747-5fa8-65c6cb790359'].head())
     print("number of unique vital signs:")
