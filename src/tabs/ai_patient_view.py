@@ -1,11 +1,30 @@
 import json
+import os
 import pandas as pd
-import dash
+from dash import html
 import dash_bootstrap_components as dbc
 from dash import dcc
 import plotly.graph_objects as go
 
 
+# load lab data
+patient_labs_dir="data/processed/patient_labs/"
+df_labs = pd.read_pickle(f"{patient_labs_dir}df_patient_labs.pkl")
+df_vital_signs = pd.read_pickle(f"{patient_labs_dir}df_vital_signs.pkl")
+df_qols_scores = pd.read_pickle(f"{patient_labs_dir}df_qols_scores.pkl")
+
+patient_ids_labs = df_labs['PATIENT'].unique().tolist()
+patient_ids_vital_signs = df_vital_signs['PATIENT'].unique().tolist()
+patient_ids_qols_scores = df_qols_scores['PATIENT'].unique().tolist()
+all_patient_ids = list(set(patient_ids_labs + patient_ids_vital_signs + patient_ids_qols_scores))
+
+
+directory_path = "data/processed/AI_summaries"
+all_patient_ids = []
+for filename in os.listdir(directory_path):
+    if filename.endswith(".json"):
+        patient_id = filename[:-5]  
+        all_patient_ids.append(patient_id)
 
 
 def load_patient_summary(patient_id):
@@ -283,3 +302,25 @@ def create_collapsible_qols_card(title, figure):
     ], className="mb-4")
     
     return card
+
+
+def create_updated_ai_patient_view(random_patient_id="e154f937-18c5-ebaa-1fd0-0b714169d18b"):
+    
+    patient_id_title = html.H2(f"Patient ID: {random_patient_id}", style={'color': 'white', 'textAlign': 'center', 'marginBottom': '20px'})
+
+    patient_summary = load_patient_summary(random_patient_id)
+    summary_card = create_collapsible_summary_card("AI Patient Summary", patient_summary)
+
+    df_labs_patient, df_vital_signs_patient, df_qols_scores_patient = get_labs_for_single_patient(df_labs, df_vital_signs, df_qols_scores, random_patient_id)
+    
+    vital_signs_figures = create_vital_signs_charts(df_vital_signs_patient)
+    vital_signs_card = create_collapsible_vital_signs_card("Vitals", vital_signs_figures)
+    
+    lab_figures = create_charts_patient(df_labs_patient)
+    labs_card = create_collapsible_charts_card("Lab Results", lab_figures)
+
+    qols_figure = create_qols_chart(df_qols_scores_patient)
+    qols_card = create_collapsible_qols_card("Quality of Life", qols_figure)
+
+    return patient_id_title, summary_card, vital_signs_card, labs_card, qols_card
+

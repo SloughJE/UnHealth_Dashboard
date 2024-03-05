@@ -1,4 +1,6 @@
 import dash
+import random
+
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
@@ -7,7 +9,7 @@ from src.tabs.overall_view_tab import overall_view_tab_layout
 from src.tabs.county_view_tab import county_view_tab_layout,default_state, default_county
 from src.tabs.measure_view_tab import measure_view_tab_layout
 from src.tabs.info_view_tab import info_view_tab_layout
-from src.tabs.ai_patient_view_tab import ai_patient_view_tab_layout
+from src.tabs.ai_patient_view_tab import ai_patient_view_tab_layout, all_patient_ids, create_updated_ai_patient_view
 
 from src.tabs.overall_view import (create_updated_map, create_updated_scatter_chart, find_top_bottom_values, value_to_color,
                                    df_ranking, x_pred, y_pred, y_intervals, percentile_low, percentile_high, pseudo_r2_value)
@@ -31,6 +33,7 @@ server = app.server # Expose the Flask server for Gunicorn
 
 # Main app layout
 app.layout = dbc.Container([
+
     html.H1("The UnHealth™ Dashboard", style={
         'color': 'white',
         'font-size':'3vw',
@@ -241,6 +244,26 @@ def update_measure_subtitle(selected_measure):
 ######AI PATIENT VIEW TAB#####
 ##############################
 
+# Callback to generate and display random patient data
+@app.callback(
+    Output('ai-patient-view-content', 'children'),
+    [Input('generate-random-patient-button', 'n_clicks')],
+    prevent_initial_call=False  # Prevent callback from running on app initialization
+)
+
+def display_random_patient_data(n_clicks):
+    
+    if n_clicks is None:
+        random_patient_id = "e154f937-18c5-ebaa-1fd0-0b714169d18b"
+        patient_id_title, summary_card, vital_signs_card, labs_card, qols_card = create_updated_ai_patient_view(random_patient_id)  
+
+        return summary_card, vital_signs_card, labs_card, qols_card
+    
+    random_patient_id = random.choice(all_patient_ids)  
+    patient_id_title, summary_card, vital_signs_card, labs_card, qols_card = create_updated_ai_patient_view(random_patient_id)  
+
+    return patient_id_title, summary_card, vital_signs_card, labs_card, qols_card
+
 
 @app.callback(
     Output("collapse-summary", "is_open"),
@@ -322,4 +345,4 @@ for callback in toggle_callbacks:
 
 # Run the app
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)
