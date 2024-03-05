@@ -47,33 +47,44 @@ def get_labs_for_single_patient(df_labs, df_vital_signs, df_qols_scores,patient_
 
 def create_charts_patient(df_labs_patient):
 
-    color_palette = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', 
-                    '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
-    unique_descriptions = df_labs_patient['DESCRIPTION'].unique()
-    color_index = 0
-    figures = []
+    if df_labs_patient.empty:
 
-    for description in unique_descriptions:
-        df_filtered = df_labs_patient[df_labs_patient['DESCRIPTION'] == description]
-        unique_units = df_filtered['UNITS'].unique()
-        
-        if len(unique_units) == 1:
-            units = unique_units[0]
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(
-                x=df_filtered['DATE'],
-                y=df_filtered['VALUE'],
-                mode='lines+markers',
-                name=f'{description} ({units})',
-                line=dict(color=color_palette[color_index])
-            ))
-            fig.update_layout(template="plotly_dark", title_text=description, showlegend=True,
-                              legend=dict(orientation='h', x=0.5, xanchor='center', y=-0.1, yanchor='top'))
-            fig.update_yaxes(title_text=f'{units}')
-            figures.append(fig)
-            color_index = (color_index + 1) % len(color_palette)
+        fig = go.Figure()
+        fig.add_annotation(text="No Lab Results Available",
+                           xref="paper", yref="paper",
+                           x=0.5, y=0.5, showarrow=False,
+                           font=dict(size=32, color="gray"))
+        fig.update_layout(template="plotly_dark", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+        return [fig]
+    
+    else:
+        color_palette = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', 
+                        '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+        unique_descriptions = df_labs_patient['DESCRIPTION'].unique()
+        color_index = 0
+        figures = []
 
-    return figures
+        for description in unique_descriptions:
+            df_filtered = df_labs_patient[df_labs_patient['DESCRIPTION'] == description]
+            unique_units = df_filtered['UNITS'].unique()
+            
+            if len(unique_units) == 1:
+                units = unique_units[0]
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(
+                    x=df_filtered['DATE'],
+                    y=df_filtered['VALUE'],
+                    mode='lines+markers',
+                    name=f'{description} ({units})',
+                    line=dict(color=color_palette[color_index])
+                ))
+                fig.update_layout(template="plotly_dark", title_text=description, showlegend=True,
+                                legend=dict(orientation='h', x=0.5, xanchor='center', y=-0.1, yanchor='top'))
+                fig.update_yaxes(title_text=f'{units}')
+                figures.append(fig)
+                color_index = (color_index + 1) % len(color_palette)
+
+        return figures
 
 def create_collapsible_charts_card(title, figures):
     header_id = "collapse-charts-header"
@@ -87,7 +98,6 @@ def create_collapsible_charts_card(title, figures):
         style={'font-size': '2.5rem', 'color': 'white'}
     )
     
-    # Prepare the figures for display within the card body
     graphs = [dcc.Graph(figure=fig) for fig in figures]
     
     card = dbc.Card([
@@ -101,87 +111,98 @@ def create_collapsible_charts_card(title, figures):
     return card
 
 def create_vital_signs_charts(df_vital_signs_patient):
-    fig_bmi = go.Figure()
-    fig_bmi.add_trace(go.Scatter(
-        x=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Body mass index (BMI) [Ratio]']['DATE'],
-        y=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Body mass index (BMI) [Ratio]']['VALUE'],
-        mode='lines+markers',
-        name='BMI (kg/m2)',
-        line=dict(color='#FFA726')  # Adjust the color as needed
-    ))
-    fig_bmi.update_layout(template="plotly_dark", title_text="BMI", showlegend=True,
-                            legend=dict(orientation='h', x=0.5, xanchor='center', y=-0.1, yanchor='top')
-    )
-    fig_bmi.update_yaxes(title_text="BMI (kg/m2)")
 
-    
+    if df_vital_signs_patient.empty:
+        fig = go.Figure()
+        fig.add_annotation(text="No Vitals Available",
+                           xref="paper", yref="paper",
+                           x=0.5, y=0.5, showarrow=False,
+                           font=dict(size=32, color="gray"))
+        fig.update_layout(template="plotly_dark", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+        return [fig]
 
-    fig_bp = go.Figure()
-    fig_bp.add_trace(go.Scatter(
-        x=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Diastolic Blood Pressure']['DATE'],
-        y=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Diastolic Blood Pressure']['VALUE'],
-        mode='lines+markers',
-        name='Diastolic BP (mmHg)',
-        line=dict(color='#673AB7')  # First BP trace color
-    ))
-    fig_bp.add_trace(go.Scatter(
-        x=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Systolic Blood Pressure']['DATE'],
-        y=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Systolic Blood Pressure']['VALUE'],
-        mode='lines+markers',
-        name='Systolic BP (mmHg)',
-        line=dict(color='#03A9F4')  # Second BP trace color
-    ))
-    fig_bp.update_layout(template="plotly_dark", title_text="Blood Pressure", showlegend=True,
-                            legend=dict(orientation='h', x=0.5, xanchor='center', y=-0.1, yanchor='top')
-    )
-    fig_bp.update_yaxes(title_text="BP (mmHg)")
-    # Find the min and max values across both Diastolic and Systolic BP readings
-    min_bp = min(df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Diastolic Blood Pressure']['VALUE'].min(), 
-                df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Systolic Blood Pressure']['VALUE'].min())
-    max_bp = max(df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Diastolic Blood Pressure']['VALUE'].max(), 
-                df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Systolic Blood Pressure']['VALUE'].max())
+    else:
+        fig_bmi = go.Figure()
+        fig_bmi.add_trace(go.Scatter(
+            x=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Body mass index (BMI) [Ratio]']['DATE'],
+            y=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Body mass index (BMI) [Ratio]']['VALUE'],
+            mode='lines+markers',
+            name='BMI (kg/m2)',
+            line=dict(color='#FFA726')  
+        ))
+        fig_bmi.update_layout(template="plotly_dark", title_text="BMI", showlegend=True,
+                                legend=dict(orientation='h', x=0.5, xanchor='center', y=-0.1, yanchor='top')
+        )
+        fig_bmi.update_yaxes(title_text="BMI (kg/m2)")
 
-    #fig_bp.update_yaxes(range=[min_bp - 10, max_bp + 10])  # Adjust buffer as needed
+        
 
-    
+        fig_bp = go.Figure()
+        fig_bp.add_trace(go.Scatter(
+            x=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Diastolic Blood Pressure']['DATE'],
+            y=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Diastolic Blood Pressure']['VALUE'],
+            mode='lines+markers',
+            name='Diastolic BP (mmHg)',
+            line=dict(color='#673AB7')  # First BP trace color
+        ))
+        fig_bp.add_trace(go.Scatter(
+            x=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Systolic Blood Pressure']['DATE'],
+            y=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Systolic Blood Pressure']['VALUE'],
+            mode='lines+markers',
+            name='Systolic BP (mmHg)',
+            line=dict(color='#03A9F4')  # Second BP trace color
+        ))
+        fig_bp.update_layout(template="plotly_dark", title_text="Blood Pressure", showlegend=True,
+                                legend=dict(orientation='h', x=0.5, xanchor='center', y=-0.1, yanchor='top')
+        )
+        fig_bp.update_yaxes(title_text="BP (mmHg)")
+        # Find the min and max values across both Diastolic and Systolic BP readings
+        min_bp = min(df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Diastolic Blood Pressure']['VALUE'].min(), 
+                    df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Systolic Blood Pressure']['VALUE'].min())
+        max_bp = max(df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Diastolic Blood Pressure']['VALUE'].max(), 
+                    df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Systolic Blood Pressure']['VALUE'].max())
 
-    fig_hr_rr = go.Figure()
-    fig_hr_rr.add_trace(go.Scatter(
-        x=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Heart rate']['DATE'],
-        y=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Heart rate']['VALUE'],
-        mode='lines+markers',
-        name='Heart Rate (/min)',
-        line=dict(color='#D32F2F')  # Heart rate color
-    ))
-    fig_hr_rr.add_trace(go.Scatter(
-        x=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Respiratory rate']['DATE'],
-        y=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Respiratory rate']['VALUE'],
-        mode='lines+markers',
-        name='Respiratory Rate (/min)',
-        line=dict(color='#4CAF50')  # Respiratory rate color
-    ))
+        #fig_bp.update_yaxes(range=[min_bp - 10, max_bp + 10])  # Adjust buffer as needed
 
-    fig_hr_rr.update_layout(template="plotly_dark", title_text="Heart and Respiratory Rate", showlegend=True,
-                            legend=dict(orientation='h', x=0.5, xanchor='center', y=-0.1, yanchor='top'))
+        
 
-    fig_hr_rr.update_yaxes(title_text="Rate (/min)")
-    
+        fig_hr_rr = go.Figure()
+        fig_hr_rr.add_trace(go.Scatter(
+            x=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Heart rate']['DATE'],
+            y=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Heart rate']['VALUE'],
+            mode='lines+markers',
+            name='Heart Rate (/min)',
+            line=dict(color='#D32F2F')  # Heart rate color
+        ))
+        fig_hr_rr.add_trace(go.Scatter(
+            x=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Respiratory rate']['DATE'],
+            y=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'] == 'Respiratory rate']['VALUE'],
+            mode='lines+markers',
+            name='Respiratory Rate (/min)',
+            line=dict(color='#4CAF50')  # Respiratory rate color
+        ))
 
-    fig_pain = go.Figure()
-    fig_pain.add_trace(go.Scatter(
-        x=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'].str.contains('Pain severity')]['DATE'],
-        y=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'].str.contains('Pain severity')]['VALUE'],
-        mode='lines+markers',
-        name='Pain Severity (0-10)',
-        line=dict(color='#FFEB3B')  # Adjust as necessary
-    ))
-    fig_pain.update_layout(
-        legend=dict(orientation='h', x=0.5, xanchor='center', y=-0.1, yanchor='top')
-    )
-    fig_pain.update_layout(template="plotly_dark", title_text="Pain Severity", showlegend=True)
-    fig_pain.update_yaxes(title_text="Pain Severity (0-10)")
-    
-    return [fig_bmi, fig_bp, fig_hr_rr, fig_pain]
+        fig_hr_rr.update_layout(template="plotly_dark", title_text="Heart and Respiratory Rate", showlegend=True,
+                                legend=dict(orientation='h', x=0.5, xanchor='center', y=-0.1, yanchor='top'))
+
+        fig_hr_rr.update_yaxes(title_text="Rate (/min)")
+        
+
+        fig_pain = go.Figure()
+        fig_pain.add_trace(go.Scatter(
+            x=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'].str.contains('Pain severity')]['DATE'],
+            y=df_vital_signs_patient[df_vital_signs_patient['DESCRIPTION'].str.contains('Pain severity')]['VALUE'],
+            mode='lines+markers',
+            name='Pain Severity (0-10)',
+            line=dict(color='#FFEB3B')  # Adjust as necessary
+        ))
+        fig_pain.update_layout(
+            legend=dict(orientation='h', x=0.5, xanchor='center', y=-0.1, yanchor='top')
+        )
+        fig_pain.update_layout(template="plotly_dark", title_text="Pain Severity", showlegend=True)
+        fig_pain.update_yaxes(title_text="Pain Severity (0-10)")
+        
+        return [fig_bmi, fig_bp, fig_hr_rr, fig_pain]
 
 def create_collapsible_vital_signs_card(title, figures):
     header_id = "collapse-vital-signs-header"
@@ -209,24 +230,35 @@ def create_collapsible_vital_signs_card(title, figures):
 
 # QOLS
 def create_qols_chart(df_qols_scores_patient):
-    fig = go.Figure()
 
-    fig.add_trace(go.Scatter(
-        x=df_qols_scores_patient['DATE'],
-        y=df_qols_scores_patient['VALUE'],
-        mode='lines+markers',
-        name='QOLS Score'
-    ))
+    if df_qols_scores_patient.empty:
+        fig = go.Figure()
+        fig.add_annotation(text="No Quality of Life Data Available",
+                           xref="paper", yref="paper",
+                           x=0.5, y=0.5, showarrow=False,
+                           font=dict(size=32, color="gray"))
+        fig.update_layout(template="plotly_dark", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+        return fig
 
-    fig.update_layout(
-        title='QOLS Scores',
-        xaxis_title='Date',
-        yaxis_title='QOLS Score',
-        template="plotly_dark"
-    )
-    fig.update_yaxes(range=[0, 1])  
+    else:
+        fig = go.Figure()
 
-    return fig
+        fig.add_trace(go.Scatter(
+            x=df_qols_scores_patient['DATE'],
+            y=df_qols_scores_patient['VALUE'],
+            mode='lines+markers',
+            name='QOLS Score'
+        ))
+
+        fig.update_layout(
+            title='QOLS Scores',
+            xaxis_title='Date',
+            yaxis_title='QOLS Score',
+            template="plotly_dark"
+        )
+        fig.update_yaxes(range=[0, 1])  
+
+        return fig
 
 def create_collapsible_qols_card(title, figure):
     header_id = "collapse-qols-header"
