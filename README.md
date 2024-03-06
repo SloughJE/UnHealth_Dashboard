@@ -66,9 +66,9 @@ The final datasets are structured and saved for use in our dashboard, providing 
 
 ### AI Patient Summary Data
 
-Utilizes synthetic patient data and AI models to generate personalized health summaries. This involves selecting pertinent patient information, integrating public health context including the UnHealth Score, and applying AI to create insightful summaries for individual patient care.
+Utilizes synthetic patient data and AI to generate personalized health summaries. This involves selecting pertinent patient information, integrating public health context including the UnHealth Score, and applying AI to create insightful summaries for individual patient care.
 
-# Project Default Flow Diagram
+# Project Flow Diagram
 
 ```mermaid
 graph TD
