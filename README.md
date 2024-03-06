@@ -6,6 +6,8 @@
 
 The Dashboard aims to deliver insights into U.S. county health by combining CDC health metrics, BEA economic data, BLS CPI data, and Census geolocation data. At its core is the UnHealth Score™, designed to assess county health comprehensively. This score aggregates various health indicators, facilitating direct county comparisons and highlighting areas needing health interventions.
 
+The dashboard now includes an AI Patient View, leveraging AI to generate personalized patient health summaries and visualize vital health data, enriching the decision-making process for healthcare providers.
+
 ### Views Information
 
 #### Summary View
@@ -21,6 +23,10 @@ Focuses on a selected county’s details, offering in-depth analysis through int
 #### Measure View
 
 Explores specific health measures across counties, featuring an interactive map for visualizing the distribution of health metrics, measure selection functionality, and a table listing the best and worst scores for the selected health measure.
+
+### AI Patient View
+
+Generates AI summaries of individual patient health, integrating Synthea patient data with public health metrics for a comprehensive health overview. This view also includes interactive charts for vitals, lab results, and Quality of Life Scores (QOLS), providing actionable insights for healthcare professionals.
 
 
 # Dashboard Data Processing Workflow
@@ -56,46 +62,55 @@ This outlines the steps taken to process data for our dashboard, which uses heal
    - The other details health measures by county, providing insights into specific health outcomes and behaviors.
 3. **Adjustments and Notes**: We adjust data for inflation and add notes to clarify any changes or data sources used.
 
-### Output
-
 The final datasets are structured and saved for use in our dashboard, providing a comprehensive view of health and economic conditions across the U.S. This workflow ensures our dashboard offers up-to-date and accurate information for analysis.
 
+### AI Patient Summary Data
+
+Utilizes synthetic patient data and AI models to generate personalized health summaries. This involves selecting pertinent patient information, integrating public health context including the UnHealth Score, and applying AI to create insightful summaries for individual patient care.
 
 # Project Default Flow Diagram
 
 ```mermaid
-    graph TD
+graph TD
     A[Start] --> B{Data Acquisition}
     B --> C[Get CDC PLACES Data]
     B --> D[Get BEA Income Data]
     B --> E[Get BEA GDP Data]
     B --> F[Get Regional BLS CPI Data]
     B --> G[Get USA BLS CPI Data]
-    C --> H[Initial Processing CDC PLACES Data]
-    H --> I[Process CDC Data]
-    D --> J[Process BEA Data]
-    E --> J
-    F --> J
-    G --> J
-    I --> K[Create Final Summary Dataset]
-    I --> L[Create Final Measures Dataset]
-    J --> K
-    J --> L
-    K --> M[Fit GAM Model]
-    K --> N{Dashboard Setup}
-    L --> N
-    M --> N
-    N --> O[Summary View Tab]
-    N --> P[County View Tab]
-    N --> Q[Measure View Tab]
-    N --> R[Info View Tab]
-    O --> S[Display Summary View]
-    P --> T[Display County Specific Data]
-    Q --> U[Display Health Measures Across Counties]
-    R --> V[Display Dashboard Information]
-    S --> W[main_app Dashboard]
-    T --> W
-    U --> W
-    V --> W
+    B --> H[Generate Synthea Patient Data]
+    C --> I[Initial Processing CDC PLACES Data]
+    I --> J[Process CDC Data]
+    D --> K[Process BEA Data]
+    E --> K
+    F --> K
+    G --> K
+    H --> L[Process Synthea Patient Data]
+    J --> M[Create Final Summary Dataset]
+    J --> N[Create Final Measures Dataset]
+    K --> M
+    K --> N
+    L --> O[Generate AI Patient Summaries]
+    O --> P[Prepare Data for AI Patient View]
+    M --> Q[Fit GAM Model]
+    M --> R{Dashboard Setup}
+    N --> R
+    Q --> R
+    P --> R
+    R --> S[Summary View Tab]
+    R --> T[County View Tab]
+    R --> U[Measure View Tab]
+    R --> V[AI Patient View Tab]
+    R --> W[Info View Tab]
+    S --> X[Display Summary View]
+    T --> Y[Display County Specific Data]
+    U --> Z[Display Health Measures Across Counties]
+    V --> AA[Display AI Patient Summaries and Charts]
+    W --> AB[Display Dashboard Information]
+    X --> AC[main_app Dashboard]
+    Y --> AC
+    Z --> AC
+    AA --> AC
+    AB --> AC
 
 ```
