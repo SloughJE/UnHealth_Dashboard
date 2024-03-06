@@ -20,11 +20,11 @@ The dashboard now includes an AI Patient Analysis tab, leveraging AI to generate
 
 Focuses on a selected county’s details, offering in-depth analysis through interactive charts and key performance indicators (KPIs). Features include county selection, health score and economic KPIs display, an interactive map, health metrics chart, and economic trends charts.
 
-#### Measure
+#### Health Measures
 
 Explores specific health measures across counties, featuring an interactive map for visualizing the distribution of health metrics, measure selection functionality, and a table listing the best and worst scores for the selected health measure.
 
-### AI Patient Analysis
+#### AI Patient Analysis
 
 Generates AI summaries of individual patient health, integrating Synthea patient data with public health metrics for a comprehensive health overview. This view also includes interactive charts for vitals, lab results, and Quality of Life Scores (QOLS), providing actionable insights for healthcare professionals.
 
