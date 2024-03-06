@@ -1,4 +1,6 @@
 import dash
+import random
+
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
@@ -7,6 +9,7 @@ from src.tabs.overall_view_tab import overall_view_tab_layout
 from src.tabs.county_view_tab import county_view_tab_layout,default_state, default_county
 from src.tabs.measure_view_tab import measure_view_tab_layout
 from src.tabs.info_view_tab import info_view_tab_layout
+from src.tabs.ai_patient_view_tab import ai_patient_view_tab_layout, create_updated_ai_patient_view
 
 from src.tabs.overall_view import (create_updated_map, create_updated_scatter_chart, find_top_bottom_values, value_to_color,
                                    df_ranking, x_pred, y_pred, y_intervals, percentile_low, percentile_high, pseudo_r2_value)
@@ -16,9 +19,10 @@ from src.tabs.county_view import (
                                 create_kpi_layout,
                                 df_all_counties, df_ranking_cv, df_bea, counties, 
                                 )
-from src.tabs.measure_view import (create_updated_map_measures,find_top_bottom_values, value_to_color,
-    df_measures, 
-)
+from src.tabs.measure_view import (create_updated_map_measures,find_top_bottom_values, 
+                                   value_to_color, df_measures
+                                )
+from src.tabs.ai_patient_view import all_patient_ids
 from src.tabs.info_view import *
 
 from src.tabs.helper_data import unhealth_score_explanation
@@ -30,6 +34,7 @@ server = app.server # Expose the Flask server for Gunicorn
 
 # Main app layout
 app.layout = dbc.Container([
+
     html.H1("The UnHealth™ Dashboard", style={
         'color': 'white',
         'font-size':'3vw',
@@ -45,7 +50,8 @@ app.layout = dbc.Container([
         dcc.Tab(label='Summary View', value='tab-1', className='custom-tab', selected_className='custom-tab-active', children=overall_view_tab_layout()),
         dcc.Tab(label='County View', value='tab-2', className='custom-tab', selected_className='custom-tab-active', children=county_view_tab_layout()),
         dcc.Tab(label='Measure View', value='tab-3', className='custom-tab', selected_className='custom-tab-active',children=measure_view_tab_layout()),
-        dcc.Tab(label='Info', value='tab-4', className='custom-tab', selected_className='custom-tab-active',children=info_view_tab_layout()),
+        dcc.Tab(label='AI Patient View', value='tab-4', className='custom-tab', selected_className='custom-tab-active',children=ai_patient_view_tab_layout()),
+        dcc.Tab(label='Info', value='tab-5', className='custom-tab', selected_className='custom-tab-active',children=info_view_tab_layout()),
     ], style={'position': 'sticky', 'top': '0', 'zIndex': '1000'}),
         
     
@@ -234,6 +240,73 @@ def update_measure_subtitle(selected_measure):
  
     return selected_measure
 
+
+##############################
+######AI PATIENT VIEW TAB#####
+##############################
+
+# Callback to generate and display random patient data
+@app.callback(
+    Output('ai-patient-view-content', 'children'),
+    [Input('generate-random-patient-button', 'n_clicks')],
+    prevent_initial_call=False  # Prevent callback from running on app initialization
+)
+
+def display_random_patient_data(n_clicks):
+    
+    if n_clicks is None:
+        random_patient_id = "e154f937-18c5-ebaa-1fd0-0b714169d18b"
+        patient_id_title, summary_card, vital_signs_card, labs_card, qols_card = create_updated_ai_patient_view(random_patient_id)  
+
+        return summary_card, vital_signs_card, labs_card, qols_card
+    
+    random_patient_id = random.choice(all_patient_ids)  
+    patient_id_title, summary_card, vital_signs_card, labs_card, qols_card = create_updated_ai_patient_view(random_patient_id)  
+
+    return patient_id_title, summary_card, vital_signs_card, labs_card, qols_card
+
+
+@app.callback(
+    Output("collapse-summary", "is_open"),
+    [Input("collapse-summary-header", "n_clicks")],
+    [State("collapse-summary", "is_open")],
+)
+def toggle_summary_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
+
+@app.callback(
+    Output("collapse-charts", "is_open"),
+    [Input("collapse-charts-header", "n_clicks")],
+    [State("collapse-charts", "is_open")]
+)
+def toggle_charts_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
+
+@app.callback(
+    Output("collapse-vital-signs", "is_open"),
+    [Input("collapse-vital-signs-header", "n_clicks")],
+    [State("collapse-vital-signs", "is_open")]
+)
+def toggle_vital_signs_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
+
+@app.callback(
+    Output("collapse-qols", "is_open"),
+    [Input("collapse-qols-header", "n_clicks")],
+    [State("collapse-qols", "is_open")]
+)
+def toggle_qols_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
+
+
 #######################
 ######INFO TAB#########
 #######################
@@ -246,16 +319,21 @@ toggle_callbacks = [
     {"trigger": "collapse-button-summary-view", "target": "collapse-summary-view"},
     {"trigger": "collapse-button-county-view", "target": "collapse-county-view"},
     {"trigger": "collapse-button-measure-view", "target": "collapse-measure-view"},
+    {"trigger": "collapse-button-ai-patient-view", "target": "collapse-ai-view"},
     {"trigger": "collapse-button-data-sources", "target": "collapse-data-sources"},
     {"trigger": "collapse-button-cdc-places", "target": "collapse-cdc-places"},
     {"trigger": "collapse-button-bea", "target": "collapse-bea"},
     {"trigger": "collapse-button-census", "target": "collapse-census"},
     {"trigger": "collapse-button-bls", "target": "collapse-bls"},
+    {"trigger": "collapse-button-synthea", "target": "collapse-synthea"},
     {"trigger": "collapse-button-data-loading", "target": "collapse-data-loading"},
     {"trigger": "collapse-button-cdc-places-loading", "target": "collapse-cdc-places-loading"},
     {"trigger": "collapse-button-bea-gdp-income", "target": "collapse-bea-gdp-income"},
     {"trigger": "collapse-button-bls-cpi", "target": "collapse-bls-cpi"},
     {"trigger": "collapse-button-bea-bls-further-processing", "target": "collapse-bea-bls-further-processing"},
+    {"trigger": "collapse-button-synthea-generation", "target": "collapse-synthea-generation"},
+    {"trigger": "collapse-button-ai-summary-processing", "target": "collapse-ai-summary-processing"},
+    {"trigger": "collapse-button-patient-charts-processing", "target": "collapse-patient-charts-processing"},
 
 ]
 
@@ -269,8 +347,8 @@ for callback in toggle_callbacks:
         if n:
             return not is_open
         return is_open
-
+    
 
 # Run the app
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)

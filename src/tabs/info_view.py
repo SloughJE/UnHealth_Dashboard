@@ -90,6 +90,33 @@ best_worst_scores_table = (
     "\nDetails provided: For each listed county, the table shows the county name, state, the percentage value for the selected measure, and the county's rank in that measure."
 )
 
+# AI Patient View
+ai_patient_view_tab_title = "AI Patient View"
+
+ai_patient_view_tab_data = (
+"The AI Patient View Tab uses AI to generate detailed summaries for individual patients. It combines individual health records with county health data and the UnHealth Score, aimed at assisting GPs in patient care.")
+
+ai_patient_view_button = (
+    "Generate Random Patient Data:\nFunctionality: A button at the top of the tab allows users to generate data for a randomly selected patient, displaying the AI's ability to create comprehensive health summaries based on individual patient records, local health statistics, and the UnHealth Score."
+)
+
+ai_patient_view_summary = (
+"AI Patient Summary:\nWhat it shows: An AI-generated summary that provides a holistic view of the patient's health by analyzing various health indicators, personal medical history, local UnHealth Scores and local health measures. This summary aims to give GPs a quick yet comprehensive overview, highlighting critical health events and ongoing health conditions."
+)
+
+ai_patient_view_vitals = (
+    "Vitals\nWhat it shows: Charts of the patient's vital signs over time, including Body Mass Index (BMI), Blood Pressure (BP), Heart and Respiratory Rate, and Pain Severity, enabling GPs to monitor changes and identify trends in the patient's health status."
+)
+
+ai_patient_view_labs = (
+    "Labs\nWhat it shows: A curated section presenting charts of significant lab results from a selected set of important markers such as cholesterol levels, blood glucose, and liver function tests. This area provides insights into the patient's biochemical status, essential for diagnosing and managing various conditions."
+)
+
+ai_patient_view_qols = (
+    "Quality of LIfe\nWhat it shows: Charts displaying the Quality of Life Scores (QOLS) for the patient, reflecting their overall well-being and satisfaction with life. This data helps GPs understand the patient's quality of life in relation to their physical health."
+)
+
+
 # Section Titles
 data_sources_title = "Data Sources"
 
@@ -116,7 +143,12 @@ We use data from the US Census Bureau for the geolocation data of the counties.
 bls_title = "BLS for CPI data"
 bls_data = """
 From the US Bureau of Labor Statistics, we obtain Consumer Price Index levels to adjust income-based levels.
-Website: https://www.bls.gov/cpi/regional-resources.htm
+"""
+
+# Synthea 
+synthea_title = "Synthea™: Synthetic Patient Population Simulator"
+synthea_data = """
+The AI Patient View uses data generated from Synthea, an advanced simulation tool that creates 'realistic (but not real)', synthetic patient histories. Synthea's data encompasses comprehensive medical histories, including medications, allergies, medical encounters, and social determinants of health, all generated through statistical models to reflect real-world variability and complexity.
 """
 
 # Section Titles
@@ -209,3 +241,53 @@ To create the final summary dataset we merge the health rankings with GDP data a
 The final summary dataset includes year, geographic identifiers, location names, state details, health rankings, population, and GDP per capita.
 """
 
+# Synthea Data Generation
+synthea_data_generation_title = "Synthea Patient Data Generation"
+
+synthea_data_generation_text = """
+Our dashboard uses a custom Python script to generate Synthea data across various U.S. states, simulating a wide range of patient profiles. This script automates the generation process, managing data across multiple states and consolidating outputs for analysis. The result is a dataset of synthetic patient records, which are then processed and optimized for quick access and analysis within our dashboard. This approach ensures a diverse and comprehensive dataset, supporting the AI Patient View's detailed health summaries.
+\nThe customized code used to generate and process Synthea data is maintained in a separate repository. This repository contains all necessary scripts to replicate the data generation process, allowing for further customization and exploration of synthetic patient data.
+"""
+
+# AI Patient Summary Data Processing
+ai_patient_summary_processing_title = "AI Patient Summary Processing"
+
+ai_patient_summary_processing_text = """
+The AI Patient Summary Processing involves several key steps to prepare and generate a comprehensive health summary for individual patients using AI. 
+Essentially we are sending two components to OpenAI's GPT model: a prompt template that guides the model on the format and style for the response, and a patient history that provides the model with specific patient data to analyze and summarize.
+When integrating these components with the OpenAI model, we're effectively telling the model: "Given this detailed Patient History, create a comprehensive and personalized health summary in line with the structure and emphasis defined in the Response Format Template (prompt template)."
+
+Here's a breakdown of the process to generate the patient history prompt and the AI summary for an individual patient:
+
+1. Data Aggregation: Patient-specific data is aggregated from Synthea™ generated records. This includes demographics, health conditions, medications, allergies, care plans, encounters, immunizations, laboratory results, vital signs, and quality of life scores (QOLS).
+
+2. Data Extraction: Information such as recent health conditions, current and historical medications, allergies, care plans, healthcare encounters, and immunization history is compiled to create a detailed narrative for the prompt.
+
+3. Lab Results and Vital Signs: The latest and most relevant laboratory results and vital sign measurements are selected for inclusion in the prompt. This focuses on presenting a current and accurate depiction of the patient's physical health status.
+
+4. Health Measures Integration: Public health context, including the UnHealth Score™ and local health measures, is integrated to provide a broader perspective on the patient's health relative to their community.
+
+5. AI Patient Summary Generation: From the patient history prompt and the pre-crafted prompt template, an AI Patient Summary is generated using OpenAI's GPT 3.5-turbo. This AI summary aims to highlight critical health insights, aiding healthcare providers in making informed decisions.
+
+6. Summary Saving: The AI-generated patient summary is then saved as a JSON file.
+
+This approach demonstrates how AI can be applied in healthcare to create detailed and useful summaries of individual health, based on both specific patient data and wider public health information.
+"""
+
+ai_patient_charts_processing_title = "Data Processing for Patient Charts"
+
+ai_patient_charts_processing_text = """
+The Data Processing for the Patient Charts focuses on preparing vital signs, laboratory results, and Quality of Life Scores (QOLS) for clear visualizations. This preparation involves a series of steps designed to refine the data extracted from Synthea™, ensuring it's ready for analysis and presentation in the dashboard. Here’s an overview of the process:
+
+1. Initial Extraction: Load patient observation data, specifically targeting laboratory tests, vital signs, and QOLS scores. This step filters the data to include only numeric values with valid timestamps, essential for accurate charting.
+
+2. Lab Data Prioritization and Normalization: Laboratory tests undergo a selection process where clinically significant tests are prioritized. Descriptions are normalized to ensure consistency across the dataset, facilitating easier comparison and analysis.
+
+3. Filtration for Relevance: Labs are further filtered to retain the most recent and relevant results. This involves assigning a priority based on the test medium (e.g., serum over blood) and deduplicating entries to present only the latest findings.
+
+4. Vital Signs and QOLS Refinement: Essential vital signs are isolated for clarity in tracking patient health trends over time. Similarly, QOLS data is processed to reflect patient-reported outcomes, offering insights into well-being beyond clinical measures.
+
+5. Data Organization and Saving: The processed data for labs, vital signs, and QOLS scores are saved into separate optimized pickle files. This structured approach ensures efficient data retrieval for dynamic visualization in the patient view.
+
+This detailed preparation process is focused on making patient data more accessible and actionable, supporting healthcare providers in delivering personalized care based on comprehensive health analyses.
+"""

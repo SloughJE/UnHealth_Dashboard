@@ -159,3 +159,42 @@ body {
     background-color: var(--inactive-color) !important; /* Container background color to match the nav bar */
     box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important; /* Optional: Adds a shadow for depth */
 }
+
+/* assets/style.css */
+
+.markdown-content h2 {
+    font-size: 2.5rem;  /* Adjust size to match h4 or as needed */
+}
+
+.markdown-content p, .markdown-content ul, .markdown-content ol {
+    line-height: 1; /* Adjust line spacing as needed */
+}
+
+/* Custom button styling */
+.custom-button-ai {
+    display: flex; /* Use flexbox */
+    align-items: center; /* Center vertically */
+    font-size: 2rem;
+    padding: 15px 30px;
+    margin-top: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: var(--primary-color);
+    border: none;
+    color: white;
+    border-radius: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+}
+
+.custom-button-ai:hover,
+.custom-button-ai:focus {
+    background-color: var(--hover-color);
+    outline: none;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.custom-button-ai:hover {
+    transform: translateY(-1px);
+}

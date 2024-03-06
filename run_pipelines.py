@@ -1,6 +1,7 @@
 import sys 
 import argparse
-#from dotenv import load_dotenv
+import os
+from dotenv import load_dotenv
 
 from src.data.load_data import (get_cdc_places_data, initial_processing_cdc_places_data, get_spending_data, 
                                 get_bea_income_data, get_bea_gdp_data, get_regional_bls_cpi_data, get_usa_bls_cpi_data,
@@ -10,13 +11,13 @@ from src.data.process_CDC_data import process_cdc_data
 from src.data.process_bea_data import process_bea_data
 from src.data.create_final_datasets import create_final_summary_df, create_final_measures_df
 from src.models.gam_model import fit_gam
+from src.data.patient_data import create_AI_patient_summary, save_patient_labs, consolidate_ai_summaries, filter_lab_data
 
-
-#load_dotenv()
+load_dotenv()
 # Load environment variables from .env file
-#bea_api_key = os.getenv("bea_api_key")
-#bls_api_key = os.getenv("bls_api_key")
-
+bea_api_key = os.getenv("bea_api_key")
+bls_api_key = os.getenv("bls_api_key")
+open_ai_key = os.getenv("OPENAI_API_KEY")
 
 if __name__ == "__main__":
 
@@ -105,6 +106,28 @@ if __name__ == "__main__":
         action="store_true"
     )
 
+    parser.add_argument(
+        "--create_patient_summary",
+        help="create summary of patient history",
+        action="store_true"
+    )
+
+    parser.add_argument(
+        "--save_patient_labs",
+        help="load observation, process and save labs",
+        action="store_true"
+    )
+    parser.add_argument(
+        "--consolidate_summaries",
+        help="consolidate ai summaries into one json",
+        action="store_true"
+    )
+
+    parser.add_argument(
+        "--filter_lab_data",
+        help="filter lab data for patients we have ai summaries",
+        action="store_true"
+    )
 
     args = parser.parse_args()
 
@@ -113,13 +136,13 @@ if __name__ == "__main__":
     else:
   
         if args.get_CDC_PLACES_data:
-            get_CDC_PLACES_data(
+            get_cdc_places_data(
                 link_2022_csv = "https://data.cdc.gov/api/views/duw2-7jbt/rows.csv?accessType=DOWNLOAD",
                 link_2023_csv = "https://data.cdc.gov/api/views/swc5-untb/rows.csv?accessType=DOWNLOAD"
             )
 
         if args.initial_processing_CDC_PLACES_data:
-            initial_processing_CDC_PLACES_data(
+            initial_processing_cdc_places_data(
                 filepath_PLACES="data/raw/df_CDC_PLACES_raw.pickle",
                 us_counties_geojson_url = 'https://www2.census.gov/geo/tiger/GENZ2021/shp/cb_2021_us_county_20m.zip'
             )
@@ -200,4 +223,25 @@ if __name__ == "__main__":
         if args.fit_gam:
             fit_gam(
                 df_path = "data/processed/df_summary_final.pickle"
+            )
+
+        if args.create_patient_summary:
+            create_AI_patient_summary(open_ai_key)
+        
+        if args.consolidate_summaries:
+            consolidate_ai_summaries(
+                    summaries_dir = "data/processed/AI_summaries",
+                    consolidated_file_path = "data/processed/AI_summaries_consolidated/consolidated_ai_summaries.json"
+                )
+            
+        if args.save_patient_labs:
+            save_patient_labs(
+                synthea_pickle_dir="data/Synthea/pickle_optimized_output/",
+                output_dir="data/processed/patient_labs"
+                )
+
+        if args.filter_lab_data:
+            filter_lab_data(
+                labs_data_dir = "data/processed/patient_labs",
+                json_summaries_dir = "data/processed/AI_summaries"
             )
