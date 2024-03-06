@@ -384,7 +384,8 @@ def send_patient_summary_to_openai_and_save(
         save_summary_to_json(patient_id, "No summary generated")
 
 
-def create_AI_patient_summary(open_ai_key: str) -> None:
+def create_AI_patient_summary(open_ai_key: str,
+                              num_patients: int = 10) -> None:
     """
     Generates AI-based patient summaries for a list of patients using OpenAI's API.
 
@@ -401,7 +402,7 @@ def create_AI_patient_summary(open_ai_key: str) -> None:
     # get list of all patients
     all_patients = list(df_patient_info.Id.unique())
 
-    all_patients = all_patients[0:50]
+    all_patients = all_patients[0:num_patients]
 
     print(f"Creating summaries for {len(all_patients)} patients")
 
@@ -637,7 +638,7 @@ def filter_lab_data(
         if filename.endswith(".json"):
             patient_id = filename[:-5]  
             all_patient_ids.append(patient_id)
-    print(f"filtering data to {len(all_patient_ids)}")
+    print(f"filtering data to {len(all_patient_ids)} patients")
 
     df_lab_filt = df_lab[df_lab.PATIENT.isin(all_patient_ids)]
     df_vital_signs_filt = df_vital_signs[df_vital_signs.PATIENT.isin(all_patient_ids)]

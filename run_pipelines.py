@@ -226,7 +226,8 @@ if __name__ == "__main__":
             )
 
         if args.create_patient_summary:
-            create_AI_patient_summary(open_ai_key)
+            create_AI_patient_summary(open_ai_key,
+                                      num_patients=200)
         
         if args.consolidate_summaries:
             consolidate_ai_summaries(
