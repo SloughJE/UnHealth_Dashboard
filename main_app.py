@@ -9,7 +9,7 @@ from src.tabs.overall_view_tab import overall_view_tab_layout
 from src.tabs.county_view_tab import county_view_tab_layout,default_state, default_county
 from src.tabs.measure_view_tab import measure_view_tab_layout
 from src.tabs.info_view_tab import info_view_tab_layout
-from src.tabs.ai_patient_view_tab import ai_patient_view_tab_layout, all_patient_ids, create_updated_ai_patient_view
+from src.tabs.ai_patient_view_tab import ai_patient_view_tab_layout, create_updated_ai_patient_view
 
 from src.tabs.overall_view import (create_updated_map, create_updated_scatter_chart, find_top_bottom_values, value_to_color,
                                    df_ranking, x_pred, y_pred, y_intervals, percentile_low, percentile_high, pseudo_r2_value)
@@ -19,9 +19,10 @@ from src.tabs.county_view import (
                                 create_kpi_layout,
                                 df_all_counties, df_ranking_cv, df_bea, counties, 
                                 )
-from src.tabs.measure_view import (create_updated_map_measures,find_top_bottom_values, value_to_color,
-    df_measures, 
-)
+from src.tabs.measure_view import (create_updated_map_measures,find_top_bottom_values, 
+                                   value_to_color, df_measures
+                                )
+from src.tabs.ai_patient_view import all_patient_ids
 from src.tabs.info_view import *
 
 from src.tabs.helper_data import unhealth_score_explanation
@@ -318,16 +319,21 @@ toggle_callbacks = [
     {"trigger": "collapse-button-summary-view", "target": "collapse-summary-view"},
     {"trigger": "collapse-button-county-view", "target": "collapse-county-view"},
     {"trigger": "collapse-button-measure-view", "target": "collapse-measure-view"},
+    {"trigger": "collapse-button-ai-patient-view", "target": "collapse-ai-view"},
     {"trigger": "collapse-button-data-sources", "target": "collapse-data-sources"},
     {"trigger": "collapse-button-cdc-places", "target": "collapse-cdc-places"},
     {"trigger": "collapse-button-bea", "target": "collapse-bea"},
     {"trigger": "collapse-button-census", "target": "collapse-census"},
     {"trigger": "collapse-button-bls", "target": "collapse-bls"},
+    {"trigger": "collapse-button-synthea", "target": "collapse-synthea"},
     {"trigger": "collapse-button-data-loading", "target": "collapse-data-loading"},
     {"trigger": "collapse-button-cdc-places-loading", "target": "collapse-cdc-places-loading"},
     {"trigger": "collapse-button-bea-gdp-income", "target": "collapse-bea-gdp-income"},
     {"trigger": "collapse-button-bls-cpi", "target": "collapse-bls-cpi"},
     {"trigger": "collapse-button-bea-bls-further-processing", "target": "collapse-bea-bls-further-processing"},
+    {"trigger": "collapse-button-synthea-generation", "target": "collapse-synthea-generation"},
+    {"trigger": "collapse-button-ai-summary-processing", "target": "collapse-ai-summary-processing"},
+    {"trigger": "collapse-button-patient-charts-processing", "target": "collapse-patient-charts-processing"},
 
 ]
 
@@ -345,4 +351,4 @@ for callback in toggle_callbacks:
 
 # Run the app
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)

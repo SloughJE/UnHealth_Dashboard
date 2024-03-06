@@ -6,6 +6,7 @@ from dash import html, dcc
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 
+from src.tabs.helper_data import ai_summary_explanation
 
 # load lab data
 patient_labs_dir="data/processed/patient_labs/"
@@ -47,20 +48,8 @@ def create_collapsible_summary_card(title, content):
             id=header_id,
             style={'font-size': '2.5rem', 'color': 'white'},
         ),
-        html.I(className="bi bi-info-circle", id=info_icon_id, style={'cursor': 'pointer', 'marginLeft': '0px', 'fontSize': '22px'}),
+        html.I(className="bi bi-info-circle", id=info_icon_id, style={'cursor': 'pointer', 'marginLeft': '0px', 'marginTop': '15px', 'fontSize': '22px'}),
     ], style={'display': 'flex', 'alignItems': 'center'})
-
-    # Content for the tooltip explaining the AI Patient Summary
-    ai_summary_explanation = """AI Patient Summary:
-    • AI generated using GPT-Turbo 3.5
-    • Utilizes patient health data and the UnHealth Score for local health insights
-    • Highlights critical health events, chronic conditions, and medications
-    • Intended to augment clinical judgment
-
-    Important:
-    • AI summaries complement but do not replace clinical judgment
-    • Always corroborate AI suggestions with professional guidelines
-    • AI-generated content is advisory and based on available data"""
 
 
     card = dbc.Card([

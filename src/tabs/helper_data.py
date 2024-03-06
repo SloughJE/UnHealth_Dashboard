@@ -11,6 +11,18 @@ Data is shown as percentages of population.
 e.g. for the Measure 'Sleeping < 7 hours (>=18)', in the county of Aroostook, Maine a value of 34.6% indicates that 34.6% of adults 18 or over sleep less than 7 hours per night, according to a CDC survey."""
 
 
+# AI Patient Summary tooltip
+ai_summary_explanation = """AI Patient Summary:
+    • AI generated using GPT-Turbo 3.5
+    • Utilizes patient health data and the UnHealth Score for local health insights
+    • Highlights critical health events, chronic conditions, and medications
+    • Intended to augment clinical judgment
+
+    Important:
+    • AI summaries complement but do not replace clinical judgment
+    • Always corroborate AI suggestions with professional guidelines
+    • AI-generated content is advisory and based on available data
+    """
 
 common_div_style = {
     'backgroundColor': 'black', 
