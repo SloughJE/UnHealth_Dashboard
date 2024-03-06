@@ -91,7 +91,7 @@ graph TD
     K --> M
     K --> N
     L --> O[Generate AI Patient Summaries]
-    O --> P[Prepare Data for AI Patient Analysis]
+    O --> P[Prepare Data for Patient Analysis]
     M --> Q[Fit GAM Model]
     M --> R{Dashboard Setup}
     N --> R
