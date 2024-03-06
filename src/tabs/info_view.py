@@ -13,10 +13,10 @@ dashboard_info_title = "Dashboard Overview"
 #"""
 
 # Tab Information
-tab_information_title = "Views Information"
+tab_information_title = "Tabs Information"
 
 # Summary View Tab
-summary_view_tab_title = "Summary View"
+summary_view_tab_title = "Summary"
 summary_view_tab_data = (
     "The Summary View tab provides a high-level overview of the health and economic status of U.S. counties, enabling users to explore and visualize key data points through interactive elements:"
     "\n\nInteractive Map:"
@@ -36,7 +36,7 @@ gam_model_description = (
 )
 
 # County View Tab
-county_view_tab_title = "County View"
+county_view_tab_title = "County"
 county_view_tab_data = (
     "The County View tab displays into the specifics of a selected county's health score, economic data, and population details, presenting a detailed analysis through interactive charts and key performance indicators (KPIs)."
 )
@@ -57,7 +57,7 @@ county_view_key_features = (
 )
 
 # Measure View Tab
-measure_view_tab_title = "Measure View"
+measure_view_tab_title = "Measure"
 
 measure_view_tab_data = (
     "The Measure View tab focuses on exploring health measures across U.S. counties, providing a detailed look at specific health metrics and their distribution by county throught the United States."
@@ -90,11 +90,11 @@ best_worst_scores_table = (
     "\nDetails provided: For each listed county, the table shows the county name, state, the percentage value for the selected measure, and the county's rank in that measure."
 )
 
-# AI Patient View
-ai_patient_view_tab_title = "AI Patient View"
+# AI Patient Analysis
+ai_patient_view_tab_title = "A.I. Patient Analysis"
 
 ai_patient_view_tab_data = (
-"The AI Patient View Tab uses AI to generate detailed summaries for individual patients. It combines individual health records with county health data and the UnHealth Score, aimed at assisting GPs in patient care.")
+"The AI Patient Analysis Tab uses AI to generate detailed summaries for individual patients. It combines individual health records with county health data and the UnHealth Score, aimed at assisting GPs in patient care.")
 
 ai_patient_view_button = (
     "Generate Random Patient Data:\nFunctionality: A button at the top of the tab allows users to generate data for a randomly selected patient, \
@@ -150,7 +150,7 @@ From the US Bureau of Labor Statistics, we obtain Consumer Price Index levels to
 # Synthea 
 synthea_title = "Synthea™: Synthetic Patient Population Simulator"
 synthea_data = """
-The AI Patient View uses data generated from Synthea, an advanced simulation tool that creates 'realistic (but not real)', synthetic patient histories. Synthea's data encompasses comprehensive medical histories, including medications, allergies, medical encounters, and social determinants of health, all generated through statistical models to reflect real-world variability and complexity.
+The AI Patient Analysis uses data generated from Synthea, an advanced simulation tool that creates 'realistic (but not real)', synthetic patient histories. Synthea's data encompasses comprehensive medical histories, including medications, allergies, medical encounters, and social determinants of health, all generated through statistical models to reflect real-world variability and complexity.
 """
 
 # Section Titles
@@ -247,7 +247,7 @@ The final summary dataset includes year, geographic identifiers, location names,
 synthea_data_generation_title = "Synthea Patient Data Generation"
 
 synthea_data_generation_text = """
-Our dashboard uses a custom Python script to generate Synthea data across various U.S. states, simulating a wide range of patient profiles. This script automates the generation process, managing data across multiple states and consolidating outputs for analysis. The result is a dataset of synthetic patient records, which are then processed and optimized for quick access and analysis within our dashboard. This approach ensures a diverse and comprehensive dataset, supporting the AI Patient View's detailed health summaries.
+Our dashboard uses a custom Python script to generate Synthea data across various U.S. states, simulating a wide range of patient profiles. This script automates the generation process, managing data across multiple states and consolidating outputs for analysis. The result is a dataset of synthetic patient records, which are then processed and optimized for quick access and analysis within our dashboard. This approach ensures a diverse and comprehensive dataset, supporting the AI Patient Analysis's detailed health summaries.
 \nThe customized code used to generate and process Synthea data is maintained in a separate repository. This repository contains all necessary scripts to replicate the data generation process, allowing for further customization and exploration of synthetic patient data.
 """
 

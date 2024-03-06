@@ -43,7 +43,7 @@ def info_view_tab_layout():
             html.P([
                 "The aim of this Dashboard is twofold: \
                 \nFirst, to provide comprehensive insights into the health status of U.S. counties by integrating data from various government sources, including CDC health metrics, BEA economic data, BLS CPI data, and Census geolocation data, focusing on the CDC PLACES health measures.\
-                \nSecond, it introduces the AI Patient View, which uses AI to generate detailed patient summaries by combining county-level health data with individual health records. This feature illustrates how health indicators, economic factors, and AI-driven analysis can collectively enhance healthcare decision-making and patient management.\
+                \nSecond, it introduces the AI Patient Analysis, which uses AI to generate detailed patient summaries by combining county-level health data with individual health records. This feature illustrates how health indicators, economic factors, and AI-driven analysis can collectively enhance healthcare decision-making and patient management.\
                 \n\nThis approach highlights regions in need of health interventions and demonstrates the potential of AI to personalize patient care and improve health outcomes."
                 "\nA key feature of our dashboard is the ",
                 html.Strong("UnHealth Score™", style={'color': '#FF6347', 'fontSize': '16px'}),  

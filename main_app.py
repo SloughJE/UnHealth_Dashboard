@@ -47,10 +47,10 @@ app.layout = dbc.Container([
         }),
 
     dcc.Tabs(id="tabs", value='tab-1', className='tab-container', children=[
-        dcc.Tab(label='Summary View', value='tab-1', className='custom-tab', selected_className='custom-tab-active', children=overall_view_tab_layout()),
-        dcc.Tab(label='County View', value='tab-2', className='custom-tab', selected_className='custom-tab-active', children=county_view_tab_layout()),
-        dcc.Tab(label='Measure View', value='tab-3', className='custom-tab', selected_className='custom-tab-active',children=measure_view_tab_layout()),
-        dcc.Tab(label='AI Patient View', value='tab-4', className='custom-tab', selected_className='custom-tab-active',children=ai_patient_view_tab_layout()),
+        dcc.Tab(label='Summary', value='tab-1', className='custom-tab', selected_className='custom-tab-active', children=overall_view_tab_layout()),
+        dcc.Tab(label='County', value='tab-2', className='custom-tab', selected_className='custom-tab-active', children=county_view_tab_layout()),
+        dcc.Tab(label='Health Measures', value='tab-3', className='custom-tab', selected_className='custom-tab-active',children=measure_view_tab_layout()),
+        dcc.Tab(label='A.I. Patient Analysis', value='tab-4', className='custom-tab', selected_className='custom-tab-active',children=ai_patient_view_tab_layout()),
         dcc.Tab(label='Info', value='tab-5', className='custom-tab', selected_className='custom-tab-active',children=info_view_tab_layout()),
     ], style={'position': 'sticky', 'top': '0', 'zIndex': '1000'}),
         
@@ -60,7 +60,7 @@ app.layout = dbc.Container([
 
 
 ##################
-###OVERALL VIEW###
+###OVERALL###
 ##################
 
 # Define callback to update map and chart based on user input
@@ -116,7 +116,7 @@ def update_table(selected_state):
 
 
 #################
-###County View###
+###County###
 #################
 
 # Callback to update county dropdown based on state selection
@@ -176,7 +176,7 @@ def update_charts(n_intervals, n_clicks, currency_type, selected_state, selected
 
 
 ##################
-###Measure View###
+###Measure###
 ##################
     
 # Define callback to update map and chart based on user input
@@ -242,7 +242,7 @@ def update_measure_subtitle(selected_measure):
 
 
 ##############################
-######AI PATIENT VIEW TAB#####
+######AI PATIENT ANALYSIS TAB#####
 ##############################
 
 # Callback to generate and display random patient data
