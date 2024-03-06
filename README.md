@@ -6,25 +6,25 @@
 
 The Dashboard aims to deliver insights into U.S. county health by combining CDC health metrics, BEA economic data, BLS CPI data, and Census geolocation data. At its core is the UnHealth Score™, designed to assess county health comprehensively. This score aggregates various health indicators, facilitating direct county comparisons and highlighting areas needing health interventions.
 
-The dashboard now includes an AI Patient View, leveraging AI to generate personalized patient health summaries and visualize vital health data, enriching the decision-making process for healthcare providers.
+The dashboard now includes an AI Patient Analysis tab, leveraging AI to generate personalized patient health summaries and visualize vital health data, enriching the decision-making process for healthcare providers.
 
-### Views Information
+### Tab Information
 
-#### Summary View
+#### Summary 
 
 - **Interactive Map**: Shows UnHealth scores across counties, color-coded from healthier (green) to less healthy (red).
 - **Scatter Plot**: Illustrates the relationship between per capita income and UnHealth Scores, identifying economic-health patterns.
 - **Table of Rankings**: Lists counties with the best and worst health scores, income per capita, and population.
 
-#### County View
+#### County
 
 Focuses on a selected county’s details, offering in-depth analysis through interactive charts and key performance indicators (KPIs). Features include county selection, health score and economic KPIs display, an interactive map, health metrics chart, and economic trends charts.
 
-#### Measure View
+#### Measure
 
 Explores specific health measures across counties, featuring an interactive map for visualizing the distribution of health metrics, measure selection functionality, and a table listing the best and worst scores for the selected health measure.
 
-### AI Patient View
+### AI Patient Analysis
 
 Generates AI summaries of individual patient health, integrating Synthea patient data with public health metrics for a comprehensive health overview. This view also includes interactive charts for vitals, lab results, and Quality of Life Scores (QOLS), providing actionable insights for healthcare professionals.
 
@@ -91,18 +91,18 @@ graph TD
     K --> M
     K --> N
     L --> O[Generate AI Patient Summaries]
-    O --> P[Prepare Data for AI Patient View]
+    O --> P[Prepare Data for AI Patient Analysis]
     M --> Q[Fit GAM Model]
     M --> R{Dashboard Setup}
     N --> R
     Q --> R
     P --> R
-    R --> S[Summary View Tab]
-    R --> T[County View Tab]
-    R --> U[Measure View Tab]
-    R --> V[AI Patient View Tab]
-    R --> W[Info View Tab]
-    S --> X[Display Summary View]
+    R --> S[Summary Tab]
+    R --> T[County Tab]
+    R --> U[Measure Tab]
+    R --> V[AI Patient Analysis Tab]
+    R --> W[Info Tab]
+    S --> X[Display Summary Data]
     T --> Y[Display County Specific Data]
     U --> Z[Display Health Measures Across Counties]
     V --> AA[Display AI Patient Summaries and Charts]
