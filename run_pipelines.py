@@ -11,7 +11,7 @@ from src.data.process_CDC_data import process_cdc_data
 from src.data.process_bea_data import process_bea_data
 from src.data.create_final_datasets import create_final_summary_df, create_final_measures_df
 from src.models.gam_model import fit_gam
-from src.data.patient_data import create_AI_patient_summary, save_patient_labs
+from src.data.patient_data import create_AI_patient_summary, save_patient_labs, consolidate_ai_summaries, filter_lab_data
 
 load_dotenv()
 # Load environment variables from .env file
@@ -117,7 +117,17 @@ if __name__ == "__main__":
         help="load observation, process and save labs",
         action="store_true"
     )
+    parser.add_argument(
+        "--consolidate_summaries",
+        help="consolidate ai summaries into one json",
+        action="store_true"
+    )
 
+    parser.add_argument(
+        "--filter_lab_data",
+        help="filter lab data for patients we have ai summaries",
+        action="store_true"
+    )
 
     args = parser.parse_args()
 
@@ -217,9 +227,21 @@ if __name__ == "__main__":
 
         if args.create_patient_summary:
             create_AI_patient_summary(open_ai_key)
-
+        
+        if args.consolidate_summaries:
+            consolidate_ai_summaries(
+                    summaries_dir = "data/processed/AI_summaries",
+                    consolidated_file_path = "data/processed/AI_summaries_consolidated/consolidated_ai_summaries.json"
+                )
+            
         if args.save_patient_labs:
             save_patient_labs(
                 synthea_pickle_dir="data/Synthea/pickle_optimized_output/",
                 output_dir="data/processed/patient_labs"
                 )
+
+        if args.filter_lab_data:
+            filter_lab_data(
+                labs_data_dir = "data/processed/patient_labs",
+                json_summaries_dir = "data/processed/AI_summaries"
+            )

@@ -10,9 +10,9 @@ from src.tabs.helper_data import ai_summary_explanation
 
 # load lab data
 patient_labs_dir="data/processed/patient_labs/"
-df_labs = pd.read_pickle(f"{patient_labs_dir}df_patient_labs.pkl")
-df_vital_signs = pd.read_pickle(f"{patient_labs_dir}df_vital_signs.pkl")
-df_qols_scores = pd.read_pickle(f"{patient_labs_dir}df_qols_scores.pkl")
+df_labs = pd.read_pickle(f"{patient_labs_dir}df_patient_filt_labs.pkl")
+df_vital_signs = pd.read_pickle(f"{patient_labs_dir}df_vital_filt_signs.pkl")
+df_qols_scores = pd.read_pickle(f"{patient_labs_dir}df_qols_filt_scores.pkl")
 
 patient_ids_labs = df_labs['PATIENT'].unique().tolist()
 patient_ids_vital_signs = df_vital_signs['PATIENT'].unique().tolist()

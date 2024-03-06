@@ -597,3 +597,58 @@ def save_patient_labs(synthea_pickle_dir: str = "data/Synthea/pickle_optimized_o
     df_qols_scores.to_pickle(f"{output_dir}/df_qols_scores.pkl")
 
     print(f"patient data saved to {output_dir}")
+
+
+def consolidate_ai_summaries(    
+        summaries_dir = "data/processed/AI_summaries",
+        consolidated_file_path = "data/processed/AI_summaries_consolidated/consolidated_ai_summaries.json"
+        ):
+
+    print("loading and consolidating summaries")
+    all_summaries = []
+
+    # Iterate through each file in the directory
+    for filename in os.listdir(summaries_dir):
+        if filename.endswith(".json"):
+            file_path = os.path.join(summaries_dir, filename)
+            
+            # Open and load the JSON content
+            with open(file_path, 'r', encoding='utf-8') as file:
+                summary = json.load(file)
+                all_summaries.append(summary)
+
+    # Save all summaries into one JSON file
+    with open(consolidated_file_path, 'w', encoding='utf-8') as file:
+        json.dump(all_summaries, file, ensure_ascii=False, indent=4)
+
+    print(f"Consolidated {len(all_summaries)} AI patient summaries into '{consolidated_file_path}'")
+
+def filter_lab_data( 
+        labs_data_dir: str = "data/processed/patient_labs",
+        json_summaries_dir: str = "data/processed/AI_summaries"
+            ):
+
+    df_lab = pd.read_pickle(f"{labs_data_dir}/df_patient_labs.pkl")
+    df_vital_signs = pd.read_pickle(f"{labs_data_dir}/df_vital_signs.pkl")
+    df_qols_scores = pd.read_pickle(f"{labs_data_dir}/df_qols_scores.pkl")
+
+    all_patient_ids = []
+    for filename in os.listdir(json_summaries_dir):
+        if filename.endswith(".json"):
+            patient_id = filename[:-5]  
+            all_patient_ids.append(patient_id)
+    print(f"filtering data to {len(all_patient_ids)}")
+
+    df_lab_filt = df_lab[df_lab.PATIENT.isin(all_patient_ids)]
+    df_vital_signs_filt = df_vital_signs[df_vital_signs.PATIENT.isin(all_patient_ids)]
+    df_qols_scores_filt = df_qols_scores[df_qols_scores.PATIENT.isin(all_patient_ids)]
+
+    print(f"df_labs filtered to {len(df_lab_filt.PATIENT.unique())} patients")
+    print(f"df_vital_signs filtered to {len(df_vital_signs_filt.PATIENT.unique())} patients")
+    print(f"df_qols_scores filtered to {len(df_qols_scores_filt.PATIENT.unique())} patients")
+
+    df_lab_filt.to_pickle(f"{labs_data_dir}/df_patient_filt_labs.pkl")
+    df_vital_signs_filt.to_pickle(f"{labs_data_dir}/df_vital_filt_signs.pkl")
+    df_qols_scores_filt.to_pickle(f"{labs_data_dir}/df_qols_filt_scores.pkl")
+
+    print(f"data saved to {labs_data_dir}")
