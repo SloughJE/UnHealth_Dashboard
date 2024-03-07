@@ -321,7 +321,7 @@ def create_collapsible_qols_card(title, figure):
 
 def create_updated_ai_patient_view(random_patient_id="e154f937-18c5-ebaa-1fd0-0b714169d18b"):
     
-    patient_id_title = html.H2(f"Patient ID: {random_patient_id}", style={'color': 'white', 'textAlign': 'center', 'marginBottom': '20px'})
+    patient_id_title = html.H3(f"Patient ID: {random_patient_id}", style={'color': 'white', 'textAlign': 'center', 'marginBottom': '20px'})
 
     patient_summary = load_patient_summary(random_patient_id)
     summary_card = create_collapsible_summary_card("AI Patient Summary", patient_summary)
