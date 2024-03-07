@@ -22,6 +22,10 @@ ai_summary_explanation = """AI Patient Summary:
     • AI summaries complement but do not replace clinical judgment
     • Always corroborate AI suggestions with professional guidelines
     • AI-generated content is advisory and based on available data
+
+    Patient Data:
+    • generated using Synthea Patient Generator
+    • see Info tab for more information
     """
 
 common_div_style = {
