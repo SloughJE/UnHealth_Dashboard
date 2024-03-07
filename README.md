@@ -1,6 +1,6 @@
-# <a href="https://unhealth-dashboard-6d75504325c4.herokuapp.com/" target="_blank">The UnHealth Dashboard</a>
+# [The UnHealth Dashboard](https://unhealth-dashboard-6d75504325c4.herokuapp.com/)
 
-**Developed by**: <a href="https://sloughje.github.io/" target="_blank">JS Data Science Services LLC</a>
+**Developed by**: [JS Data Science Services LLC](https://sloughje.github.io/)
 
 ## Dashboard Overview
 
