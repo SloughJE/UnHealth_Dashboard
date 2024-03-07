@@ -97,7 +97,7 @@ ai_patient_view_tab_data = (
 "The AI Patient Analysis Tab uses AI to generate detailed summaries for individual patients. It combines individual health records with county health data and the UnHealth Score, aimed at assisting GPs in patient care.")
 
 ai_patient_view_button = (
-    "Generate Random Patient Data:\nFunctionality: A button at the top of the tab allows users to generate data for a randomly selected patient, \
+    "Generate Report from Random Patient:\nFunctionality: A button at the top of the tab allows users to generate a report for a randomly selected patient, \
         displaying the AI's ability to create comprehensive health summaries based on individual patient records, local health statistics, and the UnHealth Score."
         "Currently there are 196 patients that can be randomly selected from."
 )

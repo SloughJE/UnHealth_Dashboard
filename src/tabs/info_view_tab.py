@@ -41,19 +41,27 @@ def info_view_tab_layout():
         # Dashboard Information Section with Enhanced "UnHealth Score" Highlight
         create_collapsible_card("collapse-button-dashboard-info", "collapse-dashboard-info", dashboard_info_title, [
             html.P([
-                "The aim of this Dashboard is twofold: \
-                \nFirst, to provide comprehensive insights into the health status of U.S. counties by integrating data from various government sources, including CDC health metrics, BEA economic data, BLS CPI data, and Census geolocation data, focusing on the CDC PLACES health measures.\
-                \nSecond, it introduces the AI Patient Analysis, which uses AI to generate detailed patient summaries by combining county-level health data with individual health records. This feature illustrates how health indicators, economic factors, and AI-driven analysis can collectively enhance healthcare decision-making and patient management.\
-                \n\nThis approach highlights regions in need of health interventions and demonstrates the potential of AI to personalize patient care and improve health outcomes."
-                "\nA key feature of our dashboard is the ",
+                "The aim of this Dashboard is: \
+                \n1) Location-based Health Status Insights: We offer detailed insights into the health status of U.S. counties by incorporating data from a variety of government sources. This includes CDC health metrics, BEA economic data, BLS CPI data, and Census geolocation data.\
+                \n2) AI-Supported Patient Care: To demonstrate the potential of AI to personalize patient care and improve health outcomes, we introduce the AI Patient Analysis. This feature uses AI to generate detailed patient summaries by combining individual health records with county-level health statistics. \
+                This feature illustrates how health indicators, economic factors, and AI-driven analysis can collectively enhance healthcare decision-making and patient management.\
+                "
+                "\n\nCentral to our dashboard is the ",
                 html.Strong("UnHealth Score™", style={'color': '#FF6347', 'fontSize': '16px'}),  
                 ", a summary statistic designed to offer an in-depth assessment of county-level health. This score aggregates data from multiple health indicators, including chronic disease prevalence, lifestyle choices, and disability rates, facilitating direct comparisons between counties.\
-                    The UnHealth Score™ highlights regions in urgent need of health interventions and support, serving as a critical tool for public health analysis and decision-making. Economic data is not factored into the UnHealth score.\n"
+                    The UnHealth Score highlights regions in urgent need of health interventions and support, serving as a critical tool for public health analysis and decision-making. Economic data is not factored into the UnHealth score in order to maintain a focused measure on health. "
+                    "Additionally, the UnHealth Score is integrated into our AI Patient Analysis, providing context that guides individualized patient care plans.\n\n"
+                    #"\n\nOverall, this dashboard provides a view of health status across U.S. counties and uses AI to support individual patient healthcare by integrating location-based health statistics, the UnHealth Score, and individual patient records."
             ], style={'white-space': 'pre-line'}),
-            html.H5(f"Developed by {developed_by}", style={'fontSize': '18px'}),
+
             html.Div([
-                html.A("Dashboard GitHub Repo", href="https://github.com/SloughJE/UnHealth_Dashboard", target="_blank", style={'fontSize': '18px'})  
-            ], style={'marginTop': '10px'}),
+                html.Span("Developed by ", style={'fontSize': '18px'}),
+                html.A(developed_by, href='https://sloughje.github.io/', target="_blank", style={'fontSize': '18px'}),
+                html.Div([
+                    html.A("Dashboard GitHub Repo", href="https://github.com/SloughJE/UnHealth_Dashboard", target="_blank", 
+                        style={'fontSize': '18px', 'marginTop': '10px', 'display': 'block'})  
+                ], style={'marginTop': '10px'}),
+            ]),
         ], header_style=main_section_style, is_main=True),
         
         # Tab Information Section
