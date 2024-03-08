@@ -44,12 +44,12 @@ def info_view_tab_layout():
                 "The aim of this Dashboard is: \
                 \n1) Location-based Health Status Insights: We offer detailed insights into the health status of U.S. counties by incorporating data from a variety of government sources. This includes CDC health metrics, BEA economic data, BLS CPI data, and Census geolocation data.\
                 \n2) AI-Supported Patient Care: To demonstrate the potential of AI to personalize patient care and improve health outcomes, we introduce the AI Patient Analysis. This feature uses AI to generate detailed patient summaries by combining individual health records with county-level health statistics. \
-                This feature illustrates how health indicators, economic factors, and AI-driven analysis can collectively enhance healthcare decision-making and patient management.\
+                It illustrates how health indicators, economic factors, and AI-driven analysis can collectively enhance healthcare decision-making and patient management.\
                 "
                 "\n\nCentral to our dashboard is the ",
                 html.Strong("UnHealth Score™", style={'color': '#FF6347', 'fontSize': '16px'}),  
                 ", a summary statistic designed to offer an in-depth assessment of county-level health. This score aggregates data from multiple health indicators, including chronic disease prevalence, lifestyle choices, and disability rates, facilitating direct comparisons between counties.\
-                    The UnHealth Score highlights regions in urgent need of health interventions and support, serving as a critical tool for public health analysis and decision-making. Economic data is not factored into the UnHealth score in order to maintain a focused measure on health. "
+                    The UnHealth Score, consolidating multiple key health indicators into one metric, clearly highlights regions in urgent need of health interventions and support, making it a simple yet effective tool for policymakers in public health analysis and decision-making. Economic data is not factored into the UnHealth score in order to maintain a focus on health. "
                     "Additionally, the UnHealth Score is integrated into our AI Patient Analysis, providing context that guides individualized patient care plans.\n\n"
                     #"\n\nOverall, this dashboard provides a view of health status across U.S. counties and uses AI to support individual patient healthcare by integrating location-based health statistics, the UnHealth Score, and individual patient records."
             ], style={'white-space': 'pre-line'}),
