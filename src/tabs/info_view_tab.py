@@ -41,7 +41,7 @@ def info_view_tab_layout():
         # Dashboard Information Section with Enhanced "UnHealth Score" Highlight
         create_collapsible_card("collapse-button-dashboard-info", "collapse-dashboard-info", dashboard_info_title, [
             html.P([
-                "The aim of this Dashboard is: \
+                "The aim of this Dashboard is to provide: \
                 \n1) Location-based Health Status Insights: We offer detailed insights into the health status of U.S. counties by incorporating data from a variety of government sources. This includes CDC health metrics, BEA economic data, BLS CPI data, and Census geolocation data.\
                 \n2) AI-Supported Patient Care: To demonstrate the potential of AI to personalize patient care and improve health outcomes, we introduce the AI Patient Analysis. This feature uses AI to generate detailed patient summaries by combining individual health records with county-level health statistics. \
                 It illustrates how health indicators, economic factors, and AI-driven analysis can collectively enhance healthcare decision-making and patient management.\
