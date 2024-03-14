@@ -1,6 +1,6 @@
 # [The UnHealth Dashboard](https://unhealth-dashboard-6d75504325c4.herokuapp.com/)
 
-**Developed by**: [JS Data Science Services LLC](https://sloughje.github.io/)
+**Developed by**: [JS Data Science Services LLC](https://www.jsdatascience.com)
 
 ## Dashboard Overview
 
